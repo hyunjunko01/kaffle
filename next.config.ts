@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  transpilePackages: ["@web3auth/modal", "@web3auth/no-modal"],
+  serverExternalPackages: ["@prisma/client"],
 };
 
 export default nextConfig;

@@ -27,12 +27,12 @@ The Kakao identity. Created on first login.
 
 ## Wallet
 
-One wallet per user. Mapped at account creation.
+One wallet per user. Mapped after Kakao login, when Web3Auth returns an address.
 
 - user id
 - address
 
-How keys are stored can be decided at implementation.
+The private key is not stored. Web3Auth holds key shares; we persist the address only.
 
 ## TicketLedger
 

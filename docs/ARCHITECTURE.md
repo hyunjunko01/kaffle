@@ -23,8 +23,10 @@ Kakao is the only entry gate.
 On first login, the platform:
 
 - creates a user account from the Kakao identity
-- generates a wallet
-- maps that wallet 1:1 to the account
+- lets Web3Auth reconstruct the signing key in the browser
+- maps that wallet address 1:1 to the account
+
+The server stores the address only. It does not store or generate the private key.
 
 Later logins reuse the same account and wallet. The user does not import or connect an external wallet to enter the platform.
 
