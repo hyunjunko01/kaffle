@@ -1,6 +1,7 @@
+import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
 import { readSession } from "@/lib/session";
-import { randomBytes } from "crypto";
+import { getTicketBalance } from "@/lib/tickets";
 
 export async function getCurrentUser() {
   const session = await readSession();
@@ -26,13 +27,16 @@ export async function createReferralCode() {
   throw new Error("Could not allocate a referral code");
 }
 
-export function toMeResponse(user: {
-  id: string;
-  kakaoId: string;
-  referralCode: string;
-  createdAt: Date;
-  wallet: { address: string } | null;
-}) {
+export function toMeResponse(
+  user: {
+    id: string;
+    kakaoId: string;
+    referralCode: string;
+    createdAt: Date;
+    wallet: { address: string } | null;
+  },
+  ticketBalance: number,
+) {
   return {
     user: {
       id: user.id,
@@ -41,8 +45,18 @@ export function toMeResponse(user: {
       createdAt: user.createdAt.toISOString(),
     },
     wallet: user.wallet ? { address: user.wallet.address } : null,
-    ticketBalance: 0,
+    ticketBalance,
   };
+}
+
+export async function toMePayload(user: {
+  id: string;
+  kakaoId: string;
+  referralCode: string;
+  createdAt: Date;
+  wallet: { address: string } | null;
+}) {
+  return toMeResponse(user, await getTicketBalance(user.id));
 }
 
 export type MeResponse = ReturnType<typeof toMeResponse>;

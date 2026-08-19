@@ -8,14 +8,16 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(cuid())
-  kakaoId          String   @unique
-  referralCode     String   @unique
-  referredByUserId String?
-  createdAt        DateTime @default(now())
-  wallet           Wallet?
-  referredBy       User?    @relation("Referrals", fields: [referredByUserId], references: [id])
-  referrals        User[]   @relation("Referrals")
+  id                 String               @id @default(cuid())
+  kakaoId            String               @unique
+  referralCode       String               @unique
+  referredByUserId   String?
+  createdAt          DateTime             @default(now())
+  wallet             Wallet?
+  referredBy         User?                @relation("Referrals", fields: [referredByUserId], references: [id])
+  referrals          User[]               @relation("Referrals")
+  ticketLedger       TicketLedger[]
+  missionCompletions MissionCompletion[]
 }
 
 model Wallet {
@@ -23,4 +25,26 @@ model Wallet {
   userId  String @unique
   address String @unique
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TicketLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  relatedId String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MissionCompletion {
+  id        String   @id @default(cuid())
+  userId    String
+  mission   String
+  status    String
+  extra     String   @default("")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mission, extra])
 }
