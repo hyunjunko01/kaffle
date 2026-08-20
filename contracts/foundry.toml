@@ -9,4 +9,7 @@ remappings = [
     "@openzeppelin/contracts@4.9.6/=lib/openzeppelin-contracts/contracts/",
 ]
 
+[fmt]
+ignore = ["lib/**"]
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
