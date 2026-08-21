@@ -84,16 +84,19 @@ contract KaffleFactory is IKaffleFactory, Ownable {
         if (!_isRaffle[msg.sender]) revert NotRaffle();
 
         VRFConfig memory config = vrfConfig;
-        requestId = IVRFCoordinatorV2Plus(vrfCoordinator).requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
+        requestId = IVRFCoordinatorV2Plus(vrfCoordinator)
+            .requestRandomWords(
+                VRFV2PlusClient.RandomWordsRequest({
                 keyHash: config.keyHash,
                 subId: config.subscriptionId,
                 requestConfirmations: config.requestConfirmations,
                 callbackGasLimit: config.callbackGasLimit,
                 numWords: 1,
-                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: config.nativePayment}))
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: config.nativePayment})
+                )
             })
-        );
+            );
 
         _requestToRaffle[requestId] = msg.sender;
         emit RandomnessRequested(msg.sender, requestId);
