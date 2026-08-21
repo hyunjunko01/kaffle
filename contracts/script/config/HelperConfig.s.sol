@@ -102,7 +102,7 @@ contract HelperConfig is Script {
             return _localNetworkConfig;
         }
 
-        uint256 deployerKey = _optionalUint("PRIVATE_KEY", DEFAULT_ANVIL_PRIVATE_KEY);
+        uint256 deployerKey = DEFAULT_ANVIL_PRIVATE_KEY;
         address deployer = vm.addr(deployerKey);
 
         vm.startBroadcast(deployerKey);
