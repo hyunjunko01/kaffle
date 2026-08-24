@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { ADMIN_COOKIE, verifyAdminSession } from "@/lib/admin-session";
 import { SESSION_COOKIE, verifySession } from "@/lib/session-token";
 
-const PUBLIC_PREFIXES = ["/login", "/auth/", "/.well-known/", "/api/"];
+const PUBLIC_PREFIXES = ["/login", "/auth/", "/.well-known/", "/api/", "/admin/login"];
 
 function isPublicPath(pathname: string) {
   if (pathname === "/") {
@@ -12,15 +13,44 @@ function isPublicPath(pathname: string) {
 }
 
 export async function middleware(request: NextRequest) {
-  if (isPublicPath(request.nextUrl.pathname)) {
+  const { pathname } = request.nextUrl;
+
+  if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  if (pathname.startsWith("/admin")) {
+    return authorizeAdmin(request);
+  }
+
+  return authorizeUser(request);
+}
+
+async function authorizeAdmin(request: NextRequest) {
+  const token = request.cookies.get(ADMIN_COOKIE)?.value;
   const secret = process.env.SESSION_SECRET;
+  const login = new URL("/admin/login", request.url);
 
   if (!token || !secret) {
-    const login = new URL("/login", request.url);
+    return NextResponse.redirect(login);
+  }
+
+  try {
+    await verifyAdminSession(token, secret);
+    return NextResponse.next();
+  } catch {
+    const response = NextResponse.redirect(login);
+    response.cookies.set(ADMIN_COOKIE, "", { path: "/", maxAge: 0 });
+    return response;
+  }
+}
+
+async function authorizeUser(request: NextRequest) {
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const secret = process.env.SESSION_SECRET;
+  const login = new URL("/login", request.url);
+
+  if (!token || !secret) {
     return NextResponse.redirect(login);
   }
 
@@ -28,7 +58,6 @@ export async function middleware(request: NextRequest) {
     await verifySession(token, secret);
     return NextResponse.next();
   } catch {
-    const login = new URL("/login", request.url);
     const response = NextResponse.redirect(login);
     response.cookies.set(SESSION_COOKIE, "", { path: "/", maxAge: 0 });
     return response;

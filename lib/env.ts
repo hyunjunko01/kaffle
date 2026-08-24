@@ -14,6 +14,10 @@ export function getSessionSecret() {
   return required("SESSION_SECRET");
 }
 
+export function getAdminSecret() {
+  return required("ADMIN_SECRET");
+}
+
 export function getKakaoConfig() {
   return {
     restApiKey: required("KAKAO_REST_API_KEY"),
