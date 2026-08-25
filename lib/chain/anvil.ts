@@ -26,6 +26,7 @@ export function getAnvilConfig() {
 
   return {
     rpcUrl: process.env.ANVIL_RPC_URL ?? "http://127.0.0.1:8545",
+    factory: requiredAddress("ANVIL_KAFFLE_FACTORY"),
     vault: requiredAddress("ANVIL_KAFFLE_VAULT"),
     prizeToken: requiredAddress("ANVIL_PRIZE_TOKEN"),
     privateKey,

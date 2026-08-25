@@ -20,6 +20,82 @@ export const kaffleVaultAbi = [
     inputs: [],
     outputs: [{ name: "", type: "uint256" }],
   },
+  {
+    type: "function",
+    name: "prizeOf",
+    stateMutability: "view",
+    inputs: [{ name: "raffle", type: "address" }],
+    outputs: [
+      { name: "amount", type: "uint256" },
+      { name: "claimed", type: "bool" },
+      { name: "attached", type: "bool" },
+    ],
+  },
+] as const;
+
+export const kaffleFactoryAbi = [
+  {
+    type: "function",
+    name: "createRaffle",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "duration", type: "uint64" },
+      { name: "prizeAmount", type: "uint256" },
+    ],
+    outputs: [{ name: "raffle", type: "address" }],
+  },
+  {
+    type: "function",
+    name: "currentRaffle",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    type: "event",
+    name: "RaffleCreated",
+    inputs: [
+      { name: "raffle", type: "address", indexed: true },
+      { name: "startTime", type: "uint64", indexed: false },
+      { name: "endTime", type: "uint64", indexed: false },
+      { name: "prizeAmount", type: "uint256", indexed: false },
+    ],
+  },
+  { type: "error", name: "RaffleActive", inputs: [] },
+  { type: "error", name: "InvalidDuration", inputs: [] },
+  { type: "error", name: "InvalidPrize", inputs: [] },
+  { type: "error", name: "InsufficientFunds", inputs: [] },
+] as const;
+
+export const kaffleAbi = [
+  {
+    type: "function",
+    name: "startTime",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint64" }],
+  },
+  {
+    type: "function",
+    name: "endTime",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint64" }],
+  },
+  {
+    type: "function",
+    name: "isFinished",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "winner",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
 ] as const;
 
 export const erc20Abi = [

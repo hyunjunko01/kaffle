@@ -1,0 +1,215 @@
+import {
+  BaseError,
+  ContractFunctionRevertedError,
+  decodeEventLog,
+  formatUnits,
+  parseUnits,
+  zeroAddress,
+} from "viem";
+import {
+  erc20Abi,
+  kaffleAbi,
+  kaffleFactoryAbi,
+  kaffleVaultAbi,
+} from "@/lib/chain/abis";
+import {
+  getAnvilConfig,
+  getAnvilPublicClient,
+  getAnvilWalletClient,
+} from "@/lib/chain/anvil";
+
+export type CurrentRaffle = {
+  address: string;
+  startTime: number;
+  endTime: number;
+  isFinished: boolean;
+  winner: string | null;
+  prizeAmount: string;
+  prizeClaimed: boolean;
+  prizeAttached: boolean;
+};
+
+export type RaffleStatus = {
+  factory: string;
+  symbol: string;
+  decimals: number;
+  unallocated: string;
+  current: CurrentRaffle | null;
+};
+
+function formatTs(unix: number) {
+  return new Date(unix * 1000).toISOString();
+}
+
+export function raffleErrorMessage(error: unknown) {
+  if (error instanceof BaseError) {
+    const revert = error.walk(
+      (err) => err instanceof ContractFunctionRevertedError,
+    );
+    if (revert instanceof ContractFunctionRevertedError) {
+      const name = revert.data?.errorName;
+      if (name === "RaffleActive") {
+        return "RaffleActive";
+      }
+      if (name === "InsufficientFunds") {
+        return "InsufficientFunds";
+      }
+      if (name) {
+        return name;
+      }
+    }
+    return error.shortMessage;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return "createRaffle failed";
+}
+
+export async function getRaffleStatus(): Promise<RaffleStatus> {
+  const { factory, vault, prizeToken } = getAnvilConfig();
+  const client = getAnvilPublicClient();
+
+  const [currentAddress, unallocated, decimals, symbol] = await Promise.all([
+    client.readContract({
+      address: factory,
+      abi: kaffleFactoryAbi,
+      functionName: "currentRaffle",
+    }),
+    client.readContract({
+      address: vault,
+      abi: kaffleVaultAbi,
+      functionName: "unallocated",
+    }),
+    client.readContract({
+      address: prizeToken,
+      abi: erc20Abi,
+      functionName: "decimals",
+    }),
+    client.readContract({
+      address: prizeToken,
+      abi: erc20Abi,
+      functionName: "symbol",
+    }),
+  ]);
+
+  if (currentAddress === zeroAddress) {
+    return {
+      factory,
+      symbol,
+      decimals,
+      unallocated: formatUnits(unallocated, decimals),
+      current: null,
+    };
+  }
+
+  const [startTime, endTime, isFinished, winner, prize] = await Promise.all([
+    client.readContract({
+      address: currentAddress,
+      abi: kaffleAbi,
+      functionName: "startTime",
+    }),
+    client.readContract({
+      address: currentAddress,
+      abi: kaffleAbi,
+      functionName: "endTime",
+    }),
+    client.readContract({
+      address: currentAddress,
+      abi: kaffleAbi,
+      functionName: "isFinished",
+    }),
+    client.readContract({
+      address: currentAddress,
+      abi: kaffleAbi,
+      functionName: "winner",
+    }),
+    client.readContract({
+      address: vault,
+      abi: kaffleVaultAbi,
+      functionName: "prizeOf",
+      args: [currentAddress],
+    }),
+  ]);
+
+  const [prizeAmount, prizeClaimed, prizeAttached] = prize;
+
+  return {
+    factory,
+    symbol,
+    decimals,
+    unallocated: formatUnits(unallocated, decimals),
+    current: {
+      address: currentAddress,
+      startTime: Number(startTime),
+      endTime: Number(endTime),
+      isFinished,
+      winner: winner === zeroAddress ? null : winner,
+      prizeAmount: formatUnits(prizeAmount, decimals),
+      prizeClaimed,
+      prizeAttached,
+    },
+  };
+}
+
+export async function createRaffle(input: {
+  durationSeconds: string;
+  prizeAmount: string;
+}) {
+  const duration = Number(input.durationSeconds);
+  if (!Number.isInteger(duration) || duration <= 0 || duration > Number.MAX_SAFE_INTEGER) {
+    throw new Error("invalid duration");
+  }
+  if (!/^\d+(\.\d+)?$/.test(input.prizeAmount) || Number(input.prizeAmount) <= 0) {
+    throw new Error("invalid prize");
+  }
+
+  const { factory, prizeToken } = getAnvilConfig();
+  const publicClient = getAnvilPublicClient();
+  const wallet = getAnvilWalletClient();
+
+  const decimals = await publicClient.readContract({
+    address: prizeToken,
+    abi: erc20Abi,
+    functionName: "decimals",
+  });
+  const prizeAmount = parseUnits(input.prizeAmount, decimals);
+
+  const hash = await wallet.writeContract({
+    address: factory,
+    abi: kaffleFactoryAbi,
+    functionName: "createRaffle",
+    args: [BigInt(duration), prizeAmount],
+  });
+
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  if (receipt.status !== "success") {
+    throw new Error("createRaffle transaction failed");
+  }
+
+  let raffleAddress: string | null = null;
+  for (const log of receipt.logs) {
+    try {
+      const decoded = decodeEventLog({
+        abi: kaffleFactoryAbi,
+        data: log.data,
+        topics: log.topics,
+      });
+      if (decoded.eventName === "RaffleCreated") {
+        raffleAddress = decoded.args.raffle;
+        break;
+      }
+    } catch {
+      // other contracts' logs
+    }
+  }
+
+  const status = await getRaffleStatus();
+  return {
+    hash,
+    raffle: raffleAddress ?? status.current?.address ?? null,
+    startTimeIso: status.current ? formatTs(status.current.startTime) : null,
+    endTimeIso: status.current ? formatTs(status.current.endTime) : null,
+    ...status,
+  };
+}
