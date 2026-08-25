@@ -7,6 +7,8 @@ type CurrentRaffle = {
   startTime: number;
   endTime: number;
   isFinished: boolean;
+  isOpen: boolean;
+  totalTickets: number;
   winner: string | null;
   prizeAmount: string;
   prizeClaimed: boolean;
@@ -139,11 +141,15 @@ export function RafflePanel() {
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">상태</dt>
-                <dd className="mt-1 font-medium">
-                  {status.current.isFinished ? "종료" : "진행 중"}
-                </dd>
-              </div>
+              <dt className="text-zinc-500">상태</dt>
+              <dd className="mt-1 font-medium">
+                {status.current.isFinished
+                  ? "종료"
+                  : status.current.isOpen
+                    ? "진행 중"
+                    : "참여 마감"}
+              </dd>
+            </div>
               <div>
                 <dt className="text-zinc-500">상금</dt>
                 <dd className="mt-1 font-medium">

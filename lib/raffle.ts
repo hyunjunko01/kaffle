@@ -23,6 +23,8 @@ export type CurrentRaffle = {
   startTime: number;
   endTime: number;
   isFinished: boolean;
+  isOpen: boolean;
+  totalTickets: number;
   winner: string | null;
   prizeAmount: string;
   prizeClaimed: boolean;
@@ -103,36 +105,45 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
     };
   }
 
-  const [startTime, endTime, isFinished, winner, prize] = await Promise.all([
-    client.readContract({
-      address: currentAddress,
-      abi: kaffleAbi,
-      functionName: "startTime",
-    }),
-    client.readContract({
-      address: currentAddress,
-      abi: kaffleAbi,
-      functionName: "endTime",
-    }),
-    client.readContract({
-      address: currentAddress,
-      abi: kaffleAbi,
-      functionName: "isFinished",
-    }),
-    client.readContract({
-      address: currentAddress,
-      abi: kaffleAbi,
-      functionName: "winner",
-    }),
-    client.readContract({
-      address: vault,
-      abi: kaffleVaultAbi,
-      functionName: "prizeOf",
-      args: [currentAddress],
-    }),
-  ]);
+  const [startTime, endTime, isFinished, winner, prize, totalTickets] =
+    await Promise.all([
+      client.readContract({
+        address: currentAddress,
+        abi: kaffleAbi,
+        functionName: "startTime",
+      }),
+      client.readContract({
+        address: currentAddress,
+        abi: kaffleAbi,
+        functionName: "endTime",
+      }),
+      client.readContract({
+        address: currentAddress,
+        abi: kaffleAbi,
+        functionName: "isFinished",
+      }),
+      client.readContract({
+        address: currentAddress,
+        abi: kaffleAbi,
+        functionName: "winner",
+      }),
+      client.readContract({
+        address: vault,
+        abi: kaffleVaultAbi,
+        functionName: "prizeOf",
+        args: [currentAddress],
+      }),
+      client.readContract({
+        address: currentAddress,
+        abi: kaffleAbi,
+        functionName: "totalTickets",
+      }),
+    ]);
 
   const [prizeAmount, prizeClaimed, prizeAttached] = prize;
+  const start = Number(startTime);
+  const end = Number(endTime);
+  const now = Math.floor(Date.now() / 1000);
 
   return {
     factory,
@@ -141,9 +152,11 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
     unallocated: formatUnits(unallocated, decimals),
     current: {
       address: currentAddress,
-      startTime: Number(startTime),
-      endTime: Number(endTime),
+      startTime: start,
+      endTime: end,
       isFinished,
+      isOpen: now >= start && now < end,
+      totalTickets: Number(totalTickets),
       winner: winner === zeroAddress ? null : winner,
       prizeAmount: formatUnits(prizeAmount, decimals),
       prizeClaimed,

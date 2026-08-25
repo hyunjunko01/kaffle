@@ -70,6 +70,18 @@ export const kaffleFactoryAbi = [
 export const kaffleAbi = [
   {
     type: "function",
+    name: "enter",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "user", type: "address" },
+      { name: "ticketCount", type: "uint256" },
+      { name: "deadline", type: "uint256" },
+      { name: "signature", type: "bytes" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
     name: "startTime",
     stateMutability: "view",
     inputs: [],
@@ -96,6 +108,24 @@ export const kaffleAbi = [
     inputs: [],
     outputs: [{ name: "", type: "address" }],
   },
+  {
+    type: "function",
+    name: "totalTickets",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "nonce",
+    stateMutability: "view",
+    inputs: [{ name: "user", type: "address" }],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  { type: "error", name: "RoundClosed", inputs: [] },
+  { type: "error", name: "InvalidTicketCount", inputs: [] },
+  { type: "error", name: "InvalidSignature", inputs: [] },
+  { type: "error", name: "SignatureExpired", inputs: [] },
 ] as const;
 
 export const erc20Abi = [
