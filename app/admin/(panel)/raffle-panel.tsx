@@ -9,6 +9,7 @@ type CurrentRaffle = {
   isFinished: boolean;
   isOpen: boolean;
   canRequestWinner: boolean;
+  canClaim: boolean;
   totalTickets: number;
   winner: string | null;
   prizeAmount: string;

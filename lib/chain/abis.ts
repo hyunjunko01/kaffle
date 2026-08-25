@@ -31,6 +31,16 @@ export const kaffleVaultAbi = [
       { name: "attached", type: "bool" },
     ],
   },
+  {
+    type: "function",
+    name: "claim",
+    stateMutability: "nonpayable",
+    inputs: [{ name: "raffle", type: "address" }],
+    outputs: [],
+  },
+  { type: "error", name: "PrizeNotAttached", inputs: [] },
+  { type: "error", name: "AlreadyClaimed", inputs: [] },
+  { type: "error", name: "NoWinner", inputs: [] },
 ] as const;
 
 export const kaffleFactoryAbi = [

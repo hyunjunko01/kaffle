@@ -26,6 +26,7 @@ export type CurrentRaffle = {
   isFinished: boolean;
   isOpen: boolean;
   canRequestWinner: boolean;
+  canClaim: boolean;
   totalTickets: number;
   winner: string | null;
   prizeAmount: string;
@@ -167,6 +168,7 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
       isOpen: open,
       canRequestWinner:
         !open && !finished && !winnerAddress && Number(totalTickets) > 0,
+      canClaim: Boolean(winnerAddress) && prizeAttached && !prizeClaimed,
       totalTickets: Number(totalTickets),
       winner: winnerAddress,
       prizeAmount: formatUnits(prizeAmount, decimals),

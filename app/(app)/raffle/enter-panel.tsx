@@ -10,6 +10,7 @@ type CurrentRaffle = {
   isFinished: boolean;
   isOpen: boolean;
   canRequestWinner: boolean;
+  canClaim: boolean;
   totalTickets: number;
   winner: string | null;
   prizeAmount: string;
@@ -54,6 +55,7 @@ export function RaffleEnterPanel() {
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
   const [settling, setSettling] = useState(false);
+  const [claiming, setClaiming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -160,10 +162,53 @@ export function RaffleEnterPanel() {
     router.refresh();
   }
 
+  async function claimPrize() {
+    setClaiming(true);
+    setError(null);
+    setSuccess(null);
+    setTxHash(null);
+
+    const res = await fetch("/api/raffle/claim", { method: "POST" });
+    const body = (await res.json()) as RaffleView & {
+      error?: string;
+      hash?: string;
+      winner?: string;
+    };
+
+    if (!res.ok) {
+      setError(
+        body.error === "NoWinner"
+          ? "아직 당첨자가 없습니다."
+          : body.error === "AlreadyClaimed"
+            ? "이미 상금을 지급했습니다."
+            : body.error === "PrizeNotAttached"
+              ? "이 라운드에 상금이 없습니다."
+              : (body.error ?? "상금 수령에 실패했습니다."),
+      );
+      setClaiming(false);
+      return;
+    }
+
+    setView(toView(body, view));
+    setTxHash(body.hash ?? null);
+    setSuccess(
+      body.winner
+        ? `상금 지급 완료 · ${shortAddress(body.winner)}`
+        : "상금 지급 완료",
+    );
+    setClaiming(false);
+    router.refresh();
+  }
+
   const current = view?.current ?? null;
   const canEnter = Boolean(current?.isOpen && view && view.ticketBalance > 0);
   const canRequestWinner = Boolean(current?.canRequestWinner);
-  const busy = pending || settling;
+  const canClaim = Boolean(current?.canClaim);
+  const isWinner =
+    Boolean(current?.winner) &&
+    Boolean(view?.wallet) &&
+    current!.winner!.toLowerCase() === view!.wallet!.toLowerCase();
+  const busy = pending || settling || claiming;
 
   return (
     <section className="mt-8 space-y-4">
@@ -197,13 +242,15 @@ export function RaffleEnterPanel() {
                 <dd className="mt-1 font-medium">
                   {current.isOpen
                     ? "참여 가능"
-                    : current.winner
-                      ? "당첨자 확정"
-                      : current.isFinished
-                        ? "종료"
-                        : current.canRequestWinner
-                          ? "당첨자 요청 가능"
-                          : "참여 마감"}
+                    : current.prizeClaimed
+                      ? "상금 지급 완료"
+                      : current.winner
+                        ? "당첨자 확정"
+                        : current.isFinished
+                          ? "종료"
+                          : current.canRequestWinner
+                            ? "당첨자 요청 가능"
+                            : "참여 마감"}
                 </dd>
               </div>
               <div>
@@ -231,6 +278,8 @@ export function RaffleEnterPanel() {
                   <dt className="text-zinc-500">당첨자</dt>
                   <dd className="mt-1 font-mono text-xs">
                     {shortAddress(current.winner)}
+                    {isWinner ? " · 나" : null}
+                    {current.prizeClaimed ? " · 지급됨" : null}
                   </dd>
                 </div>
               ) : null}
@@ -249,6 +298,21 @@ export function RaffleEnterPanel() {
           className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
         >
           {settling ? "당첨자 추첨 중…" : "당첨자 요청"}
+        </button>
+      ) : null}
+
+      {canClaim ? (
+        <button
+          type="button"
+          onClick={() => void claimPrize()}
+          disabled={busy}
+          className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+        >
+          {claiming
+            ? "지급 중…"
+            : isWinner
+              ? "상금 받기"
+              : "당첨자에게 상금 보내기"}
         </button>
       ) : null}
 
