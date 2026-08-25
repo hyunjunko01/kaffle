@@ -58,3 +58,17 @@ export function getAnvilWalletClient() {
     transport: http(rpcUrl),
   });
 }
+
+/**
+ * Anvil keeps block.timestamp at the last mined block. eth_call status checks
+ * then look "still open" after wall-clock endTime. Mining one block advances
+ * time to roughly now so isFinished/enter windows match the UI clock.
+ */
+export async function syncAnvilClock() {
+  const client = getAnvilPublicClient();
+  try {
+    await client.request({ method: "evm_mine", params: [] });
+  } catch {
+    // Non-Anvil RPCs ignore this.
+  }
+}

@@ -10,6 +10,7 @@ import {
   getAnvilConfig,
   getAnvilPublicClient,
   getAnvilWalletClient,
+  syncAnvilClock,
 } from "@/lib/chain/anvil";
 import { getRaffleStatus } from "@/lib/raffle";
 import { getTicketBalance, refundTickets, spendTickets } from "@/lib/tickets";
@@ -56,6 +57,8 @@ export async function enterRaffle(input: {
   ) {
     throw new Error("invalid ticket count");
   }
+
+  await syncAnvilClock();
 
   const status = await getRaffleStatus();
   const current = status.current;

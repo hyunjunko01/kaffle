@@ -16,6 +16,7 @@ import {
   getAnvilConfig,
   getAnvilPublicClient,
   getAnvilWalletClient,
+  syncAnvilClock,
 } from "@/lib/chain/anvil";
 
 export type CurrentRaffle = {
@@ -69,6 +70,8 @@ export function raffleErrorMessage(error: unknown) {
 }
 
 export async function getRaffleStatus(): Promise<RaffleStatus> {
+  await syncAnvilClock();
+
   const { factory, vault, prizeToken } = getAnvilConfig();
   const client = getAnvilPublicClient();
 
@@ -143,7 +146,10 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
   const [prizeAmount, prizeClaimed, prizeAttached] = prize;
   const start = Number(startTime);
   const end = Number(endTime);
-  const now = Math.floor(Date.now() / 1000);
+  const block = await client.getBlock();
+  const now = Number(block.timestamp);
+  const finished =
+    Boolean(isFinished) || (now >= end && Number(totalTickets) === 0);
 
   return {
     factory,
@@ -154,8 +160,8 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
       address: currentAddress,
       startTime: start,
       endTime: end,
-      isFinished,
-      isOpen: now >= start && now < end,
+      isFinished: finished,
+      isOpen: !finished && now >= start && now < end,
       totalTickets: Number(totalTickets),
       winner: winner === zeroAddress ? null : winner,
       prizeAmount: formatUnits(prizeAmount, decimals),
@@ -169,6 +175,8 @@ export async function createRaffle(input: {
   durationSeconds: string;
   prizeAmount: string;
 }) {
+  await syncAnvilClock();
+
   const duration = Number(input.durationSeconds);
   if (!Number.isInteger(duration) || duration <= 0 || duration > Number.MAX_SAFE_INTEGER) {
     throw new Error("invalid duration");
