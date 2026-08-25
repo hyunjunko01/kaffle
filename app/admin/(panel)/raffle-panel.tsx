@@ -8,6 +8,7 @@ type CurrentRaffle = {
   endTime: number;
   isFinished: boolean;
   isOpen: boolean;
+  canRequestWinner: boolean;
   totalTickets: number;
   winner: string | null;
   prizeAmount: string;

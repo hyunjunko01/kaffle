@@ -25,6 +25,7 @@ export type CurrentRaffle = {
   endTime: number;
   isFinished: boolean;
   isOpen: boolean;
+  canRequestWinner: boolean;
   totalTickets: number;
   winner: string | null;
   prizeAmount: string;
@@ -150,6 +151,8 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
   const now = Number(block.timestamp);
   const finished =
     Boolean(isFinished) || (now >= end && Number(totalTickets) === 0);
+  const open = !finished && now >= start && now < end;
+  const winnerAddress = winner === zeroAddress ? null : winner;
 
   return {
     factory,
@@ -161,9 +164,11 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
       startTime: start,
       endTime: end,
       isFinished: finished,
-      isOpen: !finished && now >= start && now < end,
+      isOpen: open,
+      canRequestWinner:
+        !open && !finished && !winnerAddress && Number(totalTickets) > 0,
       totalTickets: Number(totalTickets),
-      winner: winner === zeroAddress ? null : winner,
+      winner: winnerAddress,
       prizeAmount: formatUnits(prizeAmount, decimals),
       prizeClaimed,
       prizeAttached,

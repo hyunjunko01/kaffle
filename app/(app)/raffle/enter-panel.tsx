@@ -9,6 +9,7 @@ type CurrentRaffle = {
   endTime: number;
   isFinished: boolean;
   isOpen: boolean;
+  canRequestWinner: boolean;
   totalTickets: number;
   winner: string | null;
   prizeAmount: string;
@@ -32,14 +33,30 @@ function formatLocal(unix: number) {
   return new Date(unix * 1000).toLocaleString();
 }
 
+function toView(
+  body: Partial<RaffleView> & { current?: CurrentRaffle | null },
+  fallback: RaffleView | null,
+): RaffleView {
+  return {
+    symbol: body.symbol ?? fallback?.symbol ?? "",
+    ticketBalance: body.ticketBalance ?? fallback?.ticketBalance ?? 0,
+    wallet: body.wallet ?? fallback?.wallet ?? null,
+    maxTicketsPerEnter:
+      body.maxTicketsPerEnter ?? fallback?.maxTicketsPerEnter ?? 100,
+    current: body.current ?? fallback?.current ?? null,
+  };
+}
+
 export function RaffleEnterPanel() {
   const router = useRouter();
   const [view, setView] = useState<RaffleView | null>(null);
   const [ticketCount, setTicketCount] = useState("1");
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(false);
+  const [settling, setSettling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -68,6 +85,7 @@ export function RaffleEnterPanel() {
     event.preventDefault();
     setPending(true);
     setError(null);
+    setSuccess(null);
     setTxHash(null);
 
     const count = Number(ticketCount);
@@ -95,21 +113,57 @@ export function RaffleEnterPanel() {
       return;
     }
 
-    setView({
-      symbol: body.symbol,
-      ticketBalance: body.ticketBalance,
-      wallet: body.wallet ?? view?.wallet ?? null,
-      maxTicketsPerEnter:
-        body.maxTicketsPerEnter ?? view?.maxTicketsPerEnter ?? 100,
-      current: body.current,
-    });
+    setView(toView(body, view));
     setTxHash(body.hash ?? null);
+    setSuccess("참여 완료");
     setPending(false);
+    router.refresh();
+  }
+
+  async function settleWinner() {
+    setSettling(true);
+    setError(null);
+    setSuccess(null);
+    setTxHash(null);
+
+    const res = await fetch("/api/raffle/request-winner", { method: "POST" });
+    const body = (await res.json()) as RaffleView & {
+      error?: string;
+      requestHash?: string;
+      fulfillHash?: string;
+    };
+
+    if (!res.ok) {
+      setError(
+        body.error === "RoundOpen"
+          ? "아직 라운드가 끝나지 않았습니다."
+          : body.error === "NoEntries"
+            ? "참여자가 없어 당첨자를 뽑을 수 없습니다."
+            : body.error === "AlreadySettled"
+              ? "이미 당첨자가 정해졌습니다."
+              : body.error === "AlreadyRequested"
+                ? "이미 당첨자 요청이 들어갔습니다."
+                : (body.error ?? "당첨자 요청에 실패했습니다."),
+      );
+      setSettling(false);
+      return;
+    }
+
+    setView(toView(body, view));
+    setTxHash(body.fulfillHash ?? body.requestHash ?? null);
+    setSuccess(
+      body.current?.winner
+        ? `당첨자 확정 · ${shortAddress(body.current.winner)}`
+        : "당첨자 요청 완료",
+    );
+    setSettling(false);
     router.refresh();
   }
 
   const current = view?.current ?? null;
   const canEnter = Boolean(current?.isOpen && view && view.ticketBalance > 0);
+  const canRequestWinner = Boolean(current?.canRequestWinner);
+  const busy = pending || settling;
 
   return (
     <section className="mt-8 space-y-4">
@@ -119,9 +173,10 @@ export function RaffleEnterPanel() {
         </p>
       ) : null}
 
-      {txHash ? (
+      {success ? (
         <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-          참여 완료 · {shortAddress(txHash)}
+          {success}
+          {txHash ? ` · ${shortAddress(txHash)}` : null}
         </p>
       ) : null}
 
@@ -142,9 +197,13 @@ export function RaffleEnterPanel() {
                 <dd className="mt-1 font-medium">
                   {current.isOpen
                     ? "참여 가능"
-                    : current.isFinished
-                      ? "종료"
-                      : "참여 마감"}
+                    : current.winner
+                      ? "당첨자 확정"
+                      : current.isFinished
+                        ? "종료"
+                        : current.canRequestWinner
+                          ? "당첨자 요청 가능"
+                          : "참여 마감"}
                 </dd>
               </div>
               <div>
@@ -182,6 +241,17 @@ export function RaffleEnterPanel() {
         </div>
       ) : null}
 
+      {canRequestWinner ? (
+        <button
+          type="button"
+          onClick={() => void settleWinner()}
+          disabled={busy}
+          className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+        >
+          {settling ? "당첨자 추첨 중…" : "당첨자 요청"}
+        </button>
+      ) : null}
+
       <form onSubmit={(event) => void enter(event)} className="space-y-3">
         <label className="block text-sm text-zinc-500">
           사용할 티켓 수 (최대 {view?.maxTicketsPerEnter ?? 100})
@@ -197,7 +267,7 @@ export function RaffleEnterPanel() {
         <div className="flex gap-2">
           <button
             type="submit"
-            disabled={pending || !canEnter || ticketCount.trim().length === 0}
+            disabled={busy || !canEnter || ticketCount.trim().length === 0}
             className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
           >
             {pending
@@ -209,7 +279,7 @@ export function RaffleEnterPanel() {
           <button
             type="button"
             onClick={() => void load()}
-            disabled={loading || pending}
+            disabled={loading || busy}
             className="inline-flex h-12 items-center justify-center rounded-xl border border-zinc-200 px-4 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
           >
             새로고침

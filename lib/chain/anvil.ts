@@ -35,6 +35,7 @@ export function getAnvilConfig() {
     factory: requiredAddress("ANVIL_KAFFLE_FACTORY"),
     vault: requiredAddress("ANVIL_KAFFLE_VAULT"),
     prizeToken: requiredAddress("ANVIL_PRIZE_TOKEN"),
+    vrfCoordinator: requiredAddress("ANVIL_VRF_COORDINATOR"),
     privateKey,
     ticketSignerKey,
     account: privateKeyToAccount(privateKey),
@@ -67,7 +68,10 @@ export function getAnvilWalletClient() {
 export async function syncAnvilClock() {
   const client = getAnvilPublicClient();
   try {
-    await client.request({ method: "evm_mine", params: [] });
+    await client.request({
+      method: "evm_mine" as "eth_chainId",
+      params: [] as never,
+    });
   } catch {
     // Non-Anvil RPCs ignore this.
   }

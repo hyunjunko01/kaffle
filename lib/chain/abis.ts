@@ -122,10 +122,49 @@ export const kaffleAbi = [
     inputs: [{ name: "user", type: "address" }],
     outputs: [{ name: "", type: "uint256" }],
   },
+  {
+    type: "function",
+    name: "requestWinner",
+    stateMutability: "nonpayable",
+    inputs: [],
+    outputs: [],
+  },
+  {
+    type: "event",
+    name: "WinnerRequested",
+    inputs: [{ name: "requestId", type: "uint256", indexed: false }],
+  },
+  {
+    type: "event",
+    name: "WinnerSettled",
+    inputs: [
+      { name: "winner", type: "address", indexed: true },
+      { name: "slot", type: "uint256", indexed: false },
+      { name: "randomWord", type: "uint256", indexed: false },
+    ],
+  },
   { type: "error", name: "RoundClosed", inputs: [] },
+  { type: "error", name: "RoundOpen", inputs: [] },
+  { type: "error", name: "NoEntries", inputs: [] },
+  { type: "error", name: "AlreadySettled", inputs: [] },
+  { type: "error", name: "AlreadyRequested", inputs: [] },
   { type: "error", name: "InvalidTicketCount", inputs: [] },
   { type: "error", name: "InvalidSignature", inputs: [] },
   { type: "error", name: "SignatureExpired", inputs: [] },
+] as const;
+
+export const mockVrfCoordinatorAbi = [
+  {
+    type: "function",
+    name: "fulfill",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "factory", type: "address" },
+      { name: "requestId", type: "uint256" },
+      { name: "randomWord", type: "uint256" },
+    ],
+    outputs: [],
+  },
 ] as const;
 
 export const erc20Abi = [
