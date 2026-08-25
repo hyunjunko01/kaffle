@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getJwks } from "@/lib/web3auth-jwt";
+import { getJwks } from "@/lib/auth/web3auth-jwt";
 
 export async function GET() {
   const jwks = await getJwks();

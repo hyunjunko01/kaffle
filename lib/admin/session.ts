@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-import { sessionCookieOptions } from "@/lib/session-token";
+import { sessionCookieOptions } from "@/lib/auth/session-token";
 
 export const ADMIN_COOKIE = "kaffle_admin";
 export const ADMIN_MAX_AGE = 60 * 60 * 24 * 7;

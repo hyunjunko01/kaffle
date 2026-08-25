@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
-import { signWeb3AuthIdToken } from "@/lib/web3auth-jwt";
+import { getCurrentUser } from "@/lib/auth/user";
+import { signWeb3AuthIdToken } from "@/lib/auth/web3auth-jwt";
 
 export async function GET() {
   const user = await getCurrentUser();

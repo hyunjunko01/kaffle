@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
-import { createReferralCode } from "@/lib/auth";
+import { createReferralCode } from "@/lib/auth/user";
 import { getAppUrl } from "@/lib/env";
 import {
   exchangeKakaoCode,
   OAUTH_STATE_COOKIE,
   oauthStateCookie,
-} from "@/lib/kakao";
-import { attachSessionCookie } from "@/lib/session";
+} from "@/lib/auth/kakao";
+import { attachSessionCookie } from "@/lib/auth/session";
 
 function loginRedirect(path: string) {
   return NextResponse.redirect(new URL(path, getAppUrl()));

@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
-import { readSession } from "@/lib/session";
+import { readSession } from "@/lib/auth/session";
 import { getTicketBalance } from "@/lib/tickets";
 
 export async function getCurrentUser() {

@@ -12,7 +12,7 @@ import {
   getAnvilWalletClient,
   syncAnvilClock,
 } from "@/lib/chain/anvil";
-import { getRaffleStatus } from "@/lib/raffle";
+import { getRaffleStatus } from "@/lib/raffle/status";
 import { getTicketBalance, refundTickets, spendTickets } from "@/lib/tickets";
 
 export const MAX_TICKETS_PER_ENTER = 100;

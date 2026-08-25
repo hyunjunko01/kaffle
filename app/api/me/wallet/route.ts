@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { getCurrentUser, toMePayload } from "@/lib/auth";
+import { getCurrentUser, toMePayload } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin-auth";
+import { requireAdminSession } from "@/lib/admin/auth";
 import { fundVault, getVaultStatus } from "@/lib/vault";
 
 export async function GET() {

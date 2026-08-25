@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { getAppUrl } from "@/lib/env";
-import { kakaoAuthorizeUrl, oauthStateCookie } from "@/lib/kakao";
+import { kakaoAuthorizeUrl, oauthStateCookie } from "@/lib/auth/kakao";
 
 export async function GET() {
   try {

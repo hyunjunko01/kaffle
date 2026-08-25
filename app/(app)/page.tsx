@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser, toMePayload } from "@/lib/auth";
+import { getCurrentUser, toMePayload } from "@/lib/auth/user";
 
 export default async function Home() {
   const user = await getCurrentUser();

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
-import { enterErrorMessage, enterRaffle } from "@/lib/enter";
+import { getCurrentUser } from "@/lib/auth/user";
+import { enterErrorMessage, enterRaffle } from "@/lib/raffle/enter";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();

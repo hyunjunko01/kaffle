@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth/user";
 import { getTicketBalance } from "@/lib/tickets";
 import {
   requestWinner,
   requestWinnerErrorMessage,
-} from "@/lib/request-winner";
+} from "@/lib/raffle/request-winner";
 
 export async function POST() {
   const user = await getCurrentUser();

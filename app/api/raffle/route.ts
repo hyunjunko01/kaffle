@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
-import { getRaffleStatus } from "@/lib/raffle";
+import { getCurrentUser } from "@/lib/auth/user";
+import { getRaffleStatus } from "@/lib/raffle/status";
 import { getTicketBalance } from "@/lib/tickets";
 
 export async function GET() {

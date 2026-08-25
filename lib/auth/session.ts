@@ -7,7 +7,7 @@ import {
   signSession,
   verifySession,
   type SessionPayload,
-} from "@/lib/session-token";
+} from "@/lib/auth/session-token";
 
 export { SESSION_COOKIE, type SessionPayload };
 

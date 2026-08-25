@@ -12,7 +12,7 @@ import {
   getAnvilWalletClient,
   syncAnvilClock,
 } from "@/lib/chain/anvil";
-import { getRaffleStatus } from "@/lib/raffle";
+import { getRaffleStatus } from "@/lib/raffle/status";
 
 export function requestWinnerErrorMessage(error: unknown) {
   if (error instanceof BaseError) {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth/user";
 import { ATTENDANCE_TICKETS, hasAttendanceToday } from "@/lib/missions";
 
 export async function GET() {

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser, toMePayload } from "@/lib/auth";
-import { AppHeader } from "../app-header";
+import { getCurrentUser, toMePayload } from "@/lib/auth/user";
+import { AppHeader } from "./app-header";
 
 export default async function AppShellLayout({
   children,

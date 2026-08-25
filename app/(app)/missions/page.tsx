@@ -1,6 +1,6 @@
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth/user";
 import { hasAttendanceToday } from "@/lib/missions";
-import { AttendanceButton } from "../../attendance-button";
+import { AttendanceButton } from "./attendance-button";
 
 export default async function MissionsPage() {
   const user = await getCurrentUser();

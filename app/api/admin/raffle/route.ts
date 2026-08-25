@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/admin-auth";
-import { createRaffle, getRaffleStatus, raffleErrorMessage } from "@/lib/raffle";
+import { requireAdminSession } from "@/lib/admin/auth";
+import { createRaffle, getRaffleStatus, raffleErrorMessage } from "@/lib/raffle/status";
 
 export async function GET() {
   const auth = await requireAdminSession();

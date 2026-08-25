@@ -2,8 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { MeResponse } from "@/lib/auth";
-import { connectMappedWallet, isWeb3AuthConfigured } from "@/lib/web3auth";
+import type { MeResponse } from "@/lib/auth/user";
+import { connectMappedWallet, isWeb3AuthConfigured } from "@/lib/auth/web3auth";
 
 type Status = "checking" | "ready" | "connecting-wallet";
 

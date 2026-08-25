@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE, verifyAdminSession } from "@/lib/admin-session";
+import { ADMIN_COOKIE, verifyAdminSession } from "@/lib/admin/session";
 import { getSessionSecret } from "@/lib/env";
 
 export async function requireAdminSession() {

@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE, adminCookieOptions, signAdminSession } from "@/lib/admin-session";
+import { ADMIN_COOKIE, adminCookieOptions, signAdminSession } from "@/lib/admin/session";
 import { getAdminSecret, getSessionSecret } from "@/lib/env";
 
 function passwordsMatch(provided: string, expected: string) {

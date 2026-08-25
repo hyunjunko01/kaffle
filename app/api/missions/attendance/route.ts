@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser, toMePayload } from "@/lib/auth";
+import { getCurrentUser, toMePayload } from "@/lib/auth/user";
 import { grantAttendance } from "@/lib/missions";
 
 export async function POST() {

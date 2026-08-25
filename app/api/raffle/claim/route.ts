@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
-import { claimErrorMessage, claimPrize } from "@/lib/claim";
+import { getCurrentUser } from "@/lib/auth/user";
+import { claimErrorMessage, claimPrize } from "@/lib/raffle/claim";
 import { getTicketBalance } from "@/lib/tickets";
 
 export async function POST() {
