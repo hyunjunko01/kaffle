@@ -1,7 +1,7 @@
 import { formatUnits, parseUnits } from "viem";
 import { erc20Abi, kaffleVaultAbi } from "@/lib/chain/abis";
 import { getChainConfig } from "@/lib/chain/config";
-import { getPublicClient, getWalletClient } from "@/lib/chain/clients";
+import { getOwnerWalletClient, getPublicClient } from "@/lib/chain/clients";
 
 export type VaultStatus = {
   vault: string;
@@ -84,7 +84,7 @@ export async function fundVault(amountHuman: string) {
 
   const { vault, prizeToken } = getChainConfig();
   const publicClient = getPublicClient();
-  const wallet = getWalletClient();
+  const owner = getOwnerWalletClient();
 
   const decimals = await publicClient.readContract({
     address: prizeToken,
@@ -93,7 +93,7 @@ export async function fundVault(amountHuman: string) {
   });
   const amount = parseUnits(amountHuman, decimals);
 
-  const hash = await wallet.writeContract({
+  const hash = await owner.writeContract({
     address: prizeToken,
     abi: erc20Abi,
     functionName: "mint",

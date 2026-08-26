@@ -9,10 +9,21 @@ export function getPublicClient() {
   });
 }
 
-export function getWalletClient() {
-  const { rpcUrl, account, chain } = getChainConfig();
+/** Ownable admin actions: createRaffle, vault funding helpers, etc. */
+export function getOwnerWalletClient() {
+  const { rpcUrl, ownerAccount, chain } = getChainConfig();
   return createWalletClient({
-    account,
+    account: ownerAccount,
+    chain,
+    transport: http(rpcUrl),
+  });
+}
+
+/** Pays gas for enter / claim / requestWinner. Need not be the contract owner. */
+export function getRelayerWalletClient() {
+  const { rpcUrl, relayerAccount, chain } = getChainConfig();
+  return createWalletClient({
+    account: relayerAccount,
     chain,
     transport: http(rpcUrl),
   });

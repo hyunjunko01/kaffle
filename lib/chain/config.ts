@@ -12,6 +12,7 @@ type ChainEnvKeys = {
   prizeToken: string;
   vrfCoordinator: string;
   ownerPrivateKey: string;
+  relayerPrivateKey: string;
   ticketSignerPrivateKey: string;
 };
 
@@ -41,6 +42,7 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
       prizeToken: "ANVIL_PRIZE_TOKEN",
       vrfCoordinator: "ANVIL_VRF_COORDINATOR",
       ownerPrivateKey: "ANVIL_OWNER_PRIVATE_KEY",
+      relayerPrivateKey: "ANVIL_RELAYER_PRIVATE_KEY",
       ticketSignerPrivateKey: "ANVIL_TICKET_SIGNER_PRIVATE_KEY",
     },
   },
@@ -57,6 +59,7 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
       prizeToken: "SEPOLIA_PRIZE_TOKEN",
       vrfCoordinator: "SEPOLIA_VRF_COORDINATOR",
       ownerPrivateKey: "SEPOLIA_OWNER_PRIVATE_KEY",
+      relayerPrivateKey: "SEPOLIA_RELAYER_PRIVATE_KEY",
       ticketSignerPrivateKey: "SEPOLIA_TICKET_SIGNER_PRIVATE_KEY",
     },
   },
@@ -73,6 +76,7 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
       prizeToken: "BASE_SEPOLIA_PRIZE_TOKEN",
       vrfCoordinator: "BASE_SEPOLIA_VRF_COORDINATOR",
       ownerPrivateKey: "BASE_SEPOLIA_OWNER_PRIVATE_KEY",
+      relayerPrivateKey: "BASE_SEPOLIA_RELAYER_PRIVATE_KEY",
       ticketSignerPrivateKey: "BASE_SEPOLIA_TICKET_SIGNER_PRIVATE_KEY",
     },
   },
@@ -162,12 +166,16 @@ export function getPublicChainConfig() {
   };
 }
 
-/** Server-side config: RPC, deployed addresses, relayer + ticket signer keys. */
+/**
+ * Server-side config: RPC, deployed addresses, and keys.
+ * Owner / relayer / ticketSigner are separate env vars (values may match on testnets).
+ */
 export function getChainConfig() {
   const slug = getChainSlug();
   const network = NETWORKS[slug];
   const { keys } = network;
-  const privateKey = requiredPrivateKey(keys.ownerPrivateKey);
+  const ownerPrivateKey = requiredPrivateKey(keys.ownerPrivateKey);
+  const relayerPrivateKey = requiredPrivateKey(keys.relayerPrivateKey);
   const ticketSignerKey = requiredPrivateKey(keys.ticketSignerPrivateKey);
 
   return {
@@ -184,9 +192,11 @@ export function getChainConfig() {
     implementation: optionalAddress(keys.implementation),
     prizeToken: requiredAddress(keys.prizeToken),
     vrfCoordinator: requiredAddress(keys.vrfCoordinator),
-    privateKey,
+    ownerPrivateKey,
+    relayerPrivateKey,
     ticketSignerKey,
-    account: privateKeyToAccount(privateKey),
+    ownerAccount: privateKeyToAccount(ownerPrivateKey),
+    relayerAccount: privateKeyToAccount(relayerPrivateKey),
     ticketSigner: privateKeyToAccount(ticketSignerKey),
   };
 }

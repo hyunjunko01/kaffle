@@ -7,7 +7,7 @@ import { kaffleVaultAbi } from "@/lib/chain/abis";
 import { getChainConfig } from "@/lib/chain/config";
 import {
   getPublicClient,
-  getWalletClient,
+  getRelayerWalletClient,
   syncChainClock,
 } from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
@@ -51,9 +51,9 @@ export async function claimPrize() {
 
   const { vault } = getChainConfig();
   const publicClient = getPublicClient();
-  const wallet = getWalletClient();
+  const relayer = getRelayerWalletClient();
 
-  const hash = await wallet.writeContract({
+  const hash = await relayer.writeContract({
     address: vault,
     abi: kaffleVaultAbi,
     functionName: "claim",

@@ -14,8 +14,8 @@ import {
 } from "@/lib/chain/abis";
 import { getChainConfig } from "@/lib/chain/config";
 import {
+  getOwnerWalletClient,
   getPublicClient,
-  getWalletClient,
   syncChainClock,
 } from "@/lib/chain/clients";
 
@@ -194,7 +194,7 @@ export async function createRaffle(input: {
 
   const { factory, prizeToken } = getChainConfig();
   const publicClient = getPublicClient();
-  const wallet = getWalletClient();
+  const owner = getOwnerWalletClient();
 
   const decimals = await publicClient.readContract({
     address: prizeToken,
@@ -203,7 +203,7 @@ export async function createRaffle(input: {
   });
   const prizeAmount = parseUnits(input.prizeAmount, decimals);
 
-  const hash = await wallet.writeContract({
+  const hash = await owner.writeContract({
     address: factory,
     abi: kaffleFactoryAbi,
     functionName: "createRaffle",

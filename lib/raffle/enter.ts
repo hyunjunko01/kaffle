@@ -2,12 +2,13 @@ import {
   BaseError,
   ContractFunctionRevertedError,
   type Address,
+  type Hex,
 } from "viem";
 import { kaffleAbi } from "@/lib/chain/abis";
 import { getChainConfig } from "@/lib/chain/config";
 import {
   getPublicClient,
-  getWalletClient,
+  getRelayerWalletClient,
   syncChainClock,
 } from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
@@ -71,7 +72,7 @@ export async function enterRaffle(input: {
   const raffle = current.address as Address;
   const { ticketSigner, chainId } = getChainConfig();
   const publicClient = getPublicClient();
-  const relayer = getWalletClient();
+  const relayer = getRelayerWalletClient();
 
   const nonce = await publicClient.readContract({
     address: raffle,

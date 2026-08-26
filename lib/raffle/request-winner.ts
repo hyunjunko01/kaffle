@@ -9,7 +9,7 @@ import { kaffleAbi, mockVrfCoordinatorAbi } from "@/lib/chain/abis";
 import { getChainConfig } from "@/lib/chain/config";
 import {
   getPublicClient,
-  getWalletClient,
+  getRelayerWalletClient,
   syncChainClock,
 } from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
@@ -72,10 +72,10 @@ export async function requestWinner() {
 
   const { factory, vrfCoordinator, slug } = getChainConfig();
   const publicClient = getPublicClient();
-  const wallet = getWalletClient();
+  const relayer = getRelayerWalletClient();
   const raffle = current.address as Address;
 
-  const requestHash = await wallet.writeContract({
+  const requestHash = await relayer.writeContract({
     address: raffle,
     abi: kaffleAbi,
     functionName: "requestWinner",
@@ -102,7 +102,7 @@ export async function requestWinner() {
   }
 
   const randomWord = BigInt(Date.now());
-  const fulfillHash = await wallet.writeContract({
+  const fulfillHash = await relayer.writeContract({
     address: vrfCoordinator,
     abi: mockVrfCoordinatorAbi,
     functionName: "fulfill",
