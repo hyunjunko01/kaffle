@@ -1,8 +1,7 @@
 "use client";
 
 import type { Web3AuthNoModal } from "@web3auth/no-modal";
-
-const BASE_SEPOLIA_CHAIN_ID = "0x14a34";
+import { getPublicChainConfig } from "@/lib/chain/config";
 
 let client: Web3AuthNoModal | null = null;
 let initializing: Promise<Web3AuthNoModal> | null = null;
@@ -58,6 +57,12 @@ async function getClient() {
       Web3AuthNoModal,
     } = await import("@web3auth/no-modal");
 
+    const chainConfig = getPublicChainConfig();
+    const blockExplorerUrl =
+      chainConfig.blockExplorerUrl.length > 0
+        ? chainConfig.blockExplorerUrl
+        : "http://localhost";
+
     const instance = new Web3AuthNoModal({
       clientId,
       web3AuthNetwork:
@@ -66,19 +71,19 @@ async function getClient() {
           : WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
       multiInjectedProviderDiscovery: false,
       mfaLevel: MFA_LEVELS.NONE,
-      defaultChainId: BASE_SEPOLIA_CHAIN_ID,
+      defaultChainId: chainConfig.chainIdHex,
       chains: [
         {
           chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: BASE_SEPOLIA_CHAIN_ID,
-          rpcTarget: "https://sepolia.base.org",
-          displayName: "Base Sepolia",
-          blockExplorerUrl: "https://sepolia.basescan.org",
+          chainId: chainConfig.chainIdHex,
+          rpcTarget: chainConfig.rpcUrl,
+          displayName: chainConfig.displayName,
+          blockExplorerUrl,
           ticker: "ETH",
           tickerName: "Ethereum",
           decimals: 18,
           logo: "https://images.web3auth.io/ethereum.svg",
-          isTestnet: true,
+          isTestnet: chainConfig.isTestnet,
         },
       ],
     });

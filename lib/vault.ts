@@ -1,10 +1,7 @@
 import { formatUnits, parseUnits } from "viem";
 import { erc20Abi, kaffleVaultAbi } from "@/lib/chain/abis";
-import {
-  getAnvilConfig,
-  getAnvilPublicClient,
-  getAnvilWalletClient,
-} from "@/lib/chain/anvil";
+import { getChainConfig } from "@/lib/chain/config";
+import { getPublicClient, getWalletClient } from "@/lib/chain/clients";
 
 export type VaultStatus = {
   vault: string;
@@ -20,8 +17,8 @@ export type VaultStatus = {
 };
 
 export async function getVaultStatus(): Promise<VaultStatus> {
-  const { vault, prizeToken } = getAnvilConfig();
-  const client = getAnvilPublicClient();
+  const { vault, prizeToken, keys } = getChainConfig();
+  const client = getPublicClient();
 
   const [tokenFromVault, reserved, unallocated, balance, decimals, symbol] =
     await Promise.all([
@@ -59,7 +56,7 @@ export async function getVaultStatus(): Promise<VaultStatus> {
     ]);
 
   if (tokenFromVault.toLowerCase() !== prizeToken.toLowerCase()) {
-    throw new Error("ANVIL_PRIZE_TOKEN does not match vault.token()");
+    throw new Error(`${keys.prizeToken} does not match vault.token()`);
   }
 
   return {
@@ -77,7 +74,7 @@ export async function getVaultStatus(): Promise<VaultStatus> {
 }
 
 /**
- * Local Anvil helper: mint MockERC20 into the vault.
+ * Local helper: mint MockERC20 into the vault (Anvil mock token).
  * On testnets this would become a wallet transfer of real USDC instead.
  */
 export async function fundVault(amountHuman: string) {
@@ -85,9 +82,9 @@ export async function fundVault(amountHuman: string) {
     throw new Error("invalid amount");
   }
 
-  const { vault, prizeToken } = getAnvilConfig();
-  const publicClient = getAnvilPublicClient();
-  const wallet = getAnvilWalletClient();
+  const { vault, prizeToken } = getChainConfig();
+  const publicClient = getPublicClient();
+  const wallet = getWalletClient();
 
   const decimals = await publicClient.readContract({
     address: prizeToken,

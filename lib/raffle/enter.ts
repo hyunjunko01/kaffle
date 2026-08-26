@@ -2,16 +2,14 @@ import {
   BaseError,
   ContractFunctionRevertedError,
   type Address,
-  type Hex,
 } from "viem";
-import { foundry } from "viem/chains";
 import { kaffleAbi } from "@/lib/chain/abis";
+import { getChainConfig } from "@/lib/chain/config";
 import {
-  getAnvilConfig,
-  getAnvilPublicClient,
-  getAnvilWalletClient,
-  syncAnvilClock,
-} from "@/lib/chain/anvil";
+  getPublicClient,
+  getWalletClient,
+  syncChainClock,
+} from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
 import { getTicketBalance, refundTickets, spendTickets } from "@/lib/tickets";
 
@@ -58,7 +56,7 @@ export async function enterRaffle(input: {
     throw new Error("invalid ticket count");
   }
 
-  await syncAnvilClock();
+  await syncChainClock();
 
   const status = await getRaffleStatus();
   const current = status.current;
@@ -71,9 +69,9 @@ export async function enterRaffle(input: {
 
   const user = input.walletAddress.toLowerCase() as Address;
   const raffle = current.address as Address;
-  const { ticketSigner } = getAnvilConfig();
-  const publicClient = getAnvilPublicClient();
-  const relayer = getAnvilWalletClient();
+  const { ticketSigner, chainId } = getChainConfig();
+  const publicClient = getPublicClient();
+  const relayer = getWalletClient();
 
   const nonce = await publicClient.readContract({
     address: raffle,
@@ -87,7 +85,7 @@ export async function enterRaffle(input: {
     domain: {
       name: "Kaffle",
       version: "1",
-      chainId: foundry.id,
+      chainId,
       verifyingContract: raffle,
     },
     types: enterTypes,

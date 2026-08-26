@@ -33,8 +33,8 @@ export function VaultPanel() {
       setStatus(null);
       setError(
         body.error?.includes("is not set")
-          ? "Anvil 컨트랙트 주소가 .env에 없습니다. ANVIL_KAFFLE_VAULT / ANVIL_PRIZE_TOKEN을 설정하세요."
-          : body.error ?? "Vault 상태를 읽지 못했습니다. Anvil이 켜져 있는지 확인하세요.",
+          ? "체인 컨트랙트 주소가 .env에 없습니다. CHAIN에 맞는 VAULT / PRIZE_TOKEN을 설정하세요."
+          : body.error ?? "Vault 상태를 읽지 못했습니다. RPC와 배포 주소를 확인하세요.",
       );
       setLoading(false);
       return;

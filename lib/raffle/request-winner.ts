@@ -6,12 +6,12 @@ import {
   type Hex,
 } from "viem";
 import { kaffleAbi, mockVrfCoordinatorAbi } from "@/lib/chain/abis";
+import { getChainConfig } from "@/lib/chain/config";
 import {
-  getAnvilConfig,
-  getAnvilPublicClient,
-  getAnvilWalletClient,
-  syncAnvilClock,
-} from "@/lib/chain/anvil";
+  getPublicClient,
+  getWalletClient,
+  syncChainClock,
+} from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
 
 export function requestWinnerErrorMessage(error: unknown) {
@@ -53,7 +53,7 @@ function readRequestId(logs: { data: Hex; topics: [Hex, ...Hex[]] | [] }[]) {
  * On Anvil we also fulfill MockVRF so the winner is settled in the same flow.
  */
 export async function requestWinner() {
-  await syncAnvilClock();
+  await syncChainClock();
 
   const status = await getRaffleStatus();
   const current = status.current;
@@ -70,9 +70,9 @@ export async function requestWinner() {
     throw new Error("NoEntries");
   }
 
-  const { factory, vrfCoordinator } = getAnvilConfig();
-  const publicClient = getAnvilPublicClient();
-  const wallet = getAnvilWalletClient();
+  const { factory, vrfCoordinator, slug } = getChainConfig();
+  const publicClient = getPublicClient();
+  const wallet = getWalletClient();
   const raffle = current.address as Address;
 
   const requestHash = await wallet.writeContract({
@@ -93,6 +93,14 @@ export async function requestWinner() {
   }
 
   // Local mock Chainlink callback. Real networks fulfill asynchronously.
+  if (slug !== "anvil") {
+    return {
+      requestHash,
+      requestId: requestId.toString(),
+      ...(await getRaffleStatus()),
+    };
+  }
+
   const randomWord = BigInt(Date.now());
   const fulfillHash = await wallet.writeContract({
     address: vrfCoordinator,

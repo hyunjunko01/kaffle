@@ -51,9 +51,9 @@ export function RafflePanel() {
       setStatus(null);
       setError(
         body.error?.includes("is not set")
-          ? "Anvil 컨트랙트 주소가 .env에 없습니다. ANVIL_KAFFLE_FACTORY 등을 설정하세요."
+          ? "체인 컨트랙트 주소가 .env에 없습니다. CHAIN에 맞는 FACTORY 등을 설정하세요."
           : (body.error ??
-              "라운드 상태를 읽지 못했습니다. Anvil이 켜져 있는지 확인하세요."),
+              "라운드 상태를 읽지 못했습니다. RPC와 배포 주소를 확인하세요."),
       );
       setLoading(false);
       return;

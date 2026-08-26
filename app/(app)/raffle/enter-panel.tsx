@@ -69,7 +69,7 @@ export function RaffleEnterPanel() {
       setView(null);
       setError(
         body.error?.includes("is not set")
-          ? "온체인 설정이 없습니다. Anvil 주소가 .env에 있는지 확인하세요."
+          ? "온체인 설정이 없습니다. CHAIN과 컨트랙트 주소가 .env에 있는지 확인하세요."
           : (body.error ?? "래플 상태를 읽지 못했습니다."),
       );
       setLoading(false);

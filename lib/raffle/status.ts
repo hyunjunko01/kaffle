@@ -12,12 +12,12 @@ import {
   kaffleFactoryAbi,
   kaffleVaultAbi,
 } from "@/lib/chain/abis";
+import { getChainConfig } from "@/lib/chain/config";
 import {
-  getAnvilConfig,
-  getAnvilPublicClient,
-  getAnvilWalletClient,
-  syncAnvilClock,
-} from "@/lib/chain/anvil";
+  getPublicClient,
+  getWalletClient,
+  syncChainClock,
+} from "@/lib/chain/clients";
 
 export type CurrentRaffle = {
   address: string;
@@ -72,10 +72,10 @@ export function raffleErrorMessage(error: unknown) {
 }
 
 export async function getRaffleStatus(): Promise<RaffleStatus> {
-  await syncAnvilClock();
+  await syncChainClock();
 
-  const { factory, vault, prizeToken } = getAnvilConfig();
-  const client = getAnvilPublicClient();
+  const { factory, vault, prizeToken } = getChainConfig();
+  const client = getPublicClient();
 
   const [currentAddress, unallocated, decimals, symbol] = await Promise.all([
     client.readContract({
@@ -182,7 +182,7 @@ export async function createRaffle(input: {
   durationSeconds: string;
   prizeAmount: string;
 }) {
-  await syncAnvilClock();
+  await syncChainClock();
 
   const duration = Number(input.durationSeconds);
   if (!Number.isInteger(duration) || duration <= 0 || duration > Number.MAX_SAFE_INTEGER) {
@@ -192,9 +192,9 @@ export async function createRaffle(input: {
     throw new Error("invalid prize");
   }
 
-  const { factory, prizeToken } = getAnvilConfig();
-  const publicClient = getAnvilPublicClient();
-  const wallet = getAnvilWalletClient();
+  const { factory, prizeToken } = getChainConfig();
+  const publicClient = getPublicClient();
+  const wallet = getWalletClient();
 
   const decimals = await publicClient.readContract({
     address: prizeToken,

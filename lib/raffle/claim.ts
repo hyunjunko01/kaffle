@@ -4,12 +4,12 @@ import {
   type Address,
 } from "viem";
 import { kaffleVaultAbi } from "@/lib/chain/abis";
+import { getChainConfig } from "@/lib/chain/config";
 import {
-  getAnvilConfig,
-  getAnvilPublicClient,
-  getAnvilWalletClient,
-  syncAnvilClock,
-} from "@/lib/chain/anvil";
+  getPublicClient,
+  getWalletClient,
+  syncChainClock,
+} from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
 
 export function claimErrorMessage(error: unknown) {
@@ -32,7 +32,7 @@ export function claimErrorMessage(error: unknown) {
  * Pull-based prize payout. Relayer may pay gas; tokens always go to the winner.
  */
 export async function claimPrize() {
-  await syncAnvilClock();
+  await syncChainClock();
 
   const status = await getRaffleStatus();
   const current = status.current;
@@ -49,9 +49,9 @@ export async function claimPrize() {
     throw new Error("PrizeNotAttached");
   }
 
-  const { vault } = getAnvilConfig();
-  const publicClient = getAnvilPublicClient();
-  const wallet = getAnvilWalletClient();
+  const { vault } = getChainConfig();
+  const publicClient = getPublicClient();
+  const wallet = getWalletClient();
 
   const hash = await wallet.writeContract({
     address: vault,
