@@ -64,7 +64,11 @@ export function VaultPanel() {
     };
 
     if (!res.ok) {
-      setError(body.error ?? "입금에 실패했습니다.");
+      setError(
+        body.error === "insufficient owner token balance"
+          ? "owner 지갑의 토큰 잔액이 부족합니다. USDC를 owner에 먼저 넣어 주세요."
+          : (body.error ?? "입금에 실패했습니다."),
+      );
       setPending(false);
       return;
     }
@@ -79,7 +83,8 @@ export function VaultPanel() {
       <div>
         <h2 className="text-lg font-semibold tracking-tight">Vault</h2>
         <p className="mt-1 text-sm leading-6 text-zinc-500">
-          상금 토큰을 vault에 넣어 둡니다. 로컬에서는 MockERC20을 mint합니다.
+          상금 토큰을 vault에 넣습니다. Anvil은 mint, 테스트넷은 owner
+          지갑에서 transfer합니다.
         </p>
       </div>
 

@@ -74,15 +74,16 @@ export async function getVaultStatus(): Promise<VaultStatus> {
 }
 
 /**
- * Local helper: mint MockERC20 into the vault (Anvil mock token).
- * On testnets this would become a wallet transfer of real USDC instead.
+ * Fund the vault with prize tokens.
+ * - anvil: mint MockERC20 into the vault
+ * - testnets / mainnet: transfer from the owner wallet (fund that wallet first)
  */
 export async function fundVault(amountHuman: string) {
   if (!/^\d+(\.\d+)?$/.test(amountHuman) || Number(amountHuman) <= 0) {
     throw new Error("invalid amount");
   }
 
-  const { vault, prizeToken } = getChainConfig();
+  const { vault, prizeToken, slug, ownerAccount } = getChainConfig();
   const publicClient = getPublicClient();
   const owner = getOwnerWalletClient();
 
@@ -93,12 +94,31 @@ export async function fundVault(amountHuman: string) {
   });
   const amount = parseUnits(amountHuman, decimals);
 
-  const hash = await owner.writeContract({
-    address: prizeToken,
-    abi: erc20Abi,
-    functionName: "mint",
-    args: [vault, amount],
-  });
+  let hash: `0x${string}`;
+  if (slug === "anvil") {
+    hash = await owner.writeContract({
+      address: prizeToken,
+      abi: erc20Abi,
+      functionName: "mint",
+      args: [vault, amount],
+    });
+  } else {
+    const balance = await publicClient.readContract({
+      address: prizeToken,
+      abi: erc20Abi,
+      functionName: "balanceOf",
+      args: [ownerAccount.address],
+    });
+    if (balance < amount) {
+      throw new Error("insufficient owner token balance");
+    }
+    hash = await owner.writeContract({
+      address: prizeToken,
+      abi: erc20Abi,
+      functionName: "transfer",
+      args: [vault, amount],
+    });
+  }
 
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   if (receipt.status !== "success") {

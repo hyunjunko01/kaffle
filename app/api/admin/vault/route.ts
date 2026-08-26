@@ -45,6 +45,9 @@ export async function POST(request: Request) {
     if (message === "invalid amount") {
       return NextResponse.json({ error: message }, { status: 400 });
     }
+    if (message === "insufficient owner token balance") {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
     const status = message.includes("is not set") ? 500 : 502;
     return NextResponse.json({ error: message }, { status });
   }
