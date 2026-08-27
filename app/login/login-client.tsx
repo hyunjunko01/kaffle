@@ -129,7 +129,11 @@ export function LoginClient() {
           </p>
         ) : (
           <a
-            href="/auth/kakao"
+            href={
+              searchParams.get("ref")
+                ? `/auth/kakao?ref=${encodeURIComponent(searchParams.get("ref")!)}`
+                : "/auth/kakao"
+            }
             className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#FEE500] text-sm font-semibold text-[#191919] transition hover:bg-[#f5dc00]"
           >
             <KakaoMark />
