@@ -145,13 +145,16 @@ export function getChainSlug(): ChainSlug {
  * Uses `NEXT_PUBLIC_CHAIN` + `NEXT_PUBLIC_RPC_URL` only.
  */
 export function getPublicChainConfig() {
-  const value = readEnv("NEXT_PUBLIC_CHAIN");
+  const value = process.env.NEXT_PUBLIC_CHAIN?.trim();
   if (!value) {
     throw new Error("NEXT_PUBLIC_CHAIN is not set");
   }
   const slug = parseChainSlug(value);
   const network = NETWORKS[slug];
-  const rpcUrl = required("NEXT_PUBLIC_RPC_URL");
+  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL?.trim();
+  if (!rpcUrl) {
+    throw new Error("NEXT_PUBLIC_RPC_URL is not set");
+  }
   const chainIdHex = `0x${network.chain.id.toString(16)}`;
 
   return {
