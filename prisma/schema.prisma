@@ -10,6 +10,8 @@ datasource db {
 model User {
   id                 String               @id @default(cuid())
   kakaoId            String               @unique
+  nickname           String
+  nicknameChangeCount Int                 @default(0)
   referralCode       String               @unique
   referredByUserId   String?
   createdAt          DateTime             @default(now())

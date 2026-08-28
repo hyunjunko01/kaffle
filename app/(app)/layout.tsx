@@ -13,7 +13,7 @@ export default async function AppShellLayout({
     redirect("/login");
   }
   if (!user.wallet) {
-    redirect("/login?wallet=1");
+    redirect("/onboarding");
   }
 
   const me = await toMePayload(user);

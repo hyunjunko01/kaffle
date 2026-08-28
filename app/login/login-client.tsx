@@ -1,16 +1,14 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { MeResponse } from "@/lib/auth/user";
-import { connectMappedWallet, isWeb3AuthConfigured } from "@/lib/auth/web3auth";
 
-type Status = "checking" | "ready" | "connecting-wallet";
+type Status = "checking" | "ready";
 
 export function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const connecting = useRef(false);
   const queryError = searchParams.get("error");
   const queryErrorMessage =
     queryError === "kakao-config"
@@ -31,69 +29,39 @@ export function LoginClient() {
     let cancelled = false;
 
     async function load() {
-      const res = await fetch("/api/me");
-      if (cancelled) {
-        return;
-      }
-
-      if (res.status === 401) {
-        setStatus("ready");
-        return;
-      }
-
-      if (!res.ok) {
-        setError("세션을 확인하지 못했습니다.");
-        setStatus("ready");
-        return;
-      }
-
-      const me = (await res.json()) as MeResponse;
-      if (cancelled) {
-        return;
-      }
-      if (me.wallet) {
-        router.replace("/");
-        return;
-      }
-
-      if (!isWeb3AuthConfigured()) {
-        setError("Web3Auth 설정이 없어 지갑을 연결할 수 없습니다.");
-        setStatus("ready");
-        return;
-      }
-
-      if (connecting.current) {
-        return;
-      }
-      connecting.current = true;
-      setStatus("connecting-wallet");
-
       try {
-        const tokenRes = await fetch("/api/auth/web3auth-token");
-        if (!tokenRes.ok) {
-          throw new Error("token");
-        }
-        const { idToken } = (await tokenRes.json()) as { idToken: string };
+        const res = await fetch("/api/me");
         if (cancelled) {
           return;
         }
-        const address = await connectMappedWallet(idToken);
+
+        if (res.status === 401) {
+          setStatus("ready");
+          return;
+        }
+
+        if (!res.ok) {
+          setError("세션을 확인하지 못했습니다.");
+          setStatus("ready");
+          return;
+        }
+
+        const me = (await res.json()) as MeResponse;
         if (cancelled) {
           return;
         }
-        const walletRes = await fetch("/api/me/wallet", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ address }),
-        });
-        if (!walletRes.ok) {
-          throw new Error("wallet");
+
+        if (me.wallet) {
+          router.replace("/");
+          return;
         }
-        router.replace("/");
-      } catch (err) {
-        connecting.current = false;
-        console.error(err);
-        setError("지갑 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+
+        router.replace("/onboarding");
+      } catch {
+        if (cancelled) {
+          return;
+        }
+        setError("세션을 확인하지 못했습니다.");
         setStatus("ready");
       }
     }
@@ -111,8 +79,9 @@ export function LoginClient() {
         <p className="text-sm font-medium tracking-[0.2em] text-zinc-500">KAFFLE</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">카카오로 시작하기</h1>
         <p className="mt-3 text-sm leading-6 text-zinc-500">
-          카카오 로그인 후 지갑이 자동으로 연결됩니다.
-          시드문구를 입력할 필요는 없습니다.
+          카카오 로그인 후 가입 정보를 확인하고,
+          <br />
+          원하는 경우 지갑을 만들어 시작합니다.
         </p>
 
         {error ? (
@@ -121,11 +90,9 @@ export function LoginClient() {
           </p>
         ) : null}
 
-        {status === "checking" || status === "connecting-wallet" ? (
+        {status === "checking" ? (
           <p className="mt-8 text-sm text-zinc-500">
-            {status === "connecting-wallet"
-              ? "지갑을 연결하는 중입니다…"
-              : "확인 중입니다…"}
+            확인 중입니다…
           </p>
         ) : (
           <a

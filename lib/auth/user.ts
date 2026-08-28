@@ -27,10 +27,16 @@ export async function createReferralCode() {
   throw new Error("Could not allocate a referral code");
 }
 
+export function createNickname() {
+  return `user-${randomBytes(4).toString("hex")}`;
+}
+
 export function toMeResponse(
   user: {
     id: string;
     kakaoId: string;
+    nickname: string;
+    nicknameChangeCount: number;
     referralCode: string;
     createdAt: Date;
     wallet: { address: string } | null;
@@ -41,6 +47,8 @@ export function toMeResponse(
     user: {
       id: user.id,
       kakaoId: user.kakaoId,
+      nickname: user.nickname,
+      canChangeNickname: user.nicknameChangeCount === 0,
       referralCode: user.referralCode,
       createdAt: user.createdAt.toISOString(),
     },
@@ -52,6 +60,8 @@ export function toMeResponse(
 export async function toMePayload(user: {
   id: string;
   kakaoId: string;
+  nickname: string;
+  nicknameChangeCount: number;
   referralCode: string;
   createdAt: Date;
   wallet: { address: string } | null;

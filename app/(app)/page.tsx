@@ -13,7 +13,7 @@ export default async function Home() {
     <main>
       <h1 className="text-3xl font-semibold tracking-tight">홈</h1>
       <p className="mt-3 text-sm leading-6 text-zinc-500">
-        미션으로 티켓을 모으고, 래플에 참여하세요.
+        {me.user.nickname}님, 미션으로 티켓을 모으고 래플에 참여하세요.
       </p>
 
       <dl className="mt-8 space-y-4 rounded-2xl border border-zinc-200 p-5 text-sm dark:border-zinc-800">
