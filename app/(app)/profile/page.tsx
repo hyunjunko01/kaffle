@@ -15,7 +15,7 @@ export default async function ProfilePage() {
       </p>
       <ProfileForm
         nickname={user.nickname}
-        canChangeNickname={user.nicknameChangeCount === 0}
+        canChangeNickname={!user.postSignupNicknameChanged}
       />
     </main>
   );

@@ -32,15 +32,15 @@ export async function updateNickname(userId: string, nickname: string) {
     return user;
   }
 
-  if (user.nicknameChangeCount >= 1) {
+  if (user.postSignupNicknameChanged) {
     throw new Error("nickname change exhausted");
   }
 
   const result = await prisma.user.updateMany({
-    where: { id: userId, nicknameChangeCount: 0 },
+    where: { id: userId, postSignupNicknameChanged: false },
     data: {
       nickname,
-      nicknameChangeCount: { increment: 1 },
+      postSignupNicknameChanged: true,
     },
   });
 

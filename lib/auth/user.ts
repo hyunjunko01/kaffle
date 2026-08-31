@@ -37,6 +37,7 @@ export function toMeResponse(
     kakaoId: string;
     nickname: string;
     nicknameChangeCount: number;
+    postSignupNicknameChanged: boolean;
     referralCode: string;
     createdAt: Date;
     wallet: { address: string } | null;
@@ -48,7 +49,7 @@ export function toMeResponse(
       id: user.id,
       kakaoId: user.kakaoId,
       nickname: user.nickname,
-      canChangeNickname: user.nicknameChangeCount === 0,
+      canChangeNickname: !user.postSignupNicknameChanged,
       referralCode: user.referralCode,
       createdAt: user.createdAt.toISOString(),
     },
@@ -62,6 +63,7 @@ export async function toMePayload(user: {
   kakaoId: string;
   nickname: string;
   nicknameChangeCount: number;
+  postSignupNicknameChanged: boolean;
   referralCode: string;
   createdAt: Date;
   wallet: { address: string } | null;

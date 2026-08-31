@@ -70,7 +70,7 @@ export function ProfileForm({
       </label>
       <p className="text-xs leading-5 text-zinc-500">
         {canChangeNickname
-          ? "닉네임은 지금 한 번만 변경할 수 있습니다."
+          ? "가입 후 닉네임을 한 번 변경할 수 있습니다."
           : "닉네임 변경 기회를 모두 사용했습니다."}
       </p>
       {canChangeNickname ? (
