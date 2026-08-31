@@ -1,5 +1,10 @@
-import Link from "next/link";
 import { getCurrentUser, toMePayload } from "@/lib/auth/user";
+
+const sampleLeaderboard = [
+  { rank: 1, username: "user_xxxxxxx", prize: "0 USDC" },
+  { rank: 2, username: "user_xxxxxxx", prize: "0 USDC" },
+  { rank: 3, username: "user_xxxxxxx", prize: "0 USDC" },
+];
 
 export default async function Home() {
   const user = await getCurrentUser();
@@ -10,43 +15,65 @@ export default async function Home() {
   const me = await toMePayload(user);
 
   return (
-    <main>
-      <h1 className="text-3xl font-semibold tracking-tight">홈</h1>
-      <p className="mt-3 text-sm leading-6 text-zinc-500">
-        {me.user.nickname}님, 미션으로 티켓을 모으고 래플에 참여하세요.
-      </p>
+    <main className="space-y-10">
+      <section className="pt-8 text-center sm:pt-12">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          행운의 주인공이 되어보세요
+        </h1>
+        <p className="mx-auto mt-4 max-w-sm text-sm leading-6 text-zinc-500">
+          {me.user.nickname}님, 미션으로 티켓을 모아 래플에 참여해보세요.
+        </p>
+      </section>
 
-      <dl className="mt-8 space-y-4 rounded-2xl border border-zinc-200 p-5 text-sm dark:border-zinc-800">
-        <div>
-          <dt className="text-zinc-500">Wallet</dt>
-          <dd className="mt-1 break-all font-mono">{me.wallet?.address}</dd>
+      <section aria-labelledby="recent-winner-heading">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 id="recent-winner-heading" className="text-base font-semibold">
+            최근 당첨자
+          </h2>
+          <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-500 dark:bg-zinc-900">
+            예시 데이터
+          </span>
         </div>
-        <div>
-          <dt className="text-zinc-500">Tickets</dt>
-          <dd className="mt-1 font-mono">{me.ticketBalance}</dd>
+        <div className="overflow-hidden rounded-2xl bg-zinc-950 px-5 py-5 text-center text-sm text-white dark:bg-zinc-100 dark:text-zinc-950">
+          <p className="font-mono">
+            1회차 래플 당첨자{" "}
+            <span className="font-semibold text-amber-300 dark:text-amber-700">
+              user_xxxxxxx
+            </span>
+          </p>
         </div>
-      </dl>
+      </section>
 
-      <div className="mt-8 grid gap-3">
-        <Link
-          href="/raffle"
-          className="rounded-2xl border border-zinc-200 p-5 transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-        >
-          <p className="text-base font-semibold">래플 참여</p>
-          <p className="mt-1 text-sm leading-6 text-zinc-500">
-            현재 라운드에 티켓을 사용합니다.
-          </p>
-        </Link>
-        <Link
-          href="/missions"
-          className="rounded-2xl border border-zinc-200 p-5 transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-        >
-          <p className="text-base font-semibold">미션</p>
-          <p className="mt-1 text-sm leading-6 text-zinc-500">
-            출석과 미션으로 티켓을 받습니다.
-          </p>
-        </Link>
-      </div>
+      <section aria-labelledby="leaderboard-heading">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 id="leaderboard-heading" className="text-base font-semibold">
+              누적 상금 리더보드
+            </h2>
+            <p className="mt-1 text-xs text-zinc-500">래플에서 받은 누적 상금이에요.</p>
+          </div>
+          <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-500 dark:bg-zinc-900">
+            예시 데이터
+          </span>
+        </div>
+        <ol className="overflow-hidden rounded-2xl border border-zinc-200 text-sm dark:border-zinc-800">
+          <li className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-3 border-b border-zinc-200 px-4 py-3 text-xs text-zinc-500 dark:border-zinc-800">
+            <span>순위</span>
+            <span>사용자</span>
+            <span>누적 상금</span>
+          </li>
+          {sampleLeaderboard.map((entry) => (
+            <li
+              key={entry.rank}
+              className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-3 border-b border-zinc-200 px-4 py-4 last:border-b-0 dark:border-zinc-800"
+            >
+              <span className="font-mono text-zinc-500">{entry.rank}</span>
+              <span className="truncate font-mono">{entry.username}</span>
+              <span className="font-mono">{entry.prize}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
     </main>
   );
 }
