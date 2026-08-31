@@ -1,4 +1,5 @@
 import { getCurrentUser, toMePayload } from "@/lib/auth/user";
+import Link from "next/link";
 import { ProfileForm } from "./profile-form";
 
 export default async function ProfilePage() {
@@ -24,6 +25,15 @@ export default async function ProfilePage() {
           <dd className="mt-1 font-mono">{me.ticketBalance}</dd>
         </div>
       </dl>
+      <Link
+        href="/profile/wallet"
+        className="mt-4 flex items-center justify-between rounded-xl border border-zinc-200 px-4 py-4 text-sm font-medium transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+      >
+        <span>지갑 관리</span>
+        <span aria-hidden="true" className="text-lg text-zinc-400">
+          →
+        </span>
+      </Link>
       <ProfileForm
         nickname={user.nickname}
         canChangeNickname={!user.postSignupNicknameChanged}

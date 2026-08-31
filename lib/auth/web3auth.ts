@@ -101,7 +101,7 @@ async function getClient() {
   return initializing;
 }
 
-export async function connectMappedWallet(idToken: string) {
+export async function connectMappedWalletProvider(idToken: string) {
   const authConnectionId = process.env.NEXT_PUBLIC_WEB3AUTH_AUTH_CONNECTION_ID;
   if (!authConnectionId) {
     throw new Error("NEXT_PUBLIC_WEB3AUTH_AUTH_CONNECTION_ID is not set");
@@ -125,6 +125,11 @@ export async function connectMappedWallet(idToken: string) {
     throw new Error("Web3Auth did not return a provider");
   }
 
+  return provider;
+}
+
+export async function connectMappedWallet(idToken: string) {
+  const provider = await connectMappedWalletProvider(idToken);
   const accounts = (await provider.request({
     method: "eth_accounts",
   })) as string[];
