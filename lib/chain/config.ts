@@ -8,6 +8,7 @@ type ChainEnvKeys = {
   rpcUrl: string;
   factory: string;
   vault: string;
+  faucet: string;
   implementation: string;
   prizeToken: string;
   vrfCoordinator: string;
@@ -38,6 +39,7 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
       rpcUrl: "ANVIL_RPC_URL",
       factory: "ANVIL_KAFFLE_FACTORY",
       vault: "ANVIL_KAFFLE_VAULT",
+      faucet: "ANVIL_KAFFLE_FAUCET",
       implementation: "ANVIL_KAFFLE_IMPLEMENTATION",
       prizeToken: "ANVIL_PRIZE_TOKEN",
       vrfCoordinator: "ANVIL_VRF_COORDINATOR",
@@ -55,6 +57,7 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
       rpcUrl: "SEPOLIA_RPC_URL",
       factory: "SEPOLIA_KAFFLE_FACTORY",
       vault: "SEPOLIA_KAFFLE_VAULT",
+      faucet: "SEPOLIA_KAFFLE_FAUCET",
       implementation: "SEPOLIA_KAFFLE_IMPLEMENTATION",
       prizeToken: "SEPOLIA_PRIZE_TOKEN",
       vrfCoordinator: "SEPOLIA_VRF_COORDINATOR",
@@ -72,6 +75,7 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
       rpcUrl: "BASE_SEPOLIA_RPC_URL",
       factory: "BASE_SEPOLIA_KAFFLE_FACTORY",
       vault: "BASE_SEPOLIA_KAFFLE_VAULT",
+      faucet: "BASE_SEPOLIA_KAFFLE_FAUCET",
       implementation: "BASE_SEPOLIA_KAFFLE_IMPLEMENTATION",
       prizeToken: "BASE_SEPOLIA_PRIZE_TOKEN",
       vrfCoordinator: "BASE_SEPOLIA_VRF_COORDINATOR",
@@ -192,6 +196,7 @@ export function getChainConfig() {
     rpcUrl: required(keys.rpcUrl),
     factory: requiredAddress(keys.factory),
     vault: requiredAddress(keys.vault),
+    faucet: requiredAddress(keys.faucet),
     implementation: optionalAddress(keys.implementation),
     prizeToken: requiredAddress(keys.prizeToken),
     vrfCoordinator: requiredAddress(keys.vrfCoordinator),

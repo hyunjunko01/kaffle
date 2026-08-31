@@ -8,6 +8,7 @@ const links = [
   { href: "/", label: "홈" },
   { href: "/raffle", label: "래플" },
   { href: "/missions", label: "미션" },
+  { href: "/faucet", label: "온체인" },
   { href: "/profile", label: "프로필" },
 ];
 

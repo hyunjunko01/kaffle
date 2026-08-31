@@ -43,6 +43,54 @@ export const kaffleVaultAbi = [
   { type: "error", name: "NoWinner", inputs: [] },
 ] as const;
 
+export const kaffleFaucetAbi = [
+  {
+    type: "function",
+    name: "claim",
+    stateMutability: "nonpayable",
+    inputs: [
+      { name: "user", type: "address" },
+      { name: "deadline", type: "uint256" },
+      { name: "signature", type: "bytes" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function",
+    name: "claimAmount",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" }],
+  },
+  {
+    type: "function",
+    name: "claimed",
+    stateMutability: "view",
+    inputs: [{ name: "user", type: "address" }],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "paused",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "token",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }],
+  },
+  { type: "error", name: "AlreadyClaimed", inputs: [] },
+  { type: "error", name: "InsufficientFunds", inputs: [] },
+  { type: "error", name: "InvalidSignature", inputs: [] },
+  { type: "error", name: "Paused", inputs: [] },
+  { type: "error", name: "SignatureExpired", inputs: [] },
+  { type: "error", name: "ZeroAddress", inputs: [] },
+] as const;
+
 export const kaffleFactoryAbi = [
   {
     type: "function",

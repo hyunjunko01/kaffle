@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
 export const ATTENDANCE_TICKETS = 1;
+export const ONCHAIN_TICKETS = 1;
 
 export function seoulDateKey(date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -44,6 +45,38 @@ export async function grantAttendance(userId: string) {
           userId,
           amount: ATTENDANCE_TICKETS,
           reason: "attendance",
+          relatedId: completion.id,
+        },
+      });
+      return completion;
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function grantOnchainMission(userId: string, faucetAddress: string) {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const completion = await tx.missionCompletion.create({
+        data: {
+          userId,
+          mission: "on-chain",
+          status: "granted",
+          extra: faucetAddress.toLowerCase(),
+        },
+      });
+      await tx.ticketLedger.create({
+        data: {
+          userId,
+          amount: ONCHAIN_TICKETS,
+          reason: "on-chain",
           relatedId: completion.id,
         },
       });
