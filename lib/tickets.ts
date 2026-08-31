@@ -8,6 +8,18 @@ export async function getTicketBalance(userId: string) {
   return rows._sum.amount ?? 0;
 }
 
+export async function getRaffleEntryTickets(userId: string, raffleAddress: string) {
+  const rows = await prisma.ticketLedger.aggregate({
+    where: {
+      userId,
+      relatedId: raffleAddress.toLowerCase(),
+      reason: { in: ["raffle_entry", "raffle_entry_refund"] },
+    },
+    _sum: { amount: true },
+  });
+  return Math.max(0, -(rows._sum.amount ?? 0));
+}
+
 export async function spendTickets(input: {
   userId: string;
   amount: number;

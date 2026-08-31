@@ -11,6 +11,7 @@ type CurrentRaffle = {
   isOpen: boolean;
   canRequestWinner: boolean;
   canClaim: boolean;
+  userTickets: number;
   totalTickets: number;
   winner: string | null;
   prizeAmount: string;
@@ -32,6 +33,35 @@ function shortAddress(value: string) {
 
 function formatLocal(unix: number) {
   return new Date(unix * 1000).toLocaleString();
+}
+
+function RaffleWheel() {
+  return (
+    <div
+      role="img"
+      aria-label="래플 돌림판 미리보기"
+      className="relative mx-auto flex aspect-square w-56 items-center justify-center rounded-full bg-zinc-100 p-3 dark:bg-zinc-900"
+    >
+      <div
+        aria-hidden="true"
+        className="h-full w-full rounded-full border-8 border-white shadow-lg dark:border-zinc-800"
+        style={{
+          background:
+            "conic-gradient(from -22.5deg, #18181b 0deg 45deg, #a1a1aa 45deg 90deg, #27272a 90deg 135deg, #d4d4d8 135deg 180deg, #18181b 180deg 225deg, #a1a1aa 225deg 270deg, #27272a 270deg 315deg, #d4d4d8 315deg 360deg)",
+        }}
+      >
+        <div className="flex h-full items-center justify-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-zinc-200 bg-white text-xs font-semibold tracking-[0.2em] text-zinc-950 shadow-md dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50">
+            KAFFLE
+          </div>
+        </div>
+      </div>
+      <span
+        aria-hidden="true"
+        className="absolute -top-1 left-1/2 -translate-x-1/2 border-x-8 border-t-[18px] border-x-transparent border-t-amber-400 drop-shadow-sm"
+      />
+    </div>
+  );
 }
 
 function toView(
@@ -209,9 +239,70 @@ export function RaffleEnterPanel() {
     Boolean(view?.wallet) &&
     current!.winner!.toLowerCase() === view!.wallet!.toLowerCase();
   const busy = pending || settling || claiming;
+  const statusLabel = current
+    ? current.isOpen
+      ? "참여 가능"
+      : current.prizeClaimed
+        ? "상금 지급 완료"
+        : current.winner
+          ? "당첨자 확정"
+          : current.isFinished
+            ? "종료"
+            : current.canRequestWinner
+              ? "당첨자 요청 가능"
+              : "참여 마감"
+    : null;
 
   return (
-    <section className="mt-8 space-y-4">
+    <section className="space-y-4">
+      {current ? (
+        <div className="space-y-5">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2">
+              <h2 className="text-xl font-semibold tracking-tight">n회차 Kaffle</h2>
+              <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-500 dark:bg-zinc-900">
+                {statusLabel}
+              </span>
+            </div>
+            <p className="mt-2 font-mono text-xs text-zinc-500">
+              {formatLocal(current.startTime)}{" "}
+              <span aria-hidden="true">—</span>{" "}
+              {formatLocal(current.endTime)}
+            </p>
+            <p className="mt-3 text-sm text-zinc-500">
+              상금{" "}
+              <span className="font-semibold text-zinc-950 dark:text-zinc-50">
+                {current.prizeAmount} {view?.symbol}
+              </span>
+            </p>
+            {current.winner ? (
+              <p className="mt-2 text-sm text-zinc-500">
+                당첨자{" "}
+                <span className="font-mono font-medium text-zinc-950 dark:text-zinc-50">
+                  {shortAddress(current.winner)}
+                  {isWinner ? " · 나" : null}
+                </span>
+              </p>
+            ) : null}
+          </div>
+          <RaffleWheel />
+          <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+            <dl className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <dt className="text-zinc-500">이번 회차 참여 티켓</dt>
+                <dd className="mt-1 font-medium">{current.userTickets}</dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500">전체 티켓</dt>
+                <dd className="mt-1 font-medium">{current.totalTickets}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      ) : (
+        <RaffleWheel />
+      )}
+
       {error ? (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
           {error}
@@ -227,66 +318,9 @@ export function RaffleEnterPanel() {
 
       {loading && !view ? (
         <p className="text-sm text-zinc-500">라운드 확인 중…</p>
-      ) : view ? (
+      ) : view && !current ? (
         <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">
-            내 티켓{" "}
-            <span className="font-medium text-zinc-950 dark:text-zinc-50">
-              {view.ticketBalance}
-            </span>
-          </p>
-          {current ? (
-            <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-              <div>
-                <dt className="text-zinc-500">상태</dt>
-                <dd className="mt-1 font-medium">
-                  {current.isOpen
-                    ? "참여 가능"
-                    : current.prizeClaimed
-                      ? "상금 지급 완료"
-                      : current.winner
-                        ? "당첨자 확정"
-                        : current.isFinished
-                          ? "종료"
-                          : current.canRequestWinner
-                            ? "당첨자 요청 가능"
-                            : "참여 마감"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-zinc-500">상금</dt>
-                <dd className="mt-1 font-medium">
-                  {current.prizeAmount} {view.symbol}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-zinc-500">참여 티켓 합</dt>
-                <dd className="mt-1 font-medium">{current.totalTickets}</dd>
-              </div>
-              <div>
-                <dt className="text-zinc-500">종료</dt>
-                <dd className="mt-1 text-xs">{formatLocal(current.endTime)}</dd>
-              </div>
-              <div className="col-span-2">
-                <dt className="text-zinc-500">라운드</dt>
-                <dd className="mt-1 font-mono text-xs">
-                  {shortAddress(current.address)}
-                </dd>
-              </div>
-              {current.winner ? (
-                <div className="col-span-2">
-                  <dt className="text-zinc-500">당첨자</dt>
-                  <dd className="mt-1 font-mono text-xs">
-                    {shortAddress(current.winner)}
-                    {isWinner ? " · 나" : null}
-                    {current.prizeClaimed ? " · 지급됨" : null}
-                  </dd>
-                </div>
-              ) : null}
-            </dl>
-          ) : (
-            <p className="mt-4 text-sm text-zinc-500">열린 라운드가 없습니다.</p>
-          )}
+          <p className="text-sm text-zinc-500">열린 라운드가 없습니다.</p>
         </div>
       ) : null}
 
@@ -320,19 +354,21 @@ export function RaffleEnterPanel() {
         <label className="block text-sm text-zinc-500">
           사용할 티켓 수 (최대 {view?.maxTicketsPerEnter ?? 100})
           <input
-            type="text"
+            type="number"
             inputMode="numeric"
+            min="1"
+            max={view?.maxTicketsPerEnter ?? 100}
             name="ticketCount"
             value={ticketCount}
             onChange={(event) => setTicketCount(event.target.value)}
-            className="mt-1 h-12 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+            className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-base text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
           />
         </label>
         <div className="flex gap-2">
           <button
             type="submit"
             disabled={busy || !canEnter || ticketCount.trim().length === 0}
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-14 flex-1 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
           >
             {pending
               ? "참여 중…"
@@ -344,7 +380,7 @@ export function RaffleEnterPanel() {
             type="button"
             onClick={() => void load()}
             disabled={loading || busy}
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-zinc-200 px-4 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
+            className="inline-flex h-14 shrink-0 items-center justify-center whitespace-nowrap rounded-xl border border-zinc-200 px-5 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
           >
             새로고침
           </button>
