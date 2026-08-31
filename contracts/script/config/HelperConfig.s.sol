@@ -22,6 +22,7 @@ contract HelperConfig is Script {
         address ticketSigner;
         address owner;
         uint256 deployerKey;
+        uint256 faucetClaimAmount;
     }
 
     uint256 public constant ETH_SEPOLIA_CHAIN_ID = 11_155_111;
@@ -35,6 +36,8 @@ contract HelperConfig is Script {
     uint16 public constant DEFAULT_REQUEST_CONFIRMATIONS = 3;
     uint32 public constant DEFAULT_CALLBACK_GAS_LIMIT = 500_000;
     bool public constant DEFAULT_NATIVE_PAYMENT = true;
+    uint256 public constant FAUCET_CLAIM_AMOUNT_USDC = 1000;
+    uint256 public constant FAUCET_CLAIM_AMOUNT_MOCK = 0.001e18;
 
     address public constant SEPOLIA_VRF_COORDINATOR = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
     bytes32 public constant SEPOLIA_KEY_HASH = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
@@ -105,13 +108,17 @@ contract HelperConfig is Script {
         uint256 deployerKey = DEFAULT_ANVIL_PRIVATE_KEY;
         address deployer = vm.addr(deployerKey);
 
+        address prizeToken = _optionalAddress("ANVIL_PRIZE_TOKEN", address(0));
+
         vm.startBroadcast(deployerKey);
         MockVRFCoordinator coordinator = new MockVRFCoordinator();
-        MockERC20 prizeToken = new MockERC20();
+        if (prizeToken == address(0)) {
+            prizeToken = address(new MockERC20());
+        }
         vm.stopBroadcast();
 
         _localNetworkConfig = NetworkConfig({
-            prizeToken: address(prizeToken),
+            prizeToken: prizeToken,
             vrfCoordinator: address(coordinator),
             keyHash: bytes32(uint256(1)),
             subscriptionId: 1,
@@ -120,7 +127,8 @@ contract HelperConfig is Script {
             nativePayment: DEFAULT_NATIVE_PAYMENT,
             ticketSigner: _optionalAddress("ANVIL_TICKET_SIGNER", DEFAULT_ANVIL_TICKET_SIGNER),
             owner: _optionalAddress("ANVIL_OWNER", deployer),
-            deployerKey: deployerKey
+            deployerKey: deployerKey,
+            faucetClaimAmount: _optionalUint("FAUCET_CLAIM_AMOUNT", FAUCET_CLAIM_AMOUNT_MOCK)
         });
 
         return _localNetworkConfig;
@@ -148,7 +156,8 @@ contract HelperConfig is Script {
             nativePayment: DEFAULT_NATIVE_PAYMENT,
             ticketSigner: _requiredAddress(ticketSignerKey),
             owner: _optionalAddress(ownerKey, deployer),
-            deployerKey: deployerKey
+            deployerKey: deployerKey,
+            faucetClaimAmount: _optionalUint("FAUCET_CLAIM_AMOUNT", FAUCET_CLAIM_AMOUNT_USDC)
         });
     }
 
