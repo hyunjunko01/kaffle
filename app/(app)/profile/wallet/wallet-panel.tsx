@@ -2,12 +2,19 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { encodeFunctionData, getAddress, isAddress, parseUnits } from "viem";
-import { erc20Abi } from "@/lib/chain/abis";
+import { getAddress, isAddress, parseUnits, type Address, type Hex } from "viem";
 import { connectMappedWalletProvider } from "@/lib/auth/web3auth";
+import {
+  AUTHORIZATION_TTL_SECONDS,
+  buildTransferWithAuthorizationTypedData,
+  randomAuthorizationNonce,
+  serializeTransferWithAuthorizationTypedData,
+} from "@/lib/wallet/eip3009";
 
 type WalletView = {
   chainId: number;
+  slug: string;
+  transferMode: "eip3009" | "unsupported";
   network: string;
   explorerBaseUrl: string;
   wallet: string;
@@ -17,9 +24,33 @@ type WalletView = {
   balance: string;
 };
 
-function errorMessage(error: unknown) {
+function errorMessage(error: unknown, bodyError?: string) {
+  if (bodyError === "unsupported chain") {
+    return "Base Sepolia에서만 전송할 수 있습니다.";
+  }
+  if (bodyError === "invalid recipient") {
+    return "받는 주소를 확인해 주세요.";
+  }
+  if (bodyError === "invalid amount") {
+    return "전송 수량을 올바르게 입력해 주세요.";
+  }
+  if (bodyError === "insufficient balance") {
+    return "잔액이 부족합니다.";
+  }
+  if (bodyError === "authorization expired") {
+    return "서명이 만료되었습니다. 다시 시도해 주세요.";
+  }
+  if (bodyError === "relayer insufficient funds") {
+    return "플랫폼 relayer에 Base Sepolia ETH가 부족합니다. 관리자에게 relayer 지갑 충전을 요청해 주세요.";
+  }
+  if (bodyError === "ERC3009InvalidSignature" || bodyError === "invalid signature") {
+    return "전송 서명이 올바르지 않습니다. 다시 시도해 주세요.";
+  }
+  if (bodyError === "token does not support EIP-3009") {
+    return "현재 prize token이 EIP-3009를 지원하지 않습니다.";
+  }
   if (!(error instanceof Error)) {
-    return "자산을 전송하지 못했습니다.";
+    return bodyError ?? "자산을 전송하지 못했습니다.";
   }
   if (error.message === "invalid recipient") {
     return "받는 주소를 확인해 주세요.";
@@ -33,7 +64,7 @@ function errorMessage(error: unknown) {
   if (error.message === "wallet mismatch") {
     return "현재 로그인한 지갑과 연결된 지갑이 다릅니다.";
   }
-  return error.message || "자산을 전송하지 못했습니다.";
+  return bodyError ?? error.message ?? "자산을 전송하지 못했습니다.";
 }
 
 export function WalletPanel() {
@@ -74,7 +105,7 @@ export function WalletPanel() {
 
   async function send(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!view) return;
+    if (!view || view.transferMode !== "eip3009") return;
 
     setPending(true);
     setError(null);
@@ -100,11 +131,6 @@ export function WalletPanel() {
         throw new Error("insufficient balance");
       }
 
-      const tokenData = encodeFunctionData({
-        abi: erc20Abi,
-        functionName: "transfer",
-        args: [getAddress(rawRecipient), tokenAmount],
-      });
       const tokenResponse = await fetch("/api/auth/web3auth-token");
       if (!tokenResponse.ok) {
         throw new Error("지갑 연결용 토큰을 만들지 못했습니다.");
@@ -119,23 +145,52 @@ export function WalletPanel() {
         throw new Error("wallet mismatch");
       }
 
-      const hash = (await provider.request({
-        method: "eth_sendTransaction",
-        params: [
-          {
-            from,
-            to: view.token,
-            data: tokenData,
-          },
-        ],
-      })) as string;
+      const nonce = randomAuthorizationNonce();
+      const validAfter = BigInt(0);
+      const validBefore = BigInt(
+        Math.floor(Date.now() / 1000) + AUTHORIZATION_TTL_SECONDS,
+      );
+      const typedData = buildTransferWithAuthorizationTypedData({
+        chainId: view.chainId,
+        token: view.token as Address,
+        from: getAddress(from),
+        to: getAddress(rawRecipient),
+        value: tokenAmount,
+        validAfter,
+        validBefore,
+        nonce,
+      });
+      const signature = (await provider.request({
+        method: "eth_signTypedData_v4",
+        params: [from, JSON.stringify(serializeTransferWithAuthorizationTypedData(typedData))],
+      })) as Hex;
 
-      setTxHash(hash);
-      setSuccess("전송 요청이 완료되었습니다.");
+      const response = await fetch("/api/wallet/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipient: getAddress(rawRecipient),
+          amount: amount.trim(),
+          nonce,
+          validAfter: validAfter.toString(),
+          validBefore: validBefore.toString(),
+          signature,
+        }),
+      });
+      const body = (await response.json()) as WalletView & {
+        error?: string;
+        hash?: string;
+      };
+      if (!response.ok) {
+        throw new Error(errorMessage(new Error("transfer failed"), body.error));
+      }
+
+      setView(body);
+      setTxHash(body.hash ?? null);
+      setSuccess("전송이 완료되었습니다.");
       setRecipient("");
       setAmount("");
       setPending(false);
-      void load();
     } catch (caught) {
       setError(errorMessage(caught));
       setPending(false);
@@ -145,6 +200,7 @@ export function WalletPanel() {
   const txUrl = txHash && view?.explorerBaseUrl
     ? `${view.explorerBaseUrl}/tx/${txHash}`
     : null;
+  const canTransfer = view?.transferMode === "eip3009";
 
   return (
     <section className="mt-8 space-y-4">
@@ -191,44 +247,58 @@ export function WalletPanel() {
             </div>
           </div>
 
-          <form onSubmit={(event) => void send(event)} className="space-y-4">
-            <label className="block text-sm font-medium">
-              받는 지갑 주소
-              <input
-                type="text"
-                inputMode="text"
-                value={recipient}
-                onChange={(event) => setRecipient(event.target.value)}
-                placeholder="0x..."
-                disabled={pending}
-                className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 font-mono text-sm outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800"
-              />
-            </label>
-            <label className="block text-sm font-medium">
-              전송 수량 ({view.symbol})
-              <input
-                type="text"
-                inputMode="decimal"
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-                placeholder="0.0"
-                disabled={pending}
-                className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-base outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={pending || recipient.trim().length === 0 || amount.trim().length === 0}
-              className="inline-flex h-14 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
-            >
-              {pending ? "지갑에서 확인 중…" : `${view.symbol} 전송하기`}
-            </button>
-          </form>
+          {canTransfer ? (
+            <form onSubmit={(event) => void send(event)} className="space-y-4">
+              <label className="block text-sm font-medium">
+                받는 지갑 주소
+                <input
+                  type="text"
+                  inputMode="text"
+                  value={recipient}
+                  onChange={(event) => setRecipient(event.target.value)}
+                  placeholder="0x..."
+                  disabled={pending}
+                  className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 font-mono text-sm outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800"
+                />
+              </label>
+              <label className="block text-sm font-medium">
+                전송 수량 ({view.symbol})
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  placeholder="0.0"
+                  disabled={pending}
+                  className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-base outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800"
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={pending || recipient.trim().length === 0 || amount.trim().length === 0}
+                className="inline-flex h-14 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+              >
+                {pending ? "전송 처리 중…" : `${view.symbol} 전송하기`}
+              </button>
+            </form>
+          ) : (
+            <p className="rounded-xl bg-zinc-50 px-4 py-3 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+              자산 전송은 Base Sepolia에서만 지원합니다.
+            </p>
+          )}
 
-          <p className="text-xs leading-5 text-zinc-500">
-            잘못된 주소나 지원하지 않는 네트워크로 전송한 자산은 복구할 수 없습니다.
-            받는 지갑이 {view.network}의 {view.symbol}을 지원하는지 확인하세요.
-          </p>
+          {canTransfer ? (
+            <p className="text-xs leading-5 text-zinc-500">
+              Base Sepolia에서는 ETH 없이 {view.symbol}만으로 전송할 수 있습니다.
+              플랫폼 relayer가 네트워크 수수료를 대신 냅니다.
+            </p>
+          ) : null}
+
+          {!canTransfer ? (
+            <p className="text-xs leading-5 text-zinc-500">
+              잘못된 주소나 지원하지 않는 네트워크로 전송한 자산은 복구할 수 없습니다.
+            </p>
+          ) : null}
         </>
       ) : null}
 

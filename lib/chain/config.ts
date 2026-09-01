@@ -17,12 +17,18 @@ type ChainEnvKeys = {
   ticketSignerPrivateKey: string;
 };
 
+type PrizeTokenEip712 = {
+  name: string;
+  version: string;
+};
+
 type NetworkDefinition = {
   chain: Chain;
   displayName: string;
   blockExplorerUrl: string;
   isTestnet: boolean;
   keys: ChainEnvKeys;
+  prizeTokenEip712?: PrizeTokenEip712;
 };
 
 /**
@@ -71,6 +77,10 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
     displayName: "Base Sepolia",
     blockExplorerUrl: "https://sepolia.basescan.org",
     isTestnet: true,
+    prizeTokenEip712: {
+      name: "USDC",
+      version: "2",
+    },
     keys: {
       rpcUrl: "BASE_SEPOLIA_RPC_URL",
       factory: "BASE_SEPOLIA_KAFFLE_FACTORY",

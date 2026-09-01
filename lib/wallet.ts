@@ -4,7 +4,8 @@ import { getChainConfig } from "@/lib/chain/config";
 import { getPublicClient } from "@/lib/chain/clients";
 
 export async function getWalletStatus(walletAddress: string) {
-  const { chainId, displayName, blockExplorerUrl, prizeToken } = getChainConfig();
+  const { chainId, displayName, blockExplorerUrl, prizeToken, slug } =
+    getChainConfig();
   const client = getPublicClient();
   const account = walletAddress as Address;
 
@@ -29,6 +30,8 @@ export async function getWalletStatus(walletAddress: string) {
 
   return {
     chainId,
+    slug,
+    transferMode: slug === "base-sepolia" ? ("eip3009" as const) : ("unsupported" as const),
     network: displayName,
     explorerBaseUrl: blockExplorerUrl,
     wallet: walletAddress,

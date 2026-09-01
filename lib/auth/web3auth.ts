@@ -13,6 +13,21 @@ export function isWeb3AuthConfigured() {
   );
 }
 
+function isAuthConnectorUsable(
+  status: string | undefined,
+  CONNECTOR_STATUS: {
+    READY: string;
+    CONNECTED: string;
+    AUTHORIZED: string;
+  },
+) {
+  return (
+    status === CONNECTOR_STATUS.READY ||
+    status === CONNECTOR_STATUS.CONNECTED ||
+    status === CONNECTOR_STATUS.AUTHORIZED
+  );
+}
+
 async function waitForAuthReady(instance: Web3AuthNoModal) {
   const { CONNECTOR_STATUS, WALLET_CONNECTORS } = await import(
     "@web3auth/no-modal"
@@ -21,10 +36,7 @@ async function waitForAuthReady(instance: Web3AuthNoModal) {
 
   while (Date.now() < deadline) {
     const auth = instance.getConnector(WALLET_CONNECTORS.AUTH);
-    if (
-      auth?.status === CONNECTOR_STATUS.READY ||
-      auth?.status === CONNECTOR_STATUS.CONNECTED
-    ) {
+    if (isAuthConnectorUsable(auth?.status, CONNECTOR_STATUS)) {
       return;
     }
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -107,10 +119,21 @@ export async function connectMappedWalletProvider(idToken: string) {
     throw new Error("NEXT_PUBLIC_WEB3AUTH_AUTH_CONNECTION_ID is not set");
   }
 
-  const { AUTH_CONNECTION, WALLET_CONNECTORS } = await import(
+  const { AUTH_CONNECTION, CONNECTOR_STATUS, WALLET_CONNECTORS } = await import(
     "@web3auth/no-modal"
   );
   const web3auth = await getClient();
+  const auth = web3auth.getConnector(WALLET_CONNECTORS.AUTH);
+  if (
+    auth?.status === CONNECTOR_STATUS.CONNECTED ||
+    auth?.status === CONNECTOR_STATUS.AUTHORIZED
+  ) {
+    const existingProvider = auth.provider ?? web3auth.provider;
+    if (existingProvider) {
+      return existingProvider;
+    }
+  }
+
   const connection = await web3auth.connectTo(WALLET_CONNECTORS.AUTH, {
     authConnection: AUTH_CONNECTION.CUSTOM,
     authConnectionId,
