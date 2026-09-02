@@ -10,8 +10,8 @@ export default async function Home() {
 
   const [me, recentWinner, leaderboard] = await Promise.all([
     toMePayload(user),
-    getRecentWinner().catch(() => null),
-    getPrizeLeaderboard(3).catch(() => []),
+    getRecentWinner(),
+    getPrizeLeaderboard(3),
   ]);
 
   return (
