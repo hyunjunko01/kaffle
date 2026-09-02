@@ -4,7 +4,7 @@ import { useState } from "react";
 import { getPublicChainConfig, NETWORKS } from "@/lib/chain/config";
 import { ClaimPrizeFlow } from "./claim-prize-flow";
 import { EnterRaffleFlow } from "./enter-raffle-flow";
-import { RaffleRoundStats, RaffleRoundSummary } from "./raffle-round-header";
+import { RaffleRoundHeader, RaffleRoundStats } from "./raffle-round-header";
 import { RaffleWheel } from "./raffle-wheel";
 import { SettleWinnerFlow } from "./settle-winner-flow";
 import { useRaffleView } from "./use-raffle-view";
@@ -30,7 +30,7 @@ export function RaffleEnterPanel() {
     <section className="space-y-4">
       {current && view ? (
         <div className="space-y-5">
-          <RaffleRoundSummary
+          <RaffleRoundHeader
             current={current}
             view={view}
             isWinner={isWinner}

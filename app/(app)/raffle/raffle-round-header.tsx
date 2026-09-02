@@ -7,7 +7,7 @@ type RaffleRoundHeaderProps = {
   isWinner: boolean;
 };
 
-export function RaffleRoundSummary({
+export function RaffleRoundHeader({
   current,
   view,
   isWinner,
