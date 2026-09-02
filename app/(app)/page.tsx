@@ -1,4 +1,5 @@
 import { getCurrentUser, toMePayload } from "@/lib/auth/user";
+import { getRecentWinner } from "@/lib/raffle/recent-winner";
 
 const sampleLeaderboard = [
   { rank: 1, username: "user_xxxxxxx", prize: "0 USDC" },
@@ -12,7 +13,10 @@ export default async function Home() {
     return null;
   }
 
-  const me = await toMePayload(user);
+  const [me, recentWinner] = await Promise.all([
+    toMePayload(user),
+    getRecentWinner().catch(() => null),
+  ]);
 
   return (
     <main className="space-y-10">
@@ -30,17 +34,26 @@ export default async function Home() {
           <h2 id="recent-winner-heading" className="text-base font-semibold">
             최근 당첨자
           </h2>
-          <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-500 dark:bg-zinc-900">
-            예시 데이터
-          </span>
         </div>
         <div className="overflow-hidden rounded-2xl bg-zinc-950 px-5 py-5 text-center text-sm text-white dark:bg-zinc-100 dark:text-zinc-950">
-          <p className="font-mono">
-            1회차 래플 당첨자{" "}
-            <span className="font-semibold text-amber-300 dark:text-amber-700">
-              user_xxxxxxx
-            </span>
-          </p>
+          {recentWinner ? (
+            <>
+              <p className="font-mono">
+                {recentWinner.roundNumber}회차 래플 당첨자{" "}
+                <span className="font-semibold text-amber-300 dark:text-amber-700">
+                  {recentWinner.winnerLabel}
+                </span>
+              </p>
+              <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-600">
+                상금 {recentWinner.prizeAmount} {recentWinner.symbol}
+                {recentWinner.claimed ? " · 수령 완료" : " · 수령 대기"}
+              </p>
+            </>
+          ) : (
+            <p className="text-zinc-400 dark:text-zinc-600">
+              아직 당첨자가 없습니다.
+            </p>
+          )}
         </div>
       </section>
 

@@ -6,6 +6,11 @@ import { getPublicClient } from "@/lib/chain/clients";
 const LOG_CHUNK_SIZE = BigInt(9_000);
 const ROUND_CACHE_TTL_MS = 60_000;
 
+export type RaffleHistoryEntry = {
+  address: Address;
+  roundNumber: number;
+};
+
 type RoundCache = {
   factory: Address;
   roundsByRaffle: Map<string, number>;
@@ -118,4 +123,14 @@ export async function getRaffleRoundNumber(raffleAddress: string) {
 
 export function clearRaffleRoundCache() {
   roundCache = null;
+}
+
+export async function getRaffleEntriesNewestFirst(): Promise<RaffleHistoryEntry[]> {
+  const roundsByRaffle = await getRaffleRoundMap();
+  return Array.from(roundsByRaffle.entries())
+    .map(([address, roundNumber]) => ({
+      address: address as Address,
+      roundNumber,
+    }))
+    .sort((left, right) => right.roundNumber - left.roundNumber);
 }
