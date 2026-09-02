@@ -1,4 +1,7 @@
 import { formatUnits } from "viem";
+import { erc20Abi } from "@/lib/chain/abis";
+import { getChainConfig } from "@/lib/chain/config";
+import { getPublicClient } from "@/lib/chain/clients";
 import { prisma } from "@/lib/db";
 import type { CurrentRaffle } from "@/lib/raffle/status";
 
@@ -8,6 +11,70 @@ function shortAddress(value: string) {
 
 function normalizeAddress(value: string) {
   return value.toLowerCase();
+}
+
+export async function getRaffleRoundNumberFromDb(
+  raffleAddress: string,
+): Promise<number | null> {
+  const snapshot = await prisma.raffleSnapshot.findUnique({
+    where: { raffleAddress: normalizeAddress(raffleAddress) },
+    select: { roundNumber: true },
+  });
+  if (!snapshot || snapshot.roundNumber <= 0) {
+    return null;
+  }
+  return snapshot.roundNumber;
+}
+
+/** Persist round number after a chain lookup so later reads can skip log scans. */
+export async function cacheRaffleRoundNumberInDb(
+  raffleAddress: string,
+  roundNumber: number,
+) {
+  if (roundNumber <= 0) {
+    return;
+  }
+
+  const normalized = normalizeAddress(raffleAddress);
+  const existing = await prisma.raffleSnapshot.findUnique({
+    where: { raffleAddress: normalized },
+    select: { roundNumber: true },
+  });
+  if (existing) {
+    if (existing.roundNumber === roundNumber) {
+      return;
+    }
+    await prisma.raffleSnapshot.update({
+      where: { raffleAddress: normalized },
+      data: { roundNumber },
+    });
+    return;
+  }
+
+  const { prizeToken } = getChainConfig();
+  const client = getPublicClient();
+  const [symbol, decimals] = await Promise.all([
+    client.readContract({
+      address: prizeToken,
+      abi: erc20Abi,
+      functionName: "symbol",
+    }),
+    client.readContract({
+      address: prizeToken,
+      abi: erc20Abi,
+      functionName: "decimals",
+    }),
+  ]);
+
+  await prisma.raffleSnapshot.create({
+    data: {
+      raffleAddress: normalized,
+      roundNumber,
+      prizeAmount: "0",
+      symbol,
+      tokenDecimals: Number(decimals),
+    },
+  });
 }
 
 export async function upsertRaffleSnapshotFromCurrent(

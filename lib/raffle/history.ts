@@ -2,6 +2,10 @@ import { createPublicClient, http, type Address, zeroAddress } from "viem";
 import { kaffleFactoryAbi } from "@/lib/chain/abis";
 import { getChainConfig, getChainSlug, NETWORKS } from "@/lib/chain/config";
 import { getPublicClient } from "@/lib/chain/clients";
+import {
+  cacheRaffleRoundNumberInDb,
+  getRaffleRoundNumberFromDb,
+} from "@/lib/raffle/snapshot";
 
 const LOG_CHUNK_SIZE = BigInt(9_000);
 const ROUND_CACHE_TTL_MS = 60_000;
@@ -110,12 +114,21 @@ export async function getRaffleRoundNumber(raffleAddress: string) {
     return null;
   }
 
+  const fromDb = await getRaffleRoundNumberFromDb(normalized);
+  if (fromDb !== null) {
+    return fromDb;
+  }
+
   let roundsByRaffle = await getRaffleRoundMap();
   let round = roundsByRaffle.get(normalized);
   if (round === undefined) {
     roundCache = null;
     roundsByRaffle = await getRaffleRoundMap();
     round = roundsByRaffle.get(normalized);
+  }
+
+  if (round !== undefined) {
+    await cacheRaffleRoundNumberInDb(normalized, round).catch(() => {});
   }
 
   return round ?? null;
