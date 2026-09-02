@@ -18,9 +18,11 @@ import {
   getPublicClient,
   syncChainClock,
 } from "@/lib/chain/clients";
+import { getRaffleRoundNumber, clearRaffleRoundCache } from "@/lib/raffle/history";
 
 export type CurrentRaffle = {
   address: string;
+  roundNumber: number | null;
   startTime: number;
   endTime: number;
   isFinished: boolean;
@@ -154,6 +156,12 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
     Boolean(isFinished) || (now >= end && Number(totalTickets) === 0);
   const open = !finished && now >= start && now < end;
   const winnerAddress = winner === zeroAddress ? null : winner;
+  let roundNumber: number | null = null;
+  try {
+    roundNumber = await getRaffleRoundNumber(currentAddress);
+  } catch {
+    roundNumber = null;
+  }
 
   return {
     factory,
@@ -162,6 +170,7 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
     unallocated: formatUnits(unallocated, decimals),
     current: {
       address: currentAddress,
+      roundNumber,
       startTime: start,
       endTime: end,
       isFinished: finished,
@@ -214,6 +223,8 @@ export async function createRaffle(input: {
   if (receipt.status !== "success") {
     throw new Error("createRaffle transaction failed");
   }
+
+  clearRaffleRoundCache();
 
   let raffleAddress: string | null = null;
   for (const log of receipt.logs) {

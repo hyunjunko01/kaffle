@@ -7,6 +7,7 @@ import { getPublicChainConfig, NETWORKS } from "@/lib/chain/config";
 
 type CurrentRaffle = {
   address: string;
+  roundNumber: number | null;
   startTime: number;
   endTime: number;
   isFinished: boolean;
@@ -103,13 +104,23 @@ function toView(
   body: Partial<RaffleView> & { current?: CurrentRaffle | null },
   fallback: RaffleView | null,
 ): RaffleView {
+  const mergedCurrent =
+    body.current === undefined
+      ? (fallback?.current ?? null)
+      : body.current === null
+        ? null
+        : {
+            ...(fallback?.current ?? {}),
+            ...body.current,
+          };
+
   return {
     symbol: body.symbol ?? fallback?.symbol ?? "",
     ticketBalance: body.ticketBalance ?? fallback?.ticketBalance ?? 0,
     wallet: body.wallet ?? fallback?.wallet ?? null,
     maxTicketsPerEnter:
       body.maxTicketsPerEnter ?? fallback?.maxTicketsPerEnter ?? 100,
-    current: body.current ?? fallback?.current ?? null,
+    current: mergedCurrent as CurrentRaffle | null,
   };
 }
 
@@ -340,7 +351,9 @@ export function RaffleEnterPanel() {
         <div className="space-y-5">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2">
-              <h2 className="text-xl font-semibold tracking-tight">n회차 Kaffle</h2>
+              <h2 className="text-xl font-semibold tracking-tight">
+                {current.roundNumber ?? "—"}회차 Kaffle
+              </h2>
               <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-500 dark:bg-zinc-900">
                 {statusLabel}
               </span>

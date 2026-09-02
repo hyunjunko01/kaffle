@@ -29,6 +29,10 @@ type NetworkDefinition = {
   isTestnet: boolean;
   keys: ChainEnvKeys;
   prizeTokenEip712?: PrizeTokenEip712;
+  /** Narrow eth_getLogs scans for factory RaffleCreated events. */
+  factoryDeployBlock?: bigint;
+  /** Optional RPC for log scans when the primary provider limits eth_getLogs range. */
+  logRpcUrl?: string;
 };
 
 /**
@@ -81,6 +85,8 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
       name: "USDC",
       version: "2",
     },
+    factoryDeployBlock: BigInt(45_984_018),
+    logRpcUrl: "https://sepolia.base.org",
     keys: {
       rpcUrl: "BASE_SEPOLIA_RPC_URL",
       factory: "BASE_SEPOLIA_KAFFLE_FACTORY",
