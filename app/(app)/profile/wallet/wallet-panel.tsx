@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { getAddress, isAddress, parseUnits, type Address, type Hex } from "viem";
+import { ActionSheet, type ActionSheetStep } from "@/components/ui/action-sheet";
 import { connectMappedWalletProvider } from "@/lib/auth/web3auth";
 import {
   AUTHORIZATION_TTL_SECONDS,
@@ -23,6 +23,17 @@ type WalletView = {
   decimals: number;
   balance: string;
 };
+
+type TransferSheetState = {
+  step: ActionSheetStep;
+  loadingMessage: string;
+  errorMessage: string | null;
+  txHash: string | null;
+};
+
+function shortAddress(value: string) {
+  return `${value.slice(0, 6)}…${value.slice(-4)}`;
+}
 
 function errorMessage(error: unknown, bodyError?: string) {
   if (bodyError === "unsupported chain") {
@@ -67,24 +78,35 @@ function errorMessage(error: unknown, bodyError?: string) {
   return bodyError ?? error.message ?? "자산을 전송하지 못했습니다.";
 }
 
+function sheetTitle(step: ActionSheetStep) {
+  switch (step) {
+    case "confirm":
+      return "전송 내용 확인";
+    case "loading":
+      return "전송 처리 중";
+    case "success":
+      return "전송 완료";
+    case "error":
+      return "전송 실패";
+  }
+}
+
 export function WalletPanel() {
   const [view, setView] = useState<WalletView | null>(null);
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [sheet, setSheet] = useState<TransferSheetState | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setPageError(null);
     const response = await fetch("/api/wallet");
     const body = (await response.json()) as WalletView & { error?: string };
     if (!response.ok) {
       setView(null);
-      setError(
+      setPageError(
         body.error?.includes("is not set")
           ? "네트워크 또는 토큰 설정이 없습니다."
           : (body.error ?? "지갑 정보를 불러오지 못했습니다."),
@@ -103,33 +125,69 @@ export function WalletPanel() {
     return () => window.clearTimeout(timer);
   }, [load]);
 
-  async function send(event: React.FormEvent<HTMLFormElement>) {
+  function closeSheet() {
+    if (sheet?.step === "loading") {
+      return;
+    }
+    if (sheet?.step === "success") {
+      setRecipient("");
+      setAmount("");
+    }
+    setSheet(null);
+  }
+
+  function openConfirmSheet() {
+    setSheet({
+      step: "confirm",
+      loadingMessage: "",
+      errorMessage: null,
+      txHash: null,
+    });
+  }
+
+  function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!view || view.transferMode !== "eip3009") return;
 
-    setPending(true);
-    setError(null);
-    setSuccess(null);
-    setTxHash(null);
+    const rawRecipient = recipient.trim();
+    if (!isAddress(rawRecipient)) {
+      setPageError("받는 주소를 확인해 주세요.");
+      return;
+    }
+
+    let tokenAmount: bigint;
+    try {
+      tokenAmount = parseUnits(amount.trim(), view.decimals);
+    } catch {
+      setPageError("전송 수량을 올바르게 입력해 주세요.");
+      return;
+    }
+    if (tokenAmount <= BigInt(0)) {
+      setPageError("전송 수량을 올바르게 입력해 주세요.");
+      return;
+    }
+    if (tokenAmount > parseUnits(view.balance, view.decimals)) {
+      setPageError("잔액이 부족합니다.");
+      return;
+    }
+
+    setPageError(null);
+    openConfirmSheet();
+  }
+
+  async function executeTransfer() {
+    if (!view || view.transferMode !== "eip3009") return;
+
+    setSheet({
+      step: "loading",
+      loadingMessage: "지갑에서 서명해 주세요…",
+      errorMessage: null,
+      txHash: null,
+    });
 
     try {
       const rawRecipient = recipient.trim();
-      if (!isAddress(rawRecipient)) {
-        throw new Error("invalid recipient");
-      }
-
-      let tokenAmount: bigint;
-      try {
-        tokenAmount = parseUnits(amount.trim(), view.decimals);
-      } catch {
-        throw new Error("invalid amount");
-      }
-      if (tokenAmount <= BigInt(0)) {
-        throw new Error("invalid amount");
-      }
-      if (tokenAmount > parseUnits(view.balance, view.decimals)) {
-        throw new Error("insufficient balance");
-      }
+      const tokenAmount = parseUnits(amount.trim(), view.decimals);
 
       const tokenResponse = await fetch("/api/auth/web3auth-token");
       if (!tokenResponse.ok) {
@@ -165,6 +223,16 @@ export function WalletPanel() {
         params: [from, JSON.stringify(serializeTransferWithAuthorizationTypedData(typedData))],
       })) as Hex;
 
+      setSheet((current) =>
+        current
+          ? {
+              ...current,
+              step: "loading",
+              loadingMessage: "전송 처리 중…",
+            }
+          : current,
+      );
+
       const response = await fetch("/api/wallet/transfer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -186,41 +254,40 @@ export function WalletPanel() {
       }
 
       setView(body);
-      setTxHash(body.hash ?? null);
-      setSuccess("전송이 완료되었습니다.");
-      setRecipient("");
-      setAmount("");
-      setPending(false);
+      setSheet({
+        step: "success",
+        loadingMessage: "",
+        errorMessage: null,
+        txHash: body.hash ?? null,
+      });
     } catch (caught) {
-      setError(errorMessage(caught));
-      setPending(false);
+      setSheet({
+        step: "error",
+        loadingMessage: "",
+        errorMessage: errorMessage(caught),
+        txHash: null,
+      });
     }
   }
 
-  const txUrl = txHash && view?.explorerBaseUrl
-    ? `${view.explorerBaseUrl}/tx/${txHash}`
-    : null;
+  const sheetOpen = sheet !== null;
+  const sheetStep = sheet?.step ?? "confirm";
+  const transferBusy = sheet?.step === "loading";
+  const normalizedRecipient = recipient.trim();
+  const checksumRecipient = isAddress(normalizedRecipient)
+    ? getAddress(normalizedRecipient)
+    : normalizedRecipient;
+  const txUrl =
+    sheet?.txHash && view?.explorerBaseUrl
+      ? `${view.explorerBaseUrl}/tx/${sheet.txHash}`
+      : null;
   const canTransfer = view?.transferMode === "eip3009";
 
   return (
     <section className="mt-8 space-y-4">
-      {error ? (
+      {pageError ? (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
-          {error}
-        </p>
-      ) : null}
-
-      {success ? (
-        <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
-          {success}
-          {txUrl ? (
-            <>
-              {" · "}
-              <Link href={txUrl} target="_blank" rel="noreferrer" className="underline">
-                트랜잭션 확인
-              </Link>
-            </>
-          ) : null}
+          {pageError}
         </p>
       ) : null}
 
@@ -248,7 +315,7 @@ export function WalletPanel() {
           </div>
 
           {canTransfer ? (
-            <form onSubmit={(event) => void send(event)} className="space-y-4">
+            <form onSubmit={handleFormSubmit} className="space-y-4">
               <label className="block text-sm font-medium">
                 받는 지갑 주소
                 <input
@@ -257,7 +324,7 @@ export function WalletPanel() {
                   value={recipient}
                   onChange={(event) => setRecipient(event.target.value)}
                   placeholder="0x..."
-                  disabled={pending}
+                  disabled={transferBusy}
                   className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 font-mono text-sm outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800"
                 />
               </label>
@@ -269,16 +336,20 @@ export function WalletPanel() {
                   value={amount}
                   onChange={(event) => setAmount(event.target.value)}
                   placeholder="0.0"
-                  disabled={pending}
+                  disabled={transferBusy}
                   className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-base outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800"
                 />
               </label>
               <button
                 type="submit"
-                disabled={pending || recipient.trim().length === 0 || amount.trim().length === 0}
+                disabled={
+                  transferBusy ||
+                  recipient.trim().length === 0 ||
+                  amount.trim().length === 0
+                }
                 className="inline-flex h-14 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
               >
-                {pending ? "전송 처리 중…" : `${view.symbol} 전송하기`}
+                {`${view.symbol} 전송하기`}
               </button>
             </form>
           ) : (
@@ -305,11 +376,63 @@ export function WalletPanel() {
       <button
         type="button"
         onClick={() => void load()}
-        disabled={loading || pending}
+        disabled={loading || transferBusy}
         className="h-12 w-full rounded-xl border border-zinc-200 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
       >
         새로고침
       </button>
+
+      <ActionSheet
+        open={sheetOpen}
+        step={sheetStep}
+        title={sheetTitle(sheetStep)}
+        onClose={closeSheet}
+        onConfirm={() => void executeTransfer()}
+        onRetry={() =>
+          setSheet({
+            step: "confirm",
+            loadingMessage: "",
+            errorMessage: null,
+            txHash: null,
+          })
+        }
+        dismissible={sheetStep !== "loading"}
+        loadingMessage={sheet?.loadingMessage}
+        successMessage="전송이 완료되었습니다."
+        errorMessage={sheet?.errorMessage ?? undefined}
+        confirmLabel="전송하기"
+        cancelLabel="취소"
+        closeLabel="확인"
+        actionHref={txUrl}
+        actionLabel="트랜잭션 확인"
+      >
+        {view ? (
+          <>
+            <div className="rounded-xl bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
+              <p className="text-xs text-zinc-500">전송 수량</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight">
+                {amount.trim()} {view.symbol}
+              </p>
+            </div>
+            <dl className="space-y-3 text-sm">
+              <div>
+                <dt className="text-zinc-500">네트워크</dt>
+                <dd className="mt-1 font-medium">{view.network}</dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500">받는 주소</dt>
+                <dd className="mt-1 font-medium">{shortAddress(checksumRecipient)}</dd>
+                <dd className="mt-1 break-all font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                  {checksumRecipient}
+                </dd>
+              </div>
+            </dl>
+            <p className="text-xs leading-5 text-zinc-500">
+              잘못된 주소로 보낸 자산은 복구할 수 없습니다. 내용이 맞는지 다시 확인해 주세요.
+            </p>
+          </>
+        ) : null}
+      </ActionSheet>
     </section>
   );
 }
