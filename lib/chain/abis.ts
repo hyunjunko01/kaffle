@@ -41,6 +41,15 @@ export const kaffleVaultAbi = [
   { type: "error", name: "PrizeNotAttached", inputs: [] },
   { type: "error", name: "AlreadyClaimed", inputs: [] },
   { type: "error", name: "NoWinner", inputs: [] },
+  {
+    type: "event",
+    name: "Claimed",
+    inputs: [
+      { name: "raffle", type: "address", indexed: true },
+      { name: "winner", type: "address", indexed: true },
+      { name: "amount", type: "uint256", indexed: false },
+    ],
+  },
 ] as const;
 
 export const kaffleFaucetAbi = [

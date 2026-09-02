@@ -11,6 +11,7 @@ import {
   syncChainClock,
 } from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
+import { clearPrizeLeaderboardCache } from "@/lib/raffle/leaderboard";
 
 export function claimErrorMessage(error: unknown) {
   if (error instanceof BaseError) {
@@ -64,6 +65,8 @@ export async function claimPrize() {
   if (receipt.status !== "success") {
     throw new Error("claim transaction failed");
   }
+
+  clearPrizeLeaderboardCache();
 
   return {
     hash,

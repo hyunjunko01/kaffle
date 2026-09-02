@@ -29,12 +29,12 @@ function compareCreationOrder(
   return left.logIndex - right.logIndex;
 }
 
-function getFactoryDeployBlock() {
+export function getDeployScanBlock() {
   const slug = getChainSlug();
   return NETWORKS[slug].factoryDeployBlock ?? BigInt(0);
 }
 
-function getLogScanClient() {
+export function getLogScanClient() {
   const slug = getChainSlug();
   const network = NETWORKS[slug];
   const { chain, rpcUrl } = getChainConfig();
@@ -50,7 +50,7 @@ function getLogScanClient() {
 
 async function loadRaffleRoundMap(factory: Address) {
   const client = getLogScanClient();
-  const fromBlock = getFactoryDeployBlock();
+  const fromBlock = getDeployScanBlock();
   const latest = await client.getBlockNumber();
   const logs = [];
 
