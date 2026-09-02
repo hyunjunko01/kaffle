@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { ActionSheet, type ActionSheetStep } from "@/components/ui/action-sheet";
+import { getPublicChainConfig, NETWORKS } from "@/lib/chain/config";
 
 type CurrentRaffle = {
   address: string;
@@ -26,6 +28,39 @@ type RaffleView = {
   maxTicketsPerEnter: number;
   current: CurrentRaffle | null;
 };
+
+type EnterSheetState = {
+  step: ActionSheetStep;
+  loadingMessage: string;
+  errorMessage: string | null;
+  txHash: string | null;
+};
+
+function enterErrorMessage(bodyError?: string) {
+  if (bodyError === "insufficient tickets") {
+    return "티켓이 부족합니다.";
+  }
+  if (bodyError === "RoundClosed" || bodyError === "no raffle") {
+    return "지금은 참여할 수 있는 라운드가 없습니다.";
+  }
+  if (bodyError === "invalid ticket count") {
+    return "티켓 수를 올바르게 입력해 주세요.";
+  }
+  return bodyError ?? "참여에 실패했습니다.";
+}
+
+function enterSheetTitle(step: ActionSheetStep) {
+  switch (step) {
+    case "confirm":
+      return "참여 내용 확인";
+    case "loading":
+      return "래플 참여 중";
+    case "success":
+      return "참여 완료";
+    case "error":
+      return "참여 실패";
+  }
+}
 
 function shortAddress(value: string) {
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
@@ -80,24 +115,25 @@ function toView(
 
 export function RaffleEnterPanel() {
   const router = useRouter();
+  const explorerBaseUrl = NETWORKS[getPublicChainConfig().slug].blockExplorerUrl;
   const [view, setView] = useState<RaffleView | null>(null);
   const [ticketCount, setTicketCount] = useState("1");
   const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState(false);
+  const [enterSheet, setEnterSheet] = useState<EnterSheetState | null>(null);
   const [settling, setSettling] = useState(false);
   const [claiming, setClaiming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setPageError(null);
     const res = await fetch("/api/raffle");
     const body = (await res.json()) as RaffleView & { error?: string };
     if (!res.ok) {
       setView(null);
-      setError(
+      setPageError(
         body.error?.includes("is not set")
           ? "온체인 설정이 없습니다. CHAIN과 컨트랙트 주소가 .env에 있는지 확인하세요."
           : (body.error ?? "래플 상태를 읽지 못했습니다."),
@@ -113,14 +149,48 @@ export function RaffleEnterPanel() {
     void load();
   }, [load]);
 
-  async function enter(event: React.FormEvent<HTMLFormElement>) {
+  function closeEnterSheet() {
+    if (enterSheet?.step === "loading") {
+      return;
+    }
+    setEnterSheet(null);
+  }
+
+  function handleEnterSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setPending(true);
-    setError(null);
-    setSuccess(null);
-    setTxHash(null);
+    if (!view?.current?.isOpen || view.ticketBalance <= 0) return;
 
     const count = Number(ticketCount);
+    const maxTickets = view.maxTicketsPerEnter;
+    if (!Number.isInteger(count) || count <= 0 || count > maxTickets) {
+      setPageError(`티켓은 1~${maxTickets}장까지 사용할 수 있습니다.`);
+      return;
+    }
+    if (count > view.ticketBalance) {
+      setPageError("티켓이 부족합니다.");
+      return;
+    }
+
+    setPageError(null);
+    setEnterSheet({
+      step: "confirm",
+      loadingMessage: "",
+      errorMessage: null,
+      txHash: null,
+    });
+  }
+
+  async function executeEnter() {
+    if (!view) return;
+
+    const count = Number(ticketCount);
+    setEnterSheet({
+      step: "loading",
+      loadingMessage: "래플 참여 처리 중…",
+      errorMessage: null,
+      txHash: null,
+    });
+
     const res = await fetch("/api/raffle/enter", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -132,29 +202,32 @@ export function RaffleEnterPanel() {
     };
 
     if (!res.ok) {
-      setError(
-        body.error === "insufficient tickets"
-          ? "티켓이 부족합니다."
-          : body.error === "RoundClosed" || body.error === "no raffle"
-            ? "지금은 참여할 수 있는 라운드가 없습니다."
-            : body.error === "invalid ticket count"
-              ? `티켓은 1~${view?.maxTicketsPerEnter ?? 100}장까지 사용할 수 있습니다.`
-              : (body.error ?? "참여에 실패했습니다."),
-      );
-      setPending(false);
+      setEnterSheet({
+        step: "error",
+        loadingMessage: "",
+        errorMessage: enterErrorMessage(
+          body.error === "invalid ticket count"
+            ? `티켓은 1~${view.maxTicketsPerEnter}장까지 사용할 수 있습니다.`
+            : body.error,
+        ),
+        txHash: null,
+      });
       return;
     }
 
     setView(toView(body, view));
-    setTxHash(body.hash ?? null);
-    setSuccess("참여 완료");
-    setPending(false);
+    setEnterSheet({
+      step: "success",
+      loadingMessage: "",
+      errorMessage: null,
+      txHash: body.hash ?? null,
+    });
     router.refresh();
   }
 
   async function settleWinner() {
     setSettling(true);
-    setError(null);
+    setPageError(null);
     setSuccess(null);
     setTxHash(null);
 
@@ -166,7 +239,7 @@ export function RaffleEnterPanel() {
     };
 
     if (!res.ok) {
-      setError(
+      setPageError(
         body.error === "RoundOpen"
           ? "아직 라운드가 끝나지 않았습니다."
           : body.error === "NoEntries"
@@ -194,7 +267,7 @@ export function RaffleEnterPanel() {
 
   async function claimPrize() {
     setClaiming(true);
-    setError(null);
+    setPageError(null);
     setSuccess(null);
     setTxHash(null);
 
@@ -206,7 +279,7 @@ export function RaffleEnterPanel() {
     };
 
     if (!res.ok) {
-      setError(
+      setPageError(
         body.error === "NoWinner"
           ? "아직 당첨자가 없습니다."
           : body.error === "AlreadyClaimed"
@@ -238,7 +311,15 @@ export function RaffleEnterPanel() {
     Boolean(current?.winner) &&
     Boolean(view?.wallet) &&
     current!.winner!.toLowerCase() === view!.wallet!.toLowerCase();
-  const busy = pending || settling || claiming;
+  const enterBusy = enterSheet?.step === "loading";
+  const busy = enterBusy || settling || claiming;
+  const enterSheetOpen = enterSheet !== null;
+  const enterSheetStep = enterSheet?.step ?? "confirm";
+  const parsedTicketCount = Number(ticketCount);
+  const enterTxUrl =
+    enterSheet?.txHash && explorerBaseUrl
+      ? `${explorerBaseUrl}/tx/${enterSheet.txHash}`
+      : null;
   const statusLabel = current
     ? current.isOpen
       ? "참여 가능"
@@ -303,9 +384,9 @@ export function RaffleEnterPanel() {
         <RaffleWheel />
       )}
 
-      {error ? (
+      {pageError ? (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
-          {error}
+          {pageError}
         </p>
       ) : null}
 
@@ -350,7 +431,7 @@ export function RaffleEnterPanel() {
         </button>
       ) : null}
 
-      <form onSubmit={(event) => void enter(event)} className="space-y-3">
+      <form onSubmit={handleEnterSubmit} className="space-y-3">
         <label className="block text-sm text-zinc-500">
           사용할 티켓 수 (최대 {view?.maxTicketsPerEnter ?? 100})
           <input
@@ -361,7 +442,8 @@ export function RaffleEnterPanel() {
             name="ticketCount"
             value={ticketCount}
             onChange={(event) => setTicketCount(event.target.value)}
-            className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-base text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+            disabled={enterBusy}
+            className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-base text-zinc-950 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-50"
           />
         </label>
         <div className="flex gap-2">
@@ -370,11 +452,7 @@ export function RaffleEnterPanel() {
             disabled={busy || !canEnter || ticketCount.trim().length === 0}
             className="inline-flex h-14 flex-1 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
           >
-            {pending
-              ? "참여 중…"
-              : canEnter
-                ? "래플 참여"
-                : "지금은 참여할 수 없습니다"}
+            {canEnter ? "래플 참여" : "지금은 참여할 수 없습니다"}
           </button>
           <button
             type="button"
@@ -386,6 +464,69 @@ export function RaffleEnterPanel() {
           </button>
         </div>
       </form>
+
+      <ActionSheet
+        open={enterSheetOpen}
+        step={enterSheetStep}
+        title={enterSheetTitle(enterSheetStep)}
+        onClose={closeEnterSheet}
+        onConfirm={() => void executeEnter()}
+        onRetry={() =>
+          setEnterSheet({
+            step: "confirm",
+            loadingMessage: "",
+            errorMessage: null,
+            txHash: null,
+          })
+        }
+        dismissible={enterSheetStep !== "loading"}
+        loadingMessage={enterSheet?.loadingMessage}
+        successMessage="래플 참여가 완료되었습니다."
+        errorMessage={enterSheet?.errorMessage ?? undefined}
+        confirmLabel="참여하기"
+        cancelLabel="취소"
+        closeLabel="확인"
+        actionHref={enterTxUrl}
+        actionLabel="트랜잭션 확인"
+      >
+        {view && current && Number.isInteger(parsedTicketCount) ? (
+          <>
+            <div className="rounded-xl bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
+              <p className="text-xs text-zinc-500">사용할 티켓</p>
+              <p className="mt-1 text-2xl font-semibold tracking-tight">
+                {parsedTicketCount}장
+              </p>
+            </div>
+            <dl className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <dt className="text-zinc-500">보유 티켓</dt>
+                  <dd className="mt-1 font-medium">{view.ticketBalance}장</dd>
+                </div>
+                <div>
+                  <dt className="text-zinc-500">참여 후 잔여</dt>
+                  <dd className="mt-1 font-medium">
+                    {Math.max(view.ticketBalance - parsedTicketCount, 0)}장
+                  </dd>
+                </div>
+              </div>
+              <div>
+                <dt className="text-zinc-500">상금</dt>
+                <dd className="mt-1 font-medium">
+                  {current.prizeAmount} {view.symbol}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500">이번 회차 내 참여</dt>
+                <dd className="mt-1 font-medium">{current.userTickets}장</dd>
+              </div>
+            </dl>
+            <p className="text-xs leading-5 text-zinc-500">
+              참여에 사용한 티켓은 취소할 수 없습니다. 티켓 수가 맞는지 확인해 주세요.
+            </p>
+          </>
+        ) : null}
+      </ActionSheet>
     </section>
   );
 }
