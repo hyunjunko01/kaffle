@@ -4,27 +4,22 @@ import { getChainConfig } from "@/lib/chain/config";
 import { getPublicClient } from "@/lib/chain/clients";
 import { prisma } from "@/lib/db";
 import { getDeployScanBlock, getLogScanClient } from "@/lib/raffle/history";
+import {
+  getPrizeLeaderboardFromDb,
+  type LeaderboardSnapshotEntry,
+} from "@/lib/raffle/snapshot";
 
 const LOG_CHUNK_SIZE = BigInt(9_000);
-const LEADERBOARD_CACHE_TTL_MS = 60_000;
-const MAX_CACHED_ENTRIES = 10;
 const DEFAULT_LIMIT = 3;
 
-export type LeaderboardEntry = {
-  rank: number;
+export type LeaderboardEntry = LeaderboardSnapshotEntry;
+
+export type ChainPrizeClaim = {
+  raffleAddress: string;
   winnerAddress: string;
-  winnerLabel: string;
-  prizeTotal: string;
-  symbol: string;
+  amountWei: string;
+  txHash: string;
 };
-
-type LeaderboardCache = {
-  vault: Address;
-  entries: LeaderboardEntry[];
-  expiresAt: number;
-};
-
-let leaderboardCache: LeaderboardCache | null = null;
 
 function shortAddress(value: string) {
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
@@ -56,8 +51,32 @@ async function loadVaultClaimedLogs(vault: Address) {
   return logs;
 }
 
-async function buildLeaderboard(limit: number) {
-  const { vault, prizeToken } = getChainConfig();
+export async function scanVaultClaimsFromChain(): Promise<ChainPrizeClaim[]> {
+  const { vault } = getChainConfig();
+  const logs = await loadVaultClaimedLogs(vault);
+  const claims: ChainPrizeClaim[] = [];
+
+  for (const log of logs) {
+    const raffle = log.args.raffle;
+    const winner = log.args.winner;
+    const amount = log.args.amount;
+    const txHash = log.transactionHash;
+    if (!raffle || !winner || amount === undefined || !txHash) {
+      continue;
+    }
+    claims.push({
+      raffleAddress: raffle.toLowerCase(),
+      winnerAddress: winner.toLowerCase(),
+      amountWei: amount.toString(),
+      txHash,
+    });
+  }
+
+  return claims;
+}
+
+export async function buildLeaderboardFromChain(limit: number) {
+  const { prizeToken } = getChainConfig();
   const client = getPublicClient();
   const [decimals, symbol, logs] = await Promise.all([
     client.readContract({
@@ -70,7 +89,7 @@ async function buildLeaderboard(limit: number) {
       abi: erc20Abi,
       functionName: "symbol",
     }),
-    loadVaultClaimedLogs(vault),
+    loadVaultClaimedLogs(getChainConfig().vault),
   ]);
 
   const totals = new Map<string, bigint>();
@@ -118,25 +137,5 @@ async function buildLeaderboard(limit: number) {
 export async function getPrizeLeaderboard(
   limit = DEFAULT_LIMIT,
 ): Promise<LeaderboardEntry[]> {
-  const { vault } = getChainConfig();
-  const now = Date.now();
-  if (
-    leaderboardCache &&
-    leaderboardCache.vault === vault &&
-    leaderboardCache.expiresAt > now
-  ) {
-    return leaderboardCache.entries.slice(0, limit);
-  }
-
-  const entries = await buildLeaderboard(MAX_CACHED_ENTRIES);
-  leaderboardCache = {
-    vault,
-    entries,
-    expiresAt: now + LEADERBOARD_CACHE_TTL_MS,
-  };
-  return entries.slice(0, limit);
-}
-
-export function clearPrizeLeaderboardCache() {
-  leaderboardCache = null;
+  return getPrizeLeaderboardFromDb(limit);
 }

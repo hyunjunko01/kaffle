@@ -51,3 +51,31 @@ model MissionCompletion {
 
   @@unique([userId, mission, extra])
 }
+
+model RaffleSnapshot {
+  id            String       @id @default(cuid())
+  raffleAddress String       @unique
+  roundNumber   Int
+  winnerAddress String?
+  prizeAmount   String
+  prizeClaimed  Boolean      @default(false)
+  symbol        String
+  tokenDecimals Int
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  claims        PrizeClaim[]
+
+  @@index([roundNumber])
+}
+
+model PrizeClaim {
+  id            String         @id @default(cuid())
+  raffleAddress String
+  winnerAddress String
+  amountWei     String
+  txHash        String         @unique
+  claimedAt     DateTime       @default(now())
+  raffle        RaffleSnapshot @relation(fields: [raffleAddress], references: [raffleAddress], onDelete: Cascade)
+
+  @@index([winnerAddress])
+}

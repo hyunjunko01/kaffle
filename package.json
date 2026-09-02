@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "backfill:raffle-home": "npx tsx scripts/backfill-raffle-home.ts"
   },
   "dependencies": {
     "@babel/runtime": "^7.29.7",

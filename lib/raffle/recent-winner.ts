@@ -4,21 +4,22 @@ import { getChainConfig } from "@/lib/chain/config";
 import { getPublicClient } from "@/lib/chain/clients";
 import { prisma } from "@/lib/db";
 import { getRaffleEntriesNewestFirst } from "@/lib/raffle/history";
+import {
+  getRecentWinnerFromDb,
+  type RecentWinnerSnapshot,
+} from "@/lib/raffle/snapshot";
 
-export type RecentWinner = {
-  roundNumber: number;
-  winnerAddress: string;
-  winnerLabel: string;
-  prizeAmount: string;
-  symbol: string;
-  claimed: boolean;
+export type RecentWinner = RecentWinnerSnapshot;
+
+export type ChainRecentWinner = RecentWinnerSnapshot & {
+  raffleAddress: string;
 };
 
 function shortAddress(value: string) {
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
 }
 
-export async function getRecentWinner(): Promise<RecentWinner | null> {
+export async function scanRecentWinnerFromChain(): Promise<ChainRecentWinner | null> {
   const { vault, prizeToken } = getChainConfig();
   const client = getPublicClient();
   const raffles = await getRaffleEntriesNewestFirst();
@@ -62,8 +63,9 @@ export async function getRecentWinner(): Promise<RecentWinner | null> {
     });
 
     return {
+      raffleAddress: raffle.address.toLowerCase(),
       roundNumber: raffle.roundNumber,
-      winnerAddress: winner,
+      winnerAddress: winner.toLowerCase(),
       winnerLabel: wallet?.user.nickname ?? shortAddress(winner),
       prizeAmount: formatUnits(prizeAmount, decimals),
       symbol,
@@ -72,4 +74,8 @@ export async function getRecentWinner(): Promise<RecentWinner | null> {
   }
 
   return null;
+}
+
+export async function getRecentWinner(): Promise<RecentWinner | null> {
+  return getRecentWinnerFromDb();
 }

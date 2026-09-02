@@ -19,6 +19,7 @@ import {
   syncChainClock,
 } from "@/lib/chain/clients";
 import { getRaffleRoundNumber, clearRaffleRoundCache } from "@/lib/raffle/history";
+import { syncCurrentRaffleSnapshotIfStale } from "@/lib/raffle/snapshot";
 
 export type CurrentRaffle = {
   address: string;
@@ -163,27 +164,31 @@ export async function getRaffleStatus(): Promise<RaffleStatus> {
     roundNumber = null;
   }
 
+  const current: CurrentRaffle = {
+    address: currentAddress,
+    roundNumber,
+    startTime: start,
+    endTime: end,
+    isFinished: finished,
+    isOpen: open,
+    canRequestWinner:
+      !open && !finished && !winnerAddress && Number(totalTickets) > 0,
+    canClaim: Boolean(winnerAddress) && prizeAttached && !prizeClaimed,
+    totalTickets: Number(totalTickets),
+    winner: winnerAddress,
+    prizeAmount: formatUnits(prizeAmount, decimals),
+    prizeClaimed,
+    prizeAttached,
+  };
+
+  await syncCurrentRaffleSnapshotIfStale(current, symbol, decimals).catch(() => {});
+
   return {
     factory,
     symbol,
     decimals,
     unallocated: formatUnits(unallocated, decimals),
-    current: {
-      address: currentAddress,
-      roundNumber,
-      startTime: start,
-      endTime: end,
-      isFinished: finished,
-      isOpen: open,
-      canRequestWinner:
-        !open && !finished && !winnerAddress && Number(totalTickets) > 0,
-      canClaim: Boolean(winnerAddress) && prizeAttached && !prizeClaimed,
-      totalTickets: Number(totalTickets),
-      winner: winnerAddress,
-      prizeAmount: formatUnits(prizeAmount, decimals),
-      prizeClaimed,
-      prizeAttached,
-    },
+    current,
   };
 }
 

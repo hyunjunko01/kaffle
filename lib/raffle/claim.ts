@@ -1,6 +1,7 @@
 import {
   BaseError,
   ContractFunctionRevertedError,
+  parseUnits,
   type Address,
 } from "viem";
 import { kaffleVaultAbi } from "@/lib/chain/abis";
@@ -11,7 +12,7 @@ import {
   syncChainClock,
 } from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
-import { clearPrizeLeaderboardCache } from "@/lib/raffle/leaderboard";
+import { recordPrizeClaim } from "@/lib/raffle/snapshot";
 
 export function claimErrorMessage(error: unknown) {
   if (error instanceof BaseError) {
@@ -66,11 +67,27 @@ export async function claimPrize() {
     throw new Error("claim transaction failed");
   }
 
-  clearPrizeLeaderboardCache();
+  const updated = await getRaffleStatus();
+  const updatedCurrent = updated.current;
+  if (updatedCurrent?.winner) {
+    await recordPrizeClaim({
+      raffleAddress: updatedCurrent.address,
+      winnerAddress: updatedCurrent.winner,
+      amountWei: parseUnits(
+        updatedCurrent.prizeAmount,
+        updated.decimals,
+      ).toString(),
+      txHash: hash,
+      symbol: updated.symbol,
+      prizeAmount: updatedCurrent.prizeAmount,
+      roundNumber: updatedCurrent.roundNumber ?? 0,
+      tokenDecimals: updated.decimals,
+    });
+  }
 
   return {
     hash,
     winner: current.winner,
-    ...(await getRaffleStatus()),
+    ...updated,
   };
 }
