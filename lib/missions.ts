@@ -1,8 +1,56 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import {
+  REFERRAL_SUCCESS_CAP,
+  REFERRAL_TICKETS,
+  countSuccessfulReferrals,
+} from "@/lib/referrals";
 
 export const ATTENDANCE_TICKETS = 1;
 export const ONCHAIN_TICKETS = 1;
+
+export type MissionId = "attendance" | "referral" | "on-chain";
+
+export type MissionCatalogItem = {
+  id: MissionId;
+  href: string;
+  title: string;
+  description: string;
+  tickets: number;
+};
+
+/** Static mission definitions for v0. Completions live in the DB. */
+export const MISSION_CATALOG: MissionCatalogItem[] = [
+  {
+    id: "attendance",
+    href: "/missions/attendance",
+    title: "출석",
+    description: "하루 한 번 출석하고 티켓을 받습니다.",
+    tickets: ATTENDANCE_TICKETS,
+  },
+  {
+    id: "referral",
+    href: "/missions/invite",
+    title: "친구 초대",
+    description: "친구를 초대하고 티켓을 받습니다.",
+    tickets: REFERRAL_TICKETS,
+  },
+  {
+    id: "on-chain",
+    href: "/missions/onchain",
+    title: "온체인 미션",
+    description: "테스트 토큰을 받고 지갑 트랜잭션을 확인합니다.",
+    tickets: ONCHAIN_TICKETS,
+  },
+];
+
+export type MissionOverviewItem = MissionCatalogItem & {
+  completed: boolean;
+  available: boolean;
+  statusLabel: string;
+  inviteCount?: number;
+  inviteCap?: number;
+};
 
 export function seoulDateKey(date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -25,6 +73,57 @@ export async function hasAttendanceToday(userId: string) {
     },
   });
   return Boolean(existing);
+}
+
+export async function hasOnchainMissionCompleted(userId: string) {
+  const existing = await prisma.missionCompletion.findFirst({
+    where: {
+      userId,
+      mission: "on-chain",
+      status: "granted",
+    },
+    select: { id: true },
+  });
+  return Boolean(existing);
+}
+
+/** Hub status for /missions. Catalog is code; completion flags come from DB. */
+export async function getMissionsOverview(
+  userId: string,
+): Promise<MissionOverviewItem[]> {
+  const [attendanceDone, inviteCount, onchainDone] = await Promise.all([
+    hasAttendanceToday(userId),
+    countSuccessfulReferrals(userId),
+    hasOnchainMissionCompleted(userId),
+  ]);
+
+  return MISSION_CATALOG.map((mission) => {
+    if (mission.id === "attendance") {
+      return {
+        ...mission,
+        completed: attendanceDone,
+        available: !attendanceDone,
+        statusLabel: attendanceDone ? "완료" : "가능",
+      };
+    }
+    if (mission.id === "referral") {
+      const completed = inviteCount >= REFERRAL_SUCCESS_CAP;
+      return {
+        ...mission,
+        completed,
+        available: !completed,
+        statusLabel: `${inviteCount}/${REFERRAL_SUCCESS_CAP}`,
+        inviteCount,
+        inviteCap: REFERRAL_SUCCESS_CAP,
+      };
+    }
+    return {
+      ...mission,
+      completed: onchainDone,
+      available: !onchainDone,
+      statusLabel: onchainDone ? "완료" : "가능",
+    };
+  });
 }
 
 export async function grantAttendance(userId: string) {
