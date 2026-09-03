@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { getRaffleEntriesNewestFirst } from "@/lib/raffle/history";
 import {
   getRecentWinnerFromDb,
+  getRecentWinnersFromDb,
   type RecentWinnerSnapshot,
 } from "@/lib/raffle/snapshot";
 
@@ -78,4 +79,8 @@ export async function scanRecentWinnerFromChain(): Promise<ChainRecentWinner | n
 
 export async function getRecentWinner(): Promise<RecentWinner | null> {
   return getRecentWinnerFromDb();
+}
+
+export async function getRecentWinners(limit = 3): Promise<RecentWinner[]> {
+  return getRecentWinnersFromDb(limit);
 }

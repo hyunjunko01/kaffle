@@ -1,6 +1,7 @@
 import { getCurrentUser, toMePayload } from "@/lib/auth/user";
 import { getPrizeLeaderboard } from "@/lib/raffle/leaderboard";
-import { getRecentWinner } from "@/lib/raffle/recent-winner";
+import { getRecentWinners } from "@/lib/raffle/recent-winner";
+import { WinnerCarousel } from "./winner-carousel";
 
 export default async function Home() {
   const user = await getCurrentUser();
@@ -8,9 +9,9 @@ export default async function Home() {
     return null;
   }
 
-  const [me, recentWinner, leaderboard] = await Promise.all([
+  const [me, recentWinners, leaderboard] = await Promise.all([
     toMePayload(user),
-    getRecentWinner(),
+    getRecentWinners(3),
     getPrizeLeaderboard(3),
   ]);
 
@@ -37,24 +38,7 @@ export default async function Home() {
             최근 당첨자
           </h2>
         </div>
-        <div className="overflow-hidden rounded-[var(--kaffle-radius-lg)] border border-accent/25 bg-accent-soft px-5 py-5 text-center text-sm text-accent-ink">
-          {recentWinner ? (
-            <>
-              <p className="font-mono">
-                {recentWinner.roundNumber}회차 래플 당첨자{" "}
-                <span className="font-semibold text-foreground">
-                  {recentWinner.winnerLabel}
-                </span>
-              </p>
-              <p className="mt-2 text-xs text-accent-ink/75">
-                상금 {recentWinner.prizeAmount} {recentWinner.symbol}
-                {recentWinner.claimed ? " · 수령 완료" : " · 수령 대기"}
-              </p>
-            </>
-          ) : (
-            <p className="text-accent-ink/70">아직 당첨자가 없습니다.</p>
-          )}
-        </div>
+        <WinnerCarousel winners={recentWinners} />
       </section>
 
       <section aria-labelledby="leaderboard-heading">

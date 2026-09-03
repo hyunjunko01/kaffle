@@ -197,27 +197,46 @@ export type RecentWinnerSnapshot = {
 };
 
 export async function getRecentWinnerFromDb(): Promise<RecentWinnerSnapshot | null> {
-  const snapshot = await prisma.raffleSnapshot.findFirst({
+  const winners = await getRecentWinnersFromDb(1);
+  return winners[0] ?? null;
+}
+
+export async function getRecentWinnersFromDb(
+  limit = 3,
+): Promise<RecentWinnerSnapshot[]> {
+  const snapshots = await prisma.raffleSnapshot.findMany({
     where: { winnerAddress: { not: null } },
     orderBy: { roundNumber: "desc" },
+    take: limit,
   });
-  if (!snapshot?.winnerAddress) {
-    return null;
+
+  if (snapshots.length === 0) {
+    return [];
   }
 
-  const wallet = await prisma.wallet.findUnique({
-    where: { address: snapshot.winnerAddress },
+  const addresses = snapshots
+    .map((s) => s.winnerAddress)
+    .filter((a): a is string => a !== null);
+
+  const wallets = await prisma.wallet.findMany({
+    where: { address: { in: addresses } },
     include: { user: true },
   });
 
-  return {
-    roundNumber: snapshot.roundNumber,
-    winnerAddress: snapshot.winnerAddress,
-    winnerLabel: wallet?.user.nickname ?? shortAddress(snapshot.winnerAddress),
-    prizeAmount: snapshot.prizeAmount,
-    symbol: snapshot.symbol,
-    claimed: snapshot.prizeClaimed,
-  };
+  const labels = new Map(
+    wallets.map((w) => [w.address, w.user.nickname]),
+  );
+
+  return snapshots
+    .filter((s): s is typeof s & { winnerAddress: string } => s.winnerAddress !== null)
+    .map((s) => ({
+      roundNumber: s.roundNumber,
+      winnerAddress: s.winnerAddress,
+      winnerLabel: labels.get(s.winnerAddress) ?? shortAddress(s.winnerAddress),
+      prizeAmount: s.prizeAmount,
+      symbol: s.symbol,
+      claimed: s.prizeClaimed,
+    }));
 }
 
 export type LeaderboardSnapshotEntry = {

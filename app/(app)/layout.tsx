@@ -22,7 +22,7 @@ export default async function AppShellLayout({
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-background">
-      <AppHeader ticketBalance={me.ticketBalance} chainLabel={chainLabel} />
+      <AppHeader ticketBalance={me.ticketBalance} chainLabel={chainLabel} nickname={me.user.nickname} />
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 pt-10 pb-32">
         {children}
       </div>
