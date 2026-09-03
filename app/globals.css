@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
+/*
+  Light Stage — Kaffle v0 visual tone
+  Soft cool neutrals by day/night, single amber accent.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --background: #f3f3f1;
+  --foreground: #151515;
+  --surface: #fafaf9;
+  --surface-elevated: #ffffff;
+  --muted: #6a6a68;
+  --muted-soft: #92928f;
+  --border: #e2e2df;
+  --border-strong: #cbcbc7;
+  --accent: #bf8a22;
+  --accent-soft: #efe4cb;
+  --accent-ink: #745210;
+  --ink-inverse: #fafaf9;
+  --danger: #b42318;
+  --danger-soft: #fdeceb;
+
+  --kaffle-radius-sm: 0.625rem;
+  --kaffle-radius-md: 0.875rem;
+  --kaffle-radius-lg: 1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --background: #131314;
+    --foreground: #f3f3f1;
+    --surface: #1b1b1d;
+    --surface-elevated: #242427;
+    --muted: #9a9a97;
+    --muted-soft: #727270;
+    --border: #323235;
+    --border-strong: #48484c;
+    --accent: #d9a53c;
+    --accent-soft: #32280f;
+    --accent-ink: #efe4cb;
+    --ink-inverse: #131314;
+    --danger: #f97066;
+    --danger-soft: #3b1814;
+  }
+}
+
+/* Manual overrides for a future theme toggle */
+html.light {
+  color-scheme: light;
+
+  --background: #f3f3f1;
+  --foreground: #151515;
+  --surface: #fafaf9;
+  --surface-elevated: #ffffff;
+  --muted: #6a6a68;
+  --muted-soft: #92928f;
+  --border: #e2e2df;
+  --border-strong: #cbcbc7;
+  --accent: #bf8a22;
+  --accent-soft: #efe4cb;
+  --accent-ink: #745210;
+  --ink-inverse: #fafaf9;
+  --danger: #b42318;
+  --danger-soft: #fdeceb;
+}
+
+html.dark {
+  color-scheme: dark;
+
+  --background: #131314;
+  --foreground: #f3f3f1;
+  --surface: #1b1b1d;
+  --surface-elevated: #242427;
+  --muted: #9a9a97;
+  --muted-soft: #727270;
+  --border: #323235;
+  --border-strong: #48484c;
+  --accent: #d9a53c;
+  --accent-soft: #32280f;
+  --accent-ink: #efe4cb;
+  --ink-inverse: #131314;
+  --danger: #f97066;
+  --danger-soft: #3b1814;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-muted: var(--muted);
+  --color-muted-soft: var(--muted-soft);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-ink-inverse: var(--ink-inverse);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-ibm-plex-sans-kr), "Apple SD Gothic Neo", sans-serif;
+  --font-display: var(--font-syne), var(--font-ibm-plex-sans-kr), sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
 }

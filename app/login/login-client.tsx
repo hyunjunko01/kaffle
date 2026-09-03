@@ -74,26 +74,28 @@ export function LoginClient() {
   }, [queryError, router]);
 
   return (
-    <main className="flex min-h-full flex-1 flex-col items-center justify-center px-6">
+    <main className="flex min-h-full flex-1 flex-col items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm text-center">
-        <p className="text-sm font-medium tracking-[0.2em] text-zinc-500">KAFFLE</p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">카카오로 시작하기</h1>
-        <p className="mt-3 text-sm leading-6 text-zinc-500">
+        <p className="font-display text-sm font-bold tracking-[0.22em] text-foreground">
+          KAFFLE
+        </p>
+        <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">
+          카카오로 시작하기
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-muted">
           카카오 로그인 후 가입 정보를 확인하고,
           <br />
           원하는 경우 지갑을 만들어 시작합니다.
         </p>
 
         {error ? (
-          <p className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+          <p className="mt-6 rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
             {error}
           </p>
         ) : null}
 
         {status === "checking" ? (
-          <p className="mt-8 text-sm text-zinc-500">
-            확인 중입니다…
-          </p>
+          <p className="mt-8 text-sm text-muted">확인 중입니다…</p>
         ) : (
           <a
             href={
@@ -101,7 +103,7 @@ export function LoginClient() {
                 ? `/auth/kakao?ref=${encodeURIComponent(searchParams.get("ref")!)}`
                 : "/auth/kakao"
             }
-            className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#FEE500] text-sm font-semibold text-[#191919] transition hover:bg-[#f5dc00]"
+            className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--kaffle-radius-md)] bg-[#FEE500] text-sm font-semibold text-[#191919] transition hover:bg-[#f5dc00]"
           >
             <KakaoMark />
             카카오 로그인

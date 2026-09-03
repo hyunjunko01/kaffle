@@ -14,7 +14,7 @@ export function AppFooter() {
   const pathname = usePathname();
 
   return (
-    <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+    <footer className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface/95 backdrop-blur">
       <nav className="mx-auto grid w-full max-w-lg grid-cols-4 gap-1 px-6 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         {links.map((link) => {
           const active =
@@ -24,10 +24,10 @@ export function AppFooter() {
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-lg px-3 py-1.5 text-center text-sm font-medium transition ${
+              className={`rounded-[var(--kaffle-radius-sm)] px-3 py-1.5 text-center text-sm font-medium transition ${
                 active
-                  ? "bg-zinc-950 text-white dark:bg-zinc-50 dark:text-zinc-950"
-                  : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
+                  ? "bg-accent-soft text-accent-ink"
+                  : "text-muted hover:bg-accent-soft/60 hover:text-foreground"
               }`}
             >
               {link.label}

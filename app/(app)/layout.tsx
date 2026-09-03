@@ -21,7 +21,7 @@ export default async function AppShellLayout({
   const chainLabel = NETWORKS[getChainSlug()].displayName;
 
   return (
-    <div className="flex min-h-full flex-1 flex-col">
+    <div className="flex min-h-full flex-1 flex-col bg-background">
       <AppHeader ticketBalance={me.ticketBalance} chainLabel={chainLabel} />
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 pt-10 pb-32">
         {children}
