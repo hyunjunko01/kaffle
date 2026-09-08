@@ -4,15 +4,7 @@ import Link from "next/link";
 import { LogoutButton } from "./logout-button";
 import { ThemeToggle } from "./theme-toggle";
 
-export function AppHeader({
-  ticketBalance,
-  chainLabel,
-  nickname,
-}: {
-  ticketBalance: number;
-  chainLabel: string;
-  nickname: string;
-}) {
+export function AppHeader({ nickname }: { nickname: string }) {
   return (
     <header className="border-b border-border bg-surface/80 backdrop-blur">
       <div className="mx-auto flex w-full max-w-lg items-center justify-between px-6 py-4">
@@ -28,13 +20,10 @@ export function AppHeader({
         <div className="flex items-center gap-2">
           <Link
             href="/profile"
-            className="truncate max-w-[5rem] text-sm font-medium text-foreground hover:text-accent-ink transition"
+            className="truncate max-w-[5rem] text-sm font-medium text-foreground transition hover:text-accent-ink"
           >
             {nickname}
           </Link>
-          <span className="rounded-full bg-accent-soft px-2.5 py-1 font-mono text-xs font-medium text-accent-ink">
-            보유 티켓 {ticketBalance}
-          </span>
           <LogoutButton />
         </div>
       </div>
