@@ -19,11 +19,9 @@ type EnterRaffleFlowProps = {
   current: CurrentRaffle;
   explorerBaseUrl: string;
   disabled: boolean;
-  loading: boolean;
   onBusyChange: (busy: boolean) => void;
   onViewUpdate: (view: RaffleView) => void;
   onPageError: (message: string | null) => void;
-  onReload: () => void;
 };
 
 function enterErrorMessage(bodyError?: string) {
@@ -57,11 +55,9 @@ export function EnterRaffleFlow({
   current,
   explorerBaseUrl,
   disabled,
-  loading,
   onBusyChange,
   onViewUpdate,
   onPageError,
-  onReload,
 }: EnterRaffleFlowProps) {
   const router = useRouter();
   const [ticketCount, setTicketCount] = useState("1");
@@ -162,35 +158,43 @@ export function EnterRaffleFlow({
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <label className="block text-sm text-zinc-500">
-          사용할 티켓 수 (최대 {view.maxTicketsPerEnter})
-          <input
-            type="number"
-            inputMode="numeric"
-            min="1"
-            max={view.maxTicketsPerEnter}
-            name="ticketCount"
-            value={ticketCount}
-            onChange={(event) => setTicketCount(event.target.value)}
-            disabled={enterBusy}
-            className="mt-2 h-14 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-base text-zinc-950 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-50"
-          />
-        </label>
-        <div className="flex gap-2">
+        <p className="text-center text-sm text-zinc-500">
+          참여{" "}
+          <span className="font-mono font-medium tabular-nums text-zinc-950 dark:text-zinc-50">
+            {current.userTickets}장
+          </span>
+          {" / "}
+          보유{" "}
+          <span className="font-mono font-medium tabular-nums text-zinc-950 dark:text-zinc-50">
+            {view.ticketBalance}장
+          </span>
+        </p>
+
+        <div className="flex h-11 items-stretch justify-center gap-2">
+          <label className="relative block w-44 shrink-0">
+            <span className="sr-only">사용할 티켓 수</span>
+            <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-xs text-zinc-500">
+              최대 {view.maxTicketsPerEnter}
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min="1"
+              max={view.maxTicketsPerEnter}
+              name="ticketCount"
+              value={ticketCount}
+              onChange={(event) => setTicketCount(event.target.value)}
+              disabled={enterBusy}
+              placeholder="0"
+              className="ticket-count-input box-border h-full w-full rounded-sm border border-zinc-200 bg-transparent py-0 pl-[3.75rem] pr-2 text-right text-sm leading-none tabular-nums text-zinc-950 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-50"
+            />
+          </label>
           <button
             type="submit"
             disabled={disabled || !canEnter || ticketCount.trim().length === 0}
-            className="inline-flex h-14 flex-1 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-sm bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
           >
-            {canEnter ? "래플 참여" : "지금은 참여할 수 없습니다"}
-          </button>
-          <button
-            type="button"
-            onClick={onReload}
-            disabled={loading || disabled}
-            className="inline-flex h-14 shrink-0 items-center justify-center whitespace-nowrap rounded-xl border border-zinc-200 px-5 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
-          >
-            새로고침
+            {canEnter ? "티켓 사용" : "참여 불가"}
           </button>
         </div>
       </form>
@@ -222,7 +226,7 @@ export function EnterRaffleFlow({
       >
         {Number.isInteger(parsedTicketCount) ? (
           <>
-            <div className="rounded-xl bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
+            <div className="rounded-sm bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
               <p className="text-xs text-zinc-500">사용할 티켓</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">
                 {parsedTicketCount}장

@@ -20,6 +20,55 @@ export async function getRaffleEntryTickets(userId: string, raffleAddress: strin
   return Math.max(0, -(rows._sum.amount ?? 0));
 }
 
+export type RoundParticipant = {
+  userId: string;
+  nickname: string;
+  ticketCount: number;
+};
+
+export async function getRoundParticipants(
+  raffleAddress: string,
+  limit = 20,
+): Promise<RoundParticipant[]> {
+  const address = raffleAddress.toLowerCase();
+  const grouped = await prisma.ticketLedger.groupBy({
+    by: ["userId"],
+    where: {
+      relatedId: address,
+      reason: { in: ["raffle_entry", "raffle_entry_refund"] },
+    },
+    _sum: { amount: true },
+  });
+
+  const scored = grouped
+    .map((row) => ({
+      userId: row.userId,
+      ticketCount: Math.max(0, -(row._sum.amount ?? 0)),
+    }))
+    .filter((row) => row.ticketCount > 0)
+    .sort(
+      (a, b) =>
+        b.ticketCount - a.ticketCount || a.userId.localeCompare(b.userId),
+    )
+    .slice(0, limit);
+
+  if (scored.length === 0) {
+    return [];
+  }
+
+  const users = await prisma.user.findMany({
+    where: { id: { in: scored.map((row) => row.userId) } },
+    select: { id: true, nickname: true },
+  });
+  const nicknames = new Map(users.map((user) => [user.id, user.nickname]));
+
+  return scored.map((row) => ({
+    userId: row.userId,
+    nickname: nicknames.get(row.userId) ?? "참여자",
+    ticketCount: row.ticketCount,
+  }));
+}
+
 export async function spendTickets(input: {
   userId: string;
   amount: number;

@@ -15,12 +15,19 @@ export type CurrentRaffle = {
   prizeAttached: boolean;
 };
 
+export type RoundParticipant = {
+  userId: string;
+  nickname: string;
+  ticketCount: number;
+};
+
 export type RaffleView = {
   symbol: string;
   ticketBalance: number;
   wallet: string | null;
   maxTicketsPerEnter: number;
   current: CurrentRaffle | null;
+  participants: RoundParticipant[];
 };
 
 export function toView(
@@ -44,5 +51,9 @@ export function toView(
     maxTicketsPerEnter:
       body.maxTicketsPerEnter ?? fallback?.maxTicketsPerEnter ?? 100,
     current: mergedCurrent as CurrentRaffle | null,
+    participants:
+      body.participants !== undefined
+        ? body.participants
+        : (fallback?.participants ?? []),
   };
 }

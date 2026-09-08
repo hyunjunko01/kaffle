@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/user";
 import { enterErrorMessage, enterRaffle } from "@/lib/raffle/enter";
-import { getRaffleEntryTickets } from "@/lib/tickets";
+import { getRaffleEntryTickets, getRoundParticipants } from "@/lib/tickets";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -37,11 +37,17 @@ export async function POST(request: Request) {
     const userTickets = result.current
       ? await getRaffleEntryTickets(user.id, result.current.address)
       : 0;
+    const participants = result.current
+      ? await getRoundParticipants(result.current.address)
+      : [];
     return NextResponse.json({
       ...result,
       current: result.current
         ? { ...result.current, userTickets }
         : null,
+      wallet: user.wallet.address,
+      maxTicketsPerEnter: 100,
+      participants,
     });
   } catch (error) {
     const message = enterErrorMessage(error);

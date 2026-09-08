@@ -1,5 +1,17 @@
-import type { CurrentRaffle, RaffleView } from "./types";
-import { formatLocal, raffleStatusLabel, shortAddress } from "./utils";
+import type { CurrentRaffle, RaffleView, RoundParticipant } from "./types";
+import { RaffleWheel } from "./raffle-wheel";
+import {
+  formatLocal,
+  raffleStatusLabel,
+  raffleStatusTone,
+  shortAddress,
+} from "./utils";
+
+const statusToneClass = {
+  open: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
+  closed: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
+  other: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
+} as const;
 
 type RaffleRoundHeaderProps = {
   current: CurrentRaffle;
@@ -12,29 +24,33 @@ export function RaffleRoundHeader({
   view,
   isWinner,
 }: RaffleRoundHeaderProps) {
+  const tone = raffleStatusTone(current);
+
   return (
     <div className="text-center">
       <div className="flex items-center justify-center gap-2">
-        <h2 className="text-xl font-semibold tracking-tight">
-          {current.roundNumber ?? "—"}회차 Kaffle
+        <h2 className="text-base font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+          {current.roundNumber ?? "—"}회차
         </h2>
-        <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-500 dark:bg-zinc-900">
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusToneClass[tone]}`}
+        >
           {raffleStatusLabel(current)}
         </span>
       </div>
-      <p className="mt-2 font-mono text-xs text-zinc-500">
-        {formatLocal(current.startTime)}{" "}
-        <span aria-hidden="true">—</span>{" "}
-        {formatLocal(current.endTime)}
+
+      <p className="mt-4 text-sm text-zinc-500">상금</p>
+      <p className="mt-1 font-display text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl dark:text-zinc-50">
+        {current.prizeAmount}{" "}
+        <span className="text-xl font-semibold sm:text-2xl">{view.symbol}</span>
       </p>
+
       <p className="mt-3 text-sm text-zinc-500">
-        상금{" "}
-        <span className="font-semibold text-zinc-950 dark:text-zinc-50">
-          {current.prizeAmount} {view.symbol}
-        </span>
+        마감 {formatLocal(current.endTime)}
       </p>
+
       {current.winner ? (
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className="mt-3 text-sm text-zinc-500">
           당첨자{" "}
           <span className="font-mono font-medium text-zinc-950 dark:text-zinc-50">
             {shortAddress(current.winner)}
@@ -42,23 +58,51 @@ export function RaffleRoundHeader({
           </span>
         </p>
       ) : null}
+
+      <div className="mx-auto mt-6 w-40 opacity-80">
+        <RaffleWheel />
+      </div>
     </div>
   );
 }
 
-export function RaffleRoundStats({ current }: { current: CurrentRaffle }) {
+export function RaffleRoundBoard({
+  current,
+  participants,
+}: {
+  current: CurrentRaffle;
+  participants: RoundParticipant[];
+}) {
   return (
-    <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-      <dl className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <dt className="text-zinc-500">이번 회차 참여 티켓</dt>
-          <dd className="mt-1 font-medium">{current.userTickets}</dd>
-        </div>
-        <div>
-          <dt className="text-zinc-500">전체 티켓</dt>
-          <dd className="mt-1 font-medium">{current.totalTickets}</dd>
-        </div>
-      </dl>
+    <div className="rounded-sm border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-baseline justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
+          이번 회차 참여자
+        </h3>
+        <p className="font-mono text-xs text-zinc-500">
+          전체 {current.totalTickets}장 · {participants.length}명
+        </p>
+      </div>
+      {participants.length > 0 ? (
+        <ol className="divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+          {participants.map((entry, index) => (
+            <li
+              key={entry.userId}
+              className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-baseline gap-3 px-4 py-3"
+            >
+              <span className="font-mono text-zinc-500">{index + 1}</span>
+              <span className="truncate font-medium">{entry.nickname}</span>
+              <span className="font-mono tabular-nums text-zinc-500">
+                {entry.ticketCount}장
+              </span>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="px-4 py-5 text-center text-sm text-zinc-500">
+          아직 참여자가 없습니다.
+        </p>
+      )}
     </div>
   );
 }

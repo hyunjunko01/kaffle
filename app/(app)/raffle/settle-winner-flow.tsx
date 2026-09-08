@@ -138,7 +138,7 @@ export function SettleWinnerFlow({
         type="button"
         onClick={openSheet}
         disabled={disabled}
-        className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+        className="inline-flex h-11 w-full items-center justify-center rounded-sm bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
       >
         당첨자 요청
       </button>
@@ -168,7 +168,7 @@ export function SettleWinnerFlow({
         actionHref={txUrl}
         actionLabel="트랜잭션 확인"
       >
-        <div className="rounded-xl bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
+        <div className="rounded-sm bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
           <p className="text-xs text-zinc-500">회차</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {current.roundNumber ?? "—"}회차

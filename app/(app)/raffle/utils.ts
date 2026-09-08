@@ -30,3 +30,24 @@ export function raffleStatusLabel(current: {
   }
   return "참여 마감";
 }
+
+export function raffleStatusTone(current: {
+  isOpen: boolean;
+  prizeClaimed: boolean;
+  winner: string | null;
+  isFinished: boolean;
+  canRequestWinner: boolean;
+}) {
+  if (current.isOpen) {
+    return "open";
+  }
+  if (
+    current.prizeClaimed ||
+    current.winner ||
+    current.isFinished ||
+    current.canRequestWinner
+  ) {
+    return "other";
+  }
+  return "closed";
+}
