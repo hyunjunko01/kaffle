@@ -50,7 +50,8 @@ export async function GET(request: Request) {
       });
     }
 
-    const response = loginRedirect("/onboarding");
+    const nextPath = existing?.wallet ? "/" : "/onboarding";
+    const response = loginRedirect(nextPath);
     await attachSessionCookie(response, { sub: user.id, kakaoId: user.kakaoId });
     response.cookies.set(oauthStateCookie("", 0));
     const shouldKeepReferral = isNewUser || Boolean(existing && !existing.wallet);

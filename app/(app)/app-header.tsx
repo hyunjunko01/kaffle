@@ -18,7 +18,7 @@ export function AppHeader({
       <div className="mx-auto flex w-full max-w-lg items-center justify-between px-6 py-4">
         <div className="flex items-center gap-2">
           <Link
-            href="/"
+            href="/raffle"
             className="font-display text-sm font-bold tracking-[0.22em] text-foreground"
           >
             KAFFLE

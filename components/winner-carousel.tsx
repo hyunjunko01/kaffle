@@ -24,7 +24,7 @@ export function WinnerCarousel({ winners }: { winners: WinnerEntry[] }) {
 
   if (winners.length === 0) {
     return (
-      <div className="overflow-hidden rounded-[var(--kaffle-radius-lg)] border border-accent/25 bg-accent-soft px-5 py-3 text-center text-sm text-accent-ink/70">
+      <div className="overflow-hidden rounded-sm border border-accent/25 bg-accent-soft px-5 py-3 text-center text-sm text-accent-ink/70">
         아직 당첨자가 없습니다.
       </div>
     );
@@ -33,7 +33,7 @@ export function WinnerCarousel({ winners }: { winners: WinnerEntry[] }) {
   const winner = winners[index];
 
   return (
-    <div className="relative overflow-hidden rounded-[var(--kaffle-radius-lg)] border border-accent/25 bg-accent-soft px-5 py-4 text-center">
+    <div className="relative overflow-hidden rounded-sm border border-accent/25 bg-accent-soft px-5 py-4 text-center">
       <p
         key={winner.roundNumber}
         className="animate-[fadeSlide_0.4s_ease-out] font-mono text-sm text-accent-ink"
