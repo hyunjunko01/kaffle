@@ -99,13 +99,13 @@ export function FaucetPanel() {
   return (
     <section className="mt-8 space-y-4">
       {error ? (
-        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
           {error}
         </p>
       ) : null}
 
       {success ? (
-        <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
           {success}
           {txUrl ? (
             <>
@@ -122,7 +122,7 @@ export function FaucetPanel() {
         <p className="text-center text-sm text-zinc-500">온체인 미션 확인 중…</p>
       ) : view ? (
         <>
-          <div className="rounded-sm border border-zinc-200 p-5 dark:border-zinc-800">
+          <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
             <p className="text-sm text-zinc-500">내 지갑</p>
             <p className="mt-1 break-all font-mono text-xs">
               {view.wallet}
@@ -167,7 +167,7 @@ export function FaucetPanel() {
             </dl>
           </div>
 
-          <div className="rounded-sm border border-zinc-200 p-5 dark:border-zinc-800">
+          <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
             <h2 className="text-base font-semibold">첫 USDC 받기</h2>
             <p className="mt-1 text-sm leading-6 text-zinc-500">
               버튼을 누르면 플랫폼이 가스비를 내고 내 지갑으로 {view.claimAmount}{" "}
@@ -178,7 +178,7 @@ export function FaucetPanel() {
               type="button"
               onClick={() => void claim()}
               disabled={pending || !view.canClaim}
-              className="mt-6 h-11 w-full rounded-sm bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+              className="mt-6 h-11 w-full rounded-[var(--kaffle-radius-md)] bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
             >
               {pending
                 ? "처리 중…"

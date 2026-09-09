@@ -74,7 +74,7 @@ export function RaffleRoundBoard({
   participants: RoundParticipant[];
 }) {
   return (
-    <div className="rounded-sm border border-zinc-200 dark:border-zinc-800">
+    <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 dark:border-zinc-800">
       <div className="flex items-baseline justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
         <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
           이번 회차 참여자

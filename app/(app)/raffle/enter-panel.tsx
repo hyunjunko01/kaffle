@@ -66,7 +66,7 @@ export function RaffleEnterPanel() {
             />
 
             {pageError ? (
-              <p className="rounded-sm bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+              <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
                 {pageError}
               </p>
             ) : null}
@@ -102,12 +102,12 @@ export function RaffleEnterPanel() {
         ) : (
           <>
             {pageError ? (
-              <p className="rounded-sm bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+              <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
                 {pageError}
               </p>
             ) : null}
             {view && !current ? (
-              <div className="rounded-sm border border-zinc-200 p-5 text-center dark:border-zinc-800">
+              <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 text-center dark:border-zinc-800">
                 <p className="text-sm text-zinc-500">열린 라운드가 없습니다.</p>
               </div>
             ) : null}

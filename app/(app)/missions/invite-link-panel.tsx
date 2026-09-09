@@ -33,7 +33,7 @@ export function InviteLinkPanel({
 
   return (
     <div className="mt-6 space-y-3">
-      <div className="rounded-sm bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
+      <div className="rounded-[var(--kaffle-radius-md)] bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
         <p className="text-xs text-zinc-500">초대 코드</p>
         <p className="mt-1 font-mono text-sm">{referralCode}</p>
         <p className="mt-3 text-xs text-zinc-500">초대 링크</p>

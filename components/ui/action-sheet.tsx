@@ -76,7 +76,7 @@ export function ActionSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="action-sheet-title"
-        className="relative w-full max-w-lg rounded-t-2xl border border-zinc-200 bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
+        className="relative w-full max-w-lg rounded-t-[var(--kaffle-radius-md)] border border-zinc-200 bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
       >
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-zinc-200 dark:bg-zinc-700" />
         <h2 id="action-sheet-title" className="text-lg font-semibold tracking-tight">
@@ -90,14 +90,14 @@ export function ActionSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-zinc-200 text-sm font-medium transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-zinc-200 text-sm font-medium transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
               >
                 {cancelLabel}
               </button>
               <button
                 type="button"
                 onClick={onConfirm}
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
               >
                 {confirmLabel}
               </button>
@@ -130,7 +130,7 @@ export function ActionSheet({
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
             >
               {closeLabel}
             </button>
@@ -146,7 +146,7 @@ export function ActionSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-zinc-200 text-sm font-medium transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-zinc-200 text-sm font-medium transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
               >
                 {closeLabel}
               </button>
@@ -154,7 +154,7 @@ export function ActionSheet({
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex h-12 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+                  className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
                 >
                   {retryLabel}
                 </button>

@@ -27,7 +27,7 @@ export default async function LeaderboardPage() {
       </section>
 
       <section aria-labelledby="leaderboard-heading">
-        <ol className="overflow-hidden rounded-sm border border-border bg-surface text-sm">
+        <ol className="overflow-hidden rounded-[var(--kaffle-radius-md)] border border-border bg-surface text-sm">
           <li className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-3 border-b border-border px-4 py-3 text-xs text-muted">
             <span>순위</span>
             <span>사용자</span>

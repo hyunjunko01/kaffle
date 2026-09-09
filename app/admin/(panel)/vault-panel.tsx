@@ -89,13 +89,13 @@ export function VaultPanel() {
       </div>
 
       {error ? (
-        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
           {error}
         </p>
       ) : null}
 
       {txHash ? (
-        <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
           입금 완료 · {shortAddress(txHash)}
         </p>
       ) : null}
@@ -103,7 +103,7 @@ export function VaultPanel() {
       {loading && !status ? (
         <p className="text-sm text-zinc-500">Vault 읽는 중…</p>
       ) : status ? (
-        <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+        <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
               <dt className="text-zinc-500">잔액</dt>
@@ -143,14 +143,14 @@ export function VaultPanel() {
             name="amount"
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
-            className="mt-1 h-12 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
           />
         </label>
         <div className="flex gap-2">
           <button
             type="submit"
             disabled={pending || amount.trim().length === 0}
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
           >
             {pending ? "입금 중…" : "Vault에 넣기"}
           </button>
@@ -158,7 +158,7 @@ export function VaultPanel() {
             type="button"
             onClick={() => void load()}
             disabled={loading || pending}
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-zinc-200 px-4 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
+            className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-zinc-200 px-4 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
           >
             새로고침
           </button>

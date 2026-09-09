@@ -148,7 +148,7 @@ export function OnboardingClient() {
         </p>
 
         {error ? (
-          <p className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+          <p className="mt-6 rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
             {error}
           </p>
         ) : null}
@@ -161,7 +161,7 @@ export function OnboardingClient() {
             maxLength={20}
             onChange={(event) => setNickname(event.target.value)}
             disabled={!data?.user.canChangeNickname || connecting}
-            className="mt-2 h-12 w-full rounded-xl border border-zinc-200 bg-transparent px-4 outline-none focus:border-zinc-500 disabled:bg-zinc-100 dark:border-zinc-800 dark:disabled:bg-zinc-900"
+            className="mt-2 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 outline-none focus:border-zinc-500 disabled:bg-zinc-100 dark:border-zinc-800 dark:disabled:bg-zinc-900"
           />
           <span className="mt-2 block text-xs font-normal leading-5 text-zinc-500">
             기본 닉네임으로 바로 시작하거나, 지금 한 번 변경할 수 있습니다.
@@ -178,7 +178,7 @@ export function OnboardingClient() {
             readOnly={Boolean(data?.referralCode)}
             disabled={connecting}
             placeholder="초대 링크가 있다면 자동으로 적용됩니다"
-            className="mt-2 h-12 w-full rounded-xl border border-zinc-200 bg-transparent px-4 font-mono outline-none focus:border-zinc-500 read-only:bg-zinc-100 disabled:bg-zinc-100 dark:border-zinc-800 dark:read-only:bg-zinc-900 dark:disabled:bg-zinc-900"
+            className="mt-2 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 font-mono outline-none focus:border-zinc-500 read-only:bg-zinc-100 disabled:bg-zinc-100 dark:border-zinc-800 dark:read-only:bg-zinc-900 dark:disabled:bg-zinc-900"
           />
           <span className="mt-2 block text-xs font-normal leading-5 text-zinc-500">
             {data?.referralCode
@@ -190,7 +190,7 @@ export function OnboardingClient() {
         <button
           type="submit"
           disabled={connecting || nickname.trim().length === 0}
-          className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+          className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
         >
           {connecting ? "지갑을 만드는 중…" : "지갑 만들고 시작하기"}
         </button>

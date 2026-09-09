@@ -113,13 +113,13 @@ export function RafflePanel() {
       </div>
 
       {error ? (
-        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
           {error}
         </p>
       ) : null}
 
       {txHash ? (
-        <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
           라운드 생성 완료 · {shortAddress(txHash)}
         </p>
       ) : null}
@@ -127,7 +127,7 @@ export function RafflePanel() {
       {loading && !status ? (
         <p className="text-sm text-zinc-500">라운드 읽는 중…</p>
       ) : status ? (
-        <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+        <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
           <p className="text-sm text-zinc-500">
             vault 사용 가능{" "}
             <span className="font-medium text-zinc-950 dark:text-zinc-50">
@@ -193,7 +193,7 @@ export function RafflePanel() {
             name="durationSeconds"
             value={durationSeconds}
             onChange={(event) => setDurationSeconds(event.target.value)}
-            className="mt-1 h-12 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
           />
         </label>
         <label className="block text-sm text-zinc-500">
@@ -204,7 +204,7 @@ export function RafflePanel() {
             name="prizeAmount"
             value={prizeAmount}
             onChange={(event) => setPrizeAmount(event.target.value)}
-            className="mt-1 h-12 w-full rounded-xl border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
           />
         </label>
         <div className="flex gap-2">
@@ -216,7 +216,7 @@ export function RafflePanel() {
               durationSeconds.trim().length === 0 ||
               prizeAmount.trim().length === 0
             }
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
           >
             {pending
               ? "생성 중…"
@@ -228,7 +228,7 @@ export function RafflePanel() {
             type="button"
             onClick={() => void load()}
             disabled={loading || pending}
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-zinc-200 px-4 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
+            className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-zinc-200 px-4 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
           >
             새로고침
           </button>

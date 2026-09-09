@@ -6,7 +6,7 @@ type WalletBalanceCardProps = {
 
 export function WalletBalanceCard({ view }: WalletBalanceCardProps) {
   return (
-    <div className="rounded-sm border border-zinc-200 p-5 dark:border-zinc-800">
+    <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
       <dl className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <dt className="text-zinc-500">네트워크</dt>
