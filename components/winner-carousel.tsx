@@ -38,7 +38,7 @@ export function WinnerCarousel({ winners }: { winners: WinnerEntry[] }) {
         key={winner.roundNumber}
         className="animate-[fadeSlide_0.4s_ease-out] font-mono text-sm text-accent-ink"
       >
-        {winner.roundNumber}회차 래플{" "}
+        {winner.roundNumber}회차 Kaffle{" "}
         <span className="font-semibold text-foreground">{winner.winnerLabel}</span>
         {" "}
         {winner.prizeAmount} {winner.symbol} 당첨을 축하드립니다

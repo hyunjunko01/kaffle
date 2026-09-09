@@ -9,23 +9,24 @@ export default async function LeaderboardPage() {
   ]);
 
   return (
-    <main className="space-y-10">
+    <main className="space-y-8">
+      <header className="text-center">
+        <h2
+          id="leaderboard-heading"
+          className="text-3xl font-semibold tracking-tight text-foreground"
+        >
+          누적 상금 리더보드
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          Kaffle에서 받은 누적 상금이에요.
+        </p>
+      </header>
+
       <section aria-label="최근 당첨자">
         <WinnerCarousel winners={recentWinners} />
       </section>
 
       <section aria-labelledby="leaderboard-heading">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div>
-            <h2
-              id="leaderboard-heading"
-              className="text-base font-semibold text-foreground"
-            >
-              누적 상금 리더보드
-            </h2>
-            <p className="mt-1 text-xs text-muted">래플에서 받은 누적 상금이에요.</p>
-          </div>
-        </div>
         <ol className="overflow-hidden rounded-sm border border-border bg-surface text-sm">
           <li className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-3 border-b border-border px-4 py-3 text-xs text-muted">
             <span>순위</span>
