@@ -1,4 +1,4 @@
-import { BackLink } from "../../back-link";
+import { BackLink } from "@/components/back-link";
 import { WalletPanel } from "./wallet-panel";
 
 export default function WalletPage() {

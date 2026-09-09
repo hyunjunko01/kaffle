@@ -1,10 +1,10 @@
+import { BackLink } from "@/components/back-link";
 import { FaucetPanel } from "../../faucet/faucet-panel";
-import { MissionBackLink } from "../mission-back-link";
 
 export default function OnchainMissionPage() {
   return (
     <main>
-      <MissionBackLink />
+      <BackLink href="/missions" label="미션 목록으로 돌아가기" />
       <header className="text-center">
         <h1 className="text-3xl font-semibold tracking-tight">온체인 미션</h1>
         <p className="mt-3 text-sm leading-6 text-muted">

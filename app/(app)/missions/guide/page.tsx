@@ -1,6 +1,6 @@
 import { getCurrentUser } from "@/lib/auth/user";
 import { hasKaffleGuideCompleted, KAFFLE_GUIDE_TICKETS } from "@/lib/missions";
-import { MissionBackLink } from "../mission-back-link";
+import { BackLink } from "@/components/back-link";
 import { GuideClaimButton } from "./guide-claim-button";
 
 export default async function KaffleGuideMissionPage() {
@@ -13,7 +13,7 @@ export default async function KaffleGuideMissionPage() {
 
   return (
     <main>
-      <MissionBackLink />
+      <BackLink href="/missions" label="미션 목록으로 돌아가기" />
       <header className="text-center">
         <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
           Kaffle 가이드

@@ -5,8 +5,8 @@ import {
   REFERRAL_TICKETS,
   countSuccessfulReferrals,
 } from "@/lib/referrals";
+import { BackLink } from "@/components/back-link";
 import { InviteLinkPanel } from "../invite-link-panel";
-import { MissionBackLink } from "../mission-back-link";
 
 export default async function InviteMissionPage() {
   const user = await getCurrentUser();
@@ -19,7 +19,7 @@ export default async function InviteMissionPage() {
 
   return (
     <main>
-      <MissionBackLink />
+      <BackLink href="/missions" label="미션 목록으로 돌아가기" />
       <header className="text-center">
         <h1 className="text-3xl font-semibold tracking-tight">
           친구 초대 미션
