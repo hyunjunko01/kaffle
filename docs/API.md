@@ -1,115 +1,107 @@
 # API
 
-v0 / v1 backend surface. These endpoints cover Kakao login → tickets → raffle.
+v0 backend surface as implemented under `app/api` and `app/auth`. Session cookies authenticate users unless noted.
 
-Auth endpoints return a session. The rest assume the caller is signed in, except Kakao login and the internal close job.
+Friend invite is mostly cookie + onboarding based. `GET /api/referrals` exposes the user’s code and link; grants happen when an invitee completes first signup/onboarding with a referral.
 
-Friend invite is not a separate endpoint. If a referral code is sent on first Kakao login, the inviter gets tickets.
+## Auth and session
 
-## Auth
+### `GET /auth/kakao`
 
-### `POST /auth/kakao`
+Start Kakao OAuth. Optional `?ref=` stores a referral cookie for first-time signup.
 
-Sign in with Kakao. On first login, create an account and map a wallet.
+### `GET /auth/kakao/callback`
 
-Request:
+OAuth callback. Creates or resumes the session.
 
-```json
-{
-  "kakaoToken": "string",
-  "referralCode": "string | null"
-}
-```
+### `POST /api/auth/logout`
 
-`referralCode` is optional. It is applied only on first login.
+End the user session.
 
-### `GET /me`
+### `POST /api/auth/web3auth-token`
+
+Issue a short-lived JWT the client uses with Web3Auth (embedded wallet).
+
+### `GET /api/me`
 
 Return the current user, mapped wallet, and ticket balance.
 
-### `POST /auth/logout`
+### `POST /api/me/profile`
 
-End the session.
+Update profile fields allowed after signup (for example nickname rules).
+
+### `GET` / `POST /api/me/wallet`
+
+Read or attach the mapped wallet address for the current user.
+
+### `GET` / `POST /api/onboarding`
+
+First-run nickname / wallet / referral completion after Kakao login.
 
 ## Missions and tickets
 
-### `GET /missions`
+### `GET /api/missions`
 
-List v0 / v1 missions and whether the current user has completed each one.
+List v0 missions and completion status for the current user.
 
-Missions in this version:
+Missions in v0:
 
-- attendance
-- one on-chain activity
-- SNS promotion
-- referral / friend invite (status only; grant happens on the invitee’s first login)
+- `kaffle-guide` — one-time product guide claim (`POST /api/missions/guide`)
+- `attendance` — once per Seoul calendar day (`POST /api/missions/attendance`)
+- `referral` — friend invite (status / counts; grants on successful invitee signup)
+- `on-chain` — faucet claim mission (credited after faucet success)
 
-### `POST /missions/attendance`
+### `POST /api/missions/attendance`
 
 Check in and grant attendance tickets.
 
-### `POST /missions/on-chain`
+### `POST /api/missions/guide`
 
-Verify the one on-chain activity on the mapped wallet, then grant tickets.
+Claim the one-time Kaffle guide tickets.
 
-### `POST /missions/sns`
+### `POST /api/faucet`
 
-Submit SNS promotion proof for verification, then grant tickets.
+Claim testnet tokens to the mapped wallet (on-chain mission path).
 
-Request:
+### `GET` / `POST /api/referrals`
 
-```json
-{
-  "url": "string"
-}
-```
+- `GET` — referral code, invite link, invite count / cap
+- `POST` — apply a referral code after login if it was not bound on first create
 
-### `GET /referrals/me`
+## Wallet helpers
 
-Return the current user’s referral code and invite link.
+### `GET /api/wallet`
 
-### `POST /referrals`
+Wallet balances / view data for the profile wallet UI.
 
-Apply a referral code after login, if it was not sent on first Kakao login.
+### `POST /api/wallet/transfer`
 
-Request:
-
-```json
-{
-  "referralCode": "string"
-}
-```
+Transfer from the mapped wallet (user-initiated flow).
 
 ## Raffle
 
-### `GET /raffles/current`
+### `GET /api/raffle`
 
-Return the open round: status, close time, and how many times the current user has entered.
+Current round status, ticket balance, user entry tickets, participants, and related UI fields.
 
-### `POST /raffles/current/entries`
+### `POST /api/raffle/enter`
 
-Spend tickets to enter the current round. The same user may call this more than once.
+Spend tickets to enter the current round (platform signature + relayer). The same user may enter more than once.
 
-Request:
+### `POST /api/raffle/request-winner`
 
-```json
-{
-  "ticketCount": 1
-}
-```
+After the window ends, request Chainlink VRF settlement when the round has entries.
 
-### `GET /raffles`
+### `POST /api/raffle/claim`
 
-List past rounds.
+Winner (or relayer on their behalf) claims the prize from the vault.
 
-### `GET /raffles/:id`
+## Admin
 
-Return one round, including the result after it has closed.
+Admin routes use a separate admin session (`/admin/login`).
 
-## Internal
+- `POST /api/admin/login` / `POST /api/admin/logout`
+- `POST /api/admin/raffle` — create a round (`durationSeconds`, `prizeAmount`)
+- `POST /api/admin/vault` — vault funding / admin vault actions
 
-Not for the client. Called by a scheduler.
-
-### `POST /internal/raffles/close`
-
-Close the current round when its 3-day window has ended, then settle it.
+There is no `/internal/raffles/close` job. Entry closes on-chain at `endTime`; the admin creates the next round when the current one is finished.

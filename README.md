@@ -15,9 +15,9 @@ Kakao login → account + mapped wallet
 ```
 
 1. Sign in with Kakao. On first login, the app creates an account and maps a Web3Auth wallet 1:1.
-2. Complete missions (attendance, on-chain activity, friend invite, SNS) to earn tickets.
-3. Spend tickets to enter the current raffle round. One round at a time, open for 3 days, no participant cap.
-4. After the window ends, anyone can request a winner. Chainlink VRF picks one. The winner claims the prize from the vault.
+2. Complete v0 missions (Kaffle guide, attendance, friend invite, on-chain faucet) to earn tickets.
+3. Spend tickets to enter the current raffle round. One round at a time, no participant cap. Round duration is set when the admin creates the round (product target: about 3 days).
+4. After the window ends, anyone can request a winner. Chainlink VRF picks one. The winner claims the prize from the vault. The admin creates the next round when the current one is finished.
 
 The platform signs ticket spends. A relayer submits the `enter` transaction. The server stores the wallet address only — never the private key.
 
@@ -36,7 +36,7 @@ The platform signs ticket spends. A relayer submits the `enter` transaction. The
 
 ```
 app/          Next.js App Router (pages, API routes)
-components/   UI
+components/   Shared UI
 lib/          Auth, raffle, missions, chain helpers
 prisma/       Schema and migrations
 contracts/    Factory, raffle clone, vault, faucet

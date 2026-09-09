@@ -5,7 +5,7 @@ v0 and v1 share the same product. The difference is where it runs.
 - **v0** — testnet only. A beta to confirm the minimum flow works.
 - **v1** — the same flow in production.
 
-Later versions can add missions. NFT minting and extra missions are out of scope for v0 and v1.
+NFT minting and extra social missions (for example SNS promotion) are out of scope for v0 and v1.
 
 ## Shared scope (v0 / v1)
 
@@ -20,31 +20,34 @@ Later versions can add missions. NFT minting and extra missions are out of scope
 
 - one round at a time
 - no participant cap
-- one round every 3 days
-- closes automatically when the window ends
+- duration set when the admin creates the round (target window: about 3 days)
+- entry closes automatically when `endTime` is reached
+- next round is created by the admin after the current round is finished
 - the same user can enter more than once
 
 ### Ticket missions
 
-In scope:
+In scope for v0 / v1:
 
-- attendance
-- one on-chain activity
-- friend invite and SNS promotion, or a referral code
+- Kaffle guide (one-time product walkthrough)
+- attendance (once per Seoul calendar day)
+- friend invite / referral code
+- one on-chain activity (testnet faucet claim)
 
 Out of scope:
 
 - NFT minting
-- additional missions
+- SNS promotion missions
+- additional missions beyond the list above
 
 ## v0 — Testnet beta
 
-Deploy only to testnet. Goal: prove the loop end to end.
+Deploy only to testnet (Base Sepolia). Goal: prove the loop end to end.
 
 1. Kakao login creates an account and a mapped wallet.
 2. A user can complete the v0 missions and receive tickets.
 3. A user can spend tickets to enter the open raffle.
-4. After 3 days, the round closes on its own.
+4. When the round window ends, entries stop. Anyone can request a winner if there are entries. The winner claims from the vault. The admin starts the next round.
 
 If this loop is stable, v1 can reuse the same features on production.
 
@@ -58,4 +61,4 @@ Not planned yet:
 
 - NFT minting
 - more on-chain missions
-- extra social missions
+- SNS / extra social missions

@@ -1,26 +1,23 @@
 # Database
 
-v0 / v1 entity map. This is not a full schema. Column types and indexes can wait until implementation.
-
-Entities come from the product loop: login → wallet → mission → ticket → raffle.
+v0 entity map aligned with `prisma/schema.prisma`. Mission definitions stay in code (`lib/missions.ts`). Raffle participation lives primarily on-chain; Postgres keeps identity, tickets, mission completions, and UI snapshots.
 
 ```
 User 1 ── 1 Wallet
 User 1 ── n MissionCompletion
 User 1 ── n TicketLedger
-User 1 ── n RaffleEntry
-RaffleRound 1 ── n RaffleEntry
+User 1 ── 0..n referrals (via referredByUserId)
+RaffleSnapshot 1 ── n PrizeClaim
 ```
 
-Referral does not need its own table. Store `referredByUserId` on `User`. Invite rewards go into `TicketLedger` as a referral grant.
-
-Mission definitions stay in code for v0 / v1. Only completions are stored.
+Referral does not need its own table. Store `referredByUserId` on `User`. Invite rewards go into `TicketLedger` (and matching `MissionCompletion` rows).
 
 ## User
 
 The Kakao identity. Created on first login.
 
 - Kakao id
+- nickname (+ nickname change flags used by onboarding / profile)
 - referral code (this user’s own code)
 - referred by user id (nullable, set once)
 - created at
@@ -38,48 +35,57 @@ The private key is not stored. Web3Auth holds key shares; we persist the address
 
 Every ticket grant and spend. Balance is the sum of these rows, not a separate number on `User`.
 
-Reasons:
+Common reasons in v0:
 
-- attendance (`+n`)
-- on-chain mission (`+n`)
-- SNS promotion (`+n`)
-- referral (`+n`)
-- raffle entry (`-n`)
+- `kaffle-guide` (`+n`)
+- `attendance` (`+n`)
+- `on-chain` (`+n`)
+- `referral` / `referral_join` (`+n`)
+- `raffle_entry` (`-n`)
+- `raffle_entry_refund` (`+n`, if an enter fails after debit)
 
 Each row: user id, amount, reason, related id, created at.
 
 ## MissionCompletion
 
-Whether this user finished a mission.
+Whether this user finished a mission (or a referral success event).
 
 - user id
-- mission (`attendance` | `on-chain` | `sns`)
-- status (`pending` | `granted`)
-- extra data (attendance date, tx proof, SNS url)
+- mission (`kaffle-guide` | `attendance` | `on-chain` | `referral` | `referral_join` | …)
+- status (`granted`, …)
+- extra (for example Seoul date key for attendance; empty string when unused)
 - created at
 
-Rules for this version:
+Unique on `(userId, mission, extra)`.
 
-- attendance: once per day
-- on-chain: once per user
-- sns: submit a url, then grant after verification
+Rules for v0:
 
-## RaffleRound
+- `kaffle-guide`: once per user
+- `attendance`: once per Seoul calendar day (`extra` = date key)
+- `on-chain`: once per user after faucet claim
+- `referral`: inviter success rows (capped); invitee join recorded separately
 
-One open round at a time.
+There is no SNS mission table or status in v0.
 
-- status (`open` | `closed`)
-- starts at
-- ends at (3-day window)
-- closed at (nullable)
+## RaffleSnapshot
 
-Round lifecycle is time-based. There is no participant cap.
+Off-chain cache for round UI / history. Not the source of truth for entries.
 
-## RaffleEntry
+- raffle address (unique)
+- round number
+- winner address (nullable)
+- prize amount / symbol / decimals
+- prize claimed flag
+- timestamps
 
-One spend of tickets to enter a round. The same user can have many rows in the same round.
+## PrizeClaim
 
-- round id
-- user id
-- ticket count
-- created at
+Recorded claim txs for winners.
+
+- raffle address
+- winner address
+- amount
+- tx hash
+- claimed at
+
+Entries themselves are stored on the raffle clone on-chain, not as `RaffleEntry` rows in Postgres.
