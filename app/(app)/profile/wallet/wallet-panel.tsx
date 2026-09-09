@@ -10,13 +10,15 @@ export function WalletPanel() {
   return (
     <section className="mt-8 space-y-4">
       {pageError ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
           {pageError}
         </p>
       ) : null}
 
       {loading && !view ? (
-        <p className="text-center text-sm text-zinc-500">지갑 정보를 불러오는 중…</p>
+        <p className="text-center text-sm text-muted">
+          지갑 정보를 불러오는 중…
+        </p>
       ) : view ? (
         <>
           <WalletBalanceCard view={view} />

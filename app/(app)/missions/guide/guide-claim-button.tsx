@@ -30,17 +30,11 @@ export function GuideClaimButton({ disabled }: { disabled: boolean }) {
         type="button"
         onClick={() => void claim()}
         disabled={disabled || pending}
-        className="h-11 w-full rounded-[var(--kaffle-radius-md)] bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+        className="h-11 w-full rounded-[var(--kaffle-radius-md)] bg-foreground px-4 text-sm font-medium text-ink-inverse transition hover:opacity-90 disabled:opacity-60 "
       >
-        {disabled
-          ? "티켓 받기 완료"
-          : pending
-            ? "받는 중…"
-            : "티켓 받기"}
+        {disabled ? "티켓 받기 완료" : pending ? "받는 중…" : "티켓 받기"}
       </button>
-      {error ? (
-        <p className="mt-3 text-sm text-red-700 dark:text-red-300">{error}</p>
-      ) : null}
+      {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
     </div>
   );
 }

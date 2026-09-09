@@ -8,9 +8,9 @@ import {
 } from "./utils";
 
 const statusToneClass = {
-  open: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
-  closed: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
-  other: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
+  open: "bg-accent-soft text-accent-ink",
+  closed: "bg-danger-soft text-danger",
+  other: "bg-accent-soft text-accent-ink",
 } as const;
 
 type RaffleRoundHeaderProps = {
@@ -29,7 +29,7 @@ export function RaffleRoundHeader({
   return (
     <div className="text-center">
       <div className="flex items-center justify-center gap-2">
-        <h2 className="text-base font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+        <h2 className="text-base font-semibold tracking-tight text-foreground">
           {current.roundNumber ?? "—"}회차
         </h2>
         <span
@@ -39,20 +39,20 @@ export function RaffleRoundHeader({
         </span>
       </div>
 
-      <p className="mt-4 text-sm text-zinc-500">상금</p>
-      <p className="mt-1 font-display text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl dark:text-zinc-50">
+      <p className="mt-4 text-sm text-muted">상금</p>
+      <p className="mt-1 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         {current.prizeAmount}{" "}
         <span className="text-xl font-semibold sm:text-2xl">{view.symbol}</span>
       </p>
 
-      <p className="mt-3 text-sm text-zinc-500">
+      <p className="mt-3 text-sm text-muted">
         마감 {formatLocal(current.endTime)}
       </p>
 
       {current.winner ? (
-        <p className="mt-3 text-sm text-zinc-500">
+        <p className="mt-3 text-sm text-muted">
           당첨자{" "}
-          <span className="font-mono font-medium text-zinc-950 dark:text-zinc-50">
+          <span className="font-mono font-medium text-foreground">
             {shortAddress(current.winner)}
             {isWinner ? " · 나" : null}
           </span>
@@ -74,32 +74,32 @@ export function RaffleRoundBoard({
   participants: RoundParticipant[];
 }) {
   return (
-    <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 dark:border-zinc-800">
-      <div className="flex items-baseline justify-between gap-3 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">
+    <div className="rounded-[var(--kaffle-radius-md)] border border-border">
+      <div className="flex items-baseline justify-between gap-3 border-b border-border px-4 py-3">
+        <h3 className="text-sm font-semibold text-foreground">
           이번 회차 참여자
         </h3>
-        <p className="font-mono text-xs text-zinc-500">
+        <p className="font-mono text-xs text-muted">
           전체 {current.totalTickets}장 · {participants.length}명
         </p>
       </div>
       {participants.length > 0 ? (
-        <ol className="divide-y divide-zinc-200 text-sm dark:divide-zinc-800">
+        <ol className="divide-y divide-border text-sm">
           {participants.map((entry, index) => (
             <li
               key={entry.userId}
               className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-baseline gap-3 px-4 py-3"
             >
-              <span className="font-mono text-zinc-500">{index + 1}</span>
+              <span className="font-mono text-muted">{index + 1}</span>
               <span className="truncate font-medium">{entry.nickname}</span>
-              <span className="font-mono tabular-nums text-zinc-500">
+              <span className="font-mono tabular-nums text-muted">
                 {entry.ticketCount}장
               </span>
             </li>
           ))}
         </ol>
       ) : (
-        <p className="px-4 py-5 text-center text-sm text-zinc-500">
+        <p className="px-4 py-5 text-center text-sm text-muted">
           아직 참여자가 없습니다.
         </p>
       )}

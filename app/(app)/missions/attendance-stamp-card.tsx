@@ -33,7 +33,7 @@ export function AttendanceStampCard({
 
   return (
     <section className="mt-8 flex flex-col items-center">
-      <p className="font-mono text-base font-medium tabular-nums text-zinc-950 dark:text-zinc-50">
+      <p className="font-mono text-base font-medium tabular-nums text-foreground">
         {dateLabel}
       </p>
       <button
@@ -50,7 +50,7 @@ export function AttendanceStampCard({
         className={`mt-4 flex aspect-square w-40 items-center justify-center rounded-[var(--kaffle-radius-md)] border-2 border-dashed transition disabled:cursor-default ${
           stamped
             ? "border-accent/50 bg-accent-soft"
-            : "border-zinc-200 bg-zinc-50 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500"
+            : "border-border bg-surface hover:border-border-strong"
         } ${pending ? "opacity-60" : ""}`}
       >
         {stamped ? (
@@ -61,12 +61,10 @@ export function AttendanceStampCard({
             출석 완료
           </span>
         ) : pending ? (
-          <span className="text-sm text-zinc-500">출석 중…</span>
+          <span className="text-sm text-muted">출석 중…</span>
         ) : null}
       </button>
-      {error ? (
-        <p className="mt-3 text-sm text-red-700 dark:text-red-300">{error}</p>
-      ) : null}
+      {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
     </section>
   );
 }

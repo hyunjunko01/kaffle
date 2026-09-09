@@ -106,69 +106,73 @@ export function RafflePanel() {
     <section className="mt-10 space-y-4">
       <div>
         <h2 className="text-lg font-semibold tracking-tight">라운드</h2>
-        <p className="mt-1 text-sm leading-6 text-zinc-500">
+        <p className="mt-1 text-sm leading-6 text-muted">
           Factory owner 키로 createRaffle을 보냅니다. vault 사용 가능 잔액이
           상금 이상이어야 합니다.
         </p>
       </div>
 
       {error ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
           {error}
         </p>
       ) : null}
 
       {txHash ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
           라운드 생성 완료 · {shortAddress(txHash)}
         </p>
       ) : null}
 
       {loading && !status ? (
-        <p className="text-sm text-zinc-500">라운드 읽는 중…</p>
+        <p className="text-sm text-muted">라운드 읽는 중…</p>
       ) : status ? (
-        <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
-          <p className="text-sm text-zinc-500">
+        <div className="rounded-[var(--kaffle-radius-md)] border border-border p-5">
+          <p className="text-sm text-muted">
             vault 사용 가능{" "}
-            <span className="font-medium text-zinc-950 dark:text-zinc-50">
+            <span className="font-medium text-foreground">
               {status.unallocated} {status.symbol}
             </span>
           </p>
           {status.current ? (
             <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <div className="col-span-2">
-                <dt className="text-zinc-500">현재 라운드</dt>
+                <dt className="text-muted">현재 라운드</dt>
                 <dd className="mt-1 font-mono text-xs">
                   {shortAddress(status.current.address)}
                 </dd>
               </div>
               <div>
-              <dt className="text-zinc-500">상태</dt>
-              <dd className="mt-1 font-medium">
-                {status.current.isFinished
-                  ? "종료"
-                  : status.current.isOpen
-                    ? "진행 중"
-                    : "참여 마감"}
-              </dd>
-            </div>
+                <dt className="text-muted">상태</dt>
+                <dd className="mt-1 font-medium">
+                  {status.current.isFinished
+                    ? "종료"
+                    : status.current.isOpen
+                      ? "진행 중"
+                      : "참여 마감"}
+                </dd>
+              </div>
               <div>
-                <dt className="text-zinc-500">상금</dt>
+                <dt className="text-muted">상금</dt>
                 <dd className="mt-1 font-medium">
                   {status.current.prizeAmount} {status.symbol}
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">시작</dt>
-                <dd className="mt-1 text-xs">{formatLocal(status.current.startTime)}</dd>
+                <dt className="text-muted">시작</dt>
+                <dd className="mt-1 text-xs">
+                  {formatLocal(status.current.startTime)}
+                </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">종료</dt>
-                <dd className="mt-1 text-xs">{formatLocal(status.current.endTime)}</dd>
+                <dt className="text-muted">종료</dt>
+                <dd className="mt-1 text-xs">
+                  {formatLocal(status.current.endTime)}
+                </dd>
               </div>
               {status.current.winner ? (
                 <div className="col-span-2">
-                  <dt className="text-zinc-500">당첨자</dt>
+                  <dt className="text-muted">당첨자</dt>
                   <dd className="mt-1 font-mono text-xs">
                     {shortAddress(status.current.winner)}
                   </dd>
@@ -176,16 +180,16 @@ export function RafflePanel() {
               ) : null}
             </dl>
           ) : (
-            <p className="mt-4 text-sm text-zinc-500">열린 라운드가 없습니다.</p>
+            <p className="mt-4 text-sm text-muted">열린 라운드가 없습니다.</p>
           )}
-          <p className="mt-4 font-mono text-xs text-zinc-500">
+          <p className="mt-4 font-mono text-xs text-muted">
             factory {shortAddress(status.factory)}
           </p>
         </div>
       ) : null}
 
       <form onSubmit={(event) => void create(event)} className="space-y-3">
-        <label className="block text-sm text-zinc-500">
+        <label className="block text-sm text-muted">
           기간 (초) · 3일 = 259200
           <input
             type="text"
@@ -193,10 +197,10 @@ export function RafflePanel() {
             name="durationSeconds"
             value={durationSeconds}
             onChange={(event) => setDurationSeconds(event.target.value)}
-            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </label>
-        <label className="block text-sm text-zinc-500">
+        <label className="block text-sm text-muted">
           상금 금액
           <input
             type="text"
@@ -204,7 +208,7 @@ export function RafflePanel() {
             name="prizeAmount"
             value={prizeAmount}
             onChange={(event) => setPrizeAmount(event.target.value)}
-            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </label>
         <div className="flex gap-2">
@@ -216,7 +220,7 @@ export function RafflePanel() {
               durationSeconds.trim().length === 0 ||
               prizeAmount.trim().length === 0
             }
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {pending
               ? "생성 중…"
@@ -228,7 +232,7 @@ export function RafflePanel() {
             type="button"
             onClick={() => void load()}
             disabled={loading || pending}
-            className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-zinc-200 px-4 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
+            className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-border px-4 text-sm font-medium transition hover:bg-surface disabled:opacity-60"
           >
             새로고침
           </button>

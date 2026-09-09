@@ -77,7 +77,8 @@ export function ProfileForm({
       router.refresh();
     } catch (caught) {
       setError(
-        caught instanceof Error && caught.message === "nickname change exhausted"
+        caught instanceof Error &&
+          caught.message === "nickname change exhausted"
           ? "닉네임은 한 번만 변경할 수 있습니다."
           : "닉네임을 변경하지 못했습니다.",
       );
@@ -89,7 +90,9 @@ export function ProfileForm({
   return (
     <>
       <header className="flex items-center gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">{initialNickname}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {initialNickname}
+        </h1>
         <button
           type="button"
           onClick={openEditor}
@@ -101,7 +104,7 @@ export function ProfileForm({
       </header>
 
       {message && !open ? (
-        <p className="mt-4 rounded-[var(--kaffle-radius-md)] bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <p className="mt-4 rounded-[var(--kaffle-radius-md)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
           {message}
         </p>
       ) : null}
@@ -111,14 +114,14 @@ export function ProfileForm({
           <button
             type="button"
             aria-label="닫기"
-            className="absolute inset-0 bg-zinc-950/40"
+            className="absolute inset-0 bg-foreground/40"
             onClick={closeEditor}
           />
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby={dialogTitleId}
-            className="relative z-10 w-full max-w-[20rem] rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-white p-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
+            className="relative z-10 w-full max-w-[20rem] rounded-[var(--kaffle-radius-md)] border border-border bg-surface-elevated p-4 shadow-xl"
           >
             <div className="flex items-center justify-between gap-2">
               <h2 id={dialogTitleId} className="text-base font-semibold">
@@ -135,9 +138,12 @@ export function ProfileForm({
               </button>
             </div>
 
-            <form onSubmit={(event) => void save(event)} className="mt-3 space-y-2.5">
+            <form
+              onSubmit={(event) => void save(event)}
+              className="mt-3 space-y-2.5"
+            >
               {error ? (
-                <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-3 py-2 text-xs text-danger">
                   {error}
                 </p>
               ) : null}
@@ -150,19 +156,19 @@ export function ProfileForm({
                   aria-label="닉네임"
                   onChange={(event) => setNickname(event.target.value)}
                   disabled={!canChangeNickname || saving}
-                  className="h-10 min-w-0 flex-1 rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-3 text-sm outline-none focus:border-zinc-500 disabled:bg-zinc-100 dark:border-zinc-800 dark:disabled:bg-zinc-900"
+                  className="h-10 min-w-0 flex-1 rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-3 text-sm outline-none focus:border-border-strong disabled:bg-surface"
                 />
                 {canChangeNickname ? (
                   <button
                     type="submit"
                     disabled={saving || nickname.trim() === initialNickname}
-                    className="inline-flex h-10 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 px-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+                    className="inline-flex h-10 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground px-3 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
                   >
                     {saving ? "저장 중…" : "변경"}
                   </button>
                 ) : null}
               </div>
-              <p className="text-xs leading-5 text-zinc-500">
+              <p className="text-xs leading-5 text-muted">
                 {canChangeNickname
                   ? "가입 후 닉네임을 한 번 변경할 수 있습니다."
                   : "닉네임 변경 기회를 모두 사용했습니다."}

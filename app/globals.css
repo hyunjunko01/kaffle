@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark: follows html.dark from theme toggle / boot script */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
   Light Stage — Kaffle v0 visual tone
   Soft cool neutrals by day/night, single amber accent.
@@ -48,7 +51,7 @@
   }
 }
 
-/* Manual overrides for a future theme toggle */
+/* Manual overrides from theme toggle / boot script */
 html.light {
   color-scheme: light;
 

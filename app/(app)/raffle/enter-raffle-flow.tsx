@@ -2,7 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ActionSheet, type ActionSheetStep } from "@/components/ui/action-sheet";
+import {
+  ActionSheet,
+  type ActionSheetStep,
+} from "@/components/ui/action-sheet";
 import type { CurrentRaffle, RaffleView } from "./types";
 import { toView } from "./types";
 
@@ -158,14 +161,14 @@ export function EnterRaffleFlow({
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <p className="text-center text-sm text-zinc-500">
+        <p className="text-center text-sm text-muted">
           참여{" "}
-          <span className="font-mono font-medium tabular-nums text-zinc-950 dark:text-zinc-50">
+          <span className="font-mono font-medium tabular-nums text-foreground">
             {current.userTickets}장
           </span>
           {" / "}
           보유{" "}
-          <span className="font-mono font-medium tabular-nums text-zinc-950 dark:text-zinc-50">
+          <span className="font-mono font-medium tabular-nums text-foreground">
             {view.ticketBalance}장
           </span>
         </p>
@@ -173,7 +176,7 @@ export function EnterRaffleFlow({
         <div className="flex h-11 items-stretch justify-center gap-2">
           <label className="relative block w-44 shrink-0">
             <span className="sr-only">사용할 티켓 수</span>
-            <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-xs text-zinc-500">
+            <span className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-xs text-muted">
               최대 {view.maxTicketsPerEnter}
             </span>
             <input
@@ -186,13 +189,13 @@ export function EnterRaffleFlow({
               onChange={(event) => setTicketCount(event.target.value)}
               disabled={enterBusy}
               placeholder="0"
-              className="ticket-count-input box-border h-full w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent py-0 pl-[3.75rem] pr-2 text-right text-sm leading-none tabular-nums text-zinc-950 outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800 dark:text-zinc-50"
+              className="ticket-count-input box-border h-full w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent py-0 pl-[3.75rem] pr-2 text-right text-sm leading-none tabular-nums text-foreground outline-none focus:border-border-strong disabled:opacity-60"
             />
           </label>
           <button
             type="submit"
             disabled={disabled || !canEnter || ticketCount.trim().length === 0}
-            className="inline-flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-[var(--kaffle-radius-md)] bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-[var(--kaffle-radius-md)] bg-foreground px-5 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {canEnter ? "티켓 사용" : "참여 불가"}
           </button>
@@ -226,8 +229,8 @@ export function EnterRaffleFlow({
       >
         {Number.isInteger(parsedTicketCount) ? (
           <>
-            <div className="rounded-[var(--kaffle-radius-md)] bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
-              <p className="text-xs text-zinc-500">사용할 티켓</p>
+            <div className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-5 text-center">
+              <p className="text-xs text-muted">사용할 티켓</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">
                 {parsedTicketCount}장
               </p>
@@ -235,29 +238,30 @@ export function EnterRaffleFlow({
             <dl className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <dt className="text-zinc-500">보유 티켓</dt>
+                  <dt className="text-muted">보유 티켓</dt>
                   <dd className="mt-1 font-medium">{view.ticketBalance}장</dd>
                 </div>
                 <div>
-                  <dt className="text-zinc-500">참여 후 잔여</dt>
+                  <dt className="text-muted">참여 후 잔여</dt>
                   <dd className="mt-1 font-medium">
                     {Math.max(view.ticketBalance - parsedTicketCount, 0)}장
                   </dd>
                 </div>
               </div>
               <div>
-                <dt className="text-zinc-500">상금</dt>
+                <dt className="text-muted">상금</dt>
                 <dd className="mt-1 font-medium">
                   {current.prizeAmount} {view.symbol}
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">이번 회차 내 참여</dt>
+                <dt className="text-muted">이번 회차 내 참여</dt>
                 <dd className="mt-1 font-medium">{current.userTickets}장</dd>
               </div>
             </dl>
-            <p className="text-xs leading-5 text-zinc-500">
-              참여에 사용한 티켓은 취소할 수 없습니다. 티켓 수가 맞는지 확인해 주세요.
+            <p className="text-xs leading-5 text-muted">
+              참여에 사용한 티켓은 취소할 수 없습니다. 티켓 수가 맞는지 확인해
+              주세요.
             </p>
           </>
         ) : null}

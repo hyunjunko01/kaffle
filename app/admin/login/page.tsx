@@ -37,20 +37,25 @@ export default function AdminLoginPage() {
   return (
     <main className="flex min-h-full flex-1 flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm text-center">
-        <p className="text-sm font-medium tracking-[0.2em] text-zinc-500">KAFFLE</p>
+        <p className="text-sm font-medium tracking-[0.2em] text-muted">
+          KAFFLE
+        </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">관리자</h1>
-        <p className="mt-3 text-sm leading-6 text-zinc-500">
+        <p className="mt-3 text-sm leading-6 text-muted">
           라운드를 여는 관리자만 들어올 수 있습니다.
         </p>
 
         {error ? (
-          <p className="mt-6 rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+          <p className="mt-6 rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
             {error}
           </p>
         ) : null}
 
-        <form onSubmit={(event) => void login(event)} className="mt-8 space-y-3 text-left">
-          <label className="block text-sm text-zinc-500">
+        <form
+          onSubmit={(event) => void login(event)}
+          className="mt-8 space-y-3 text-left"
+        >
+          <label className="block text-sm text-muted">
             비밀번호
             <input
               type="password"
@@ -58,13 +63,13 @@ export default function AdminLoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+              className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
             />
           </label>
           <button
             type="submit"
             disabled={pending || password.length === 0}
-            className="inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {pending ? "확인 중…" : "관리자 로그인"}
           </button>

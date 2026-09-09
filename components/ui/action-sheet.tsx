@@ -29,7 +29,7 @@ function Spinner() {
   return (
     <div
       aria-hidden="true"
-      className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-950 dark:border-zinc-700 dark:border-t-zinc-50"
+      className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-border border-t-foreground"
     />
   );
 }
@@ -76,10 +76,13 @@ export function ActionSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="action-sheet-title"
-        className="relative w-full max-w-lg rounded-t-[var(--kaffle-radius-md)] border border-zinc-200 bg-white px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
+        className="relative w-full max-w-lg rounded-t-[var(--kaffle-radius-md)] border border-border bg-surface-elevated px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 shadow-xl"
       >
-        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-        <h2 id="action-sheet-title" className="text-lg font-semibold tracking-tight">
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border-strong" />
+        <h2
+          id="action-sheet-title"
+          className="text-lg font-semibold tracking-tight"
+        >
           {title}
         </h2>
 
@@ -90,14 +93,14 @@ export function ActionSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-zinc-200 text-sm font-medium transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-border text-sm font-medium transition hover:bg-surface"
               >
                 {cancelLabel}
               </button>
               <button
                 type="button"
                 onClick={onConfirm}
-                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
               >
                 {confirmLabel}
               </button>
@@ -108,13 +111,13 @@ export function ActionSheet({
         {step === "loading" ? (
           <div className="mt-8 flex flex-col items-center gap-4 pb-4 text-center">
             <Spinner />
-            <p className="text-sm text-zinc-600 dark:text-zinc-300">{loadingMessage}</p>
+            <p className="text-sm text-muted">{loadingMessage}</p>
           </div>
         ) : null}
 
         {step === "success" ? (
           <>
-            <p className="mt-4 text-sm leading-6 text-emerald-700 dark:text-emerald-300">
+            <p className="mt-4 text-sm leading-6 text-accent-ink">
               {successMessage}
             </p>
             {actionHref ? (
@@ -122,7 +125,7 @@ export function ActionSheet({
                 href={actionHref}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-flex text-sm font-medium text-zinc-950 underline underline-offset-4 dark:text-zinc-50"
+                className="mt-4 inline-flex text-sm font-medium text-foreground underline underline-offset-4"
               >
                 {actionLabel}
               </Link>
@@ -130,7 +133,7 @@ export function ActionSheet({
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
             >
               {closeLabel}
             </button>
@@ -139,14 +142,14 @@ export function ActionSheet({
 
         {step === "error" ? (
           <>
-            <p className="mt-4 text-sm leading-6 text-red-700 dark:text-red-300">
-              {errorMessage}
-            </p>
-            <div className={`mt-6 grid gap-3 ${onRetry ? "grid-cols-2" : "grid-cols-1"}`}>
+            <p className="mt-4 text-sm leading-6 text-danger">{errorMessage}</p>
+            <div
+              className={`mt-6 grid gap-3 ${onRetry ? "grid-cols-2" : "grid-cols-1"}`}
+            >
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-zinc-200 text-sm font-medium transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-border text-sm font-medium transition hover:bg-surface"
               >
                 {closeLabel}
               </button>
@@ -154,7 +157,7 @@ export function ActionSheet({
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+                  className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
                 >
                   {retryLabel}
                 </button>

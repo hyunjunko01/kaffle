@@ -2,7 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ActionSheet, type ActionSheetStep } from "@/components/ui/action-sheet";
+import {
+  ActionSheet,
+  type ActionSheetStep,
+} from "@/components/ui/action-sheet";
 import type { CurrentRaffle, RaffleView } from "./types";
 import { toView } from "./types";
 import { shortAddress } from "./utils";
@@ -138,7 +141,7 @@ export function SettleWinnerFlow({
         type="button"
         onClick={openSheet}
         disabled={disabled}
-        className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+        className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
       >
         당첨자 요청
       </button>
@@ -168,26 +171,27 @@ export function SettleWinnerFlow({
         actionHref={txUrl}
         actionLabel="트랜잭션 확인"
       >
-        <div className="rounded-[var(--kaffle-radius-md)] bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
-          <p className="text-xs text-zinc-500">회차</p>
+        <div className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-5 text-center">
+          <p className="text-xs text-muted">회차</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {current.roundNumber ?? "—"}회차
           </p>
         </div>
         <dl className="space-y-3 text-sm">
           <div>
-            <dt className="text-zinc-500">상금</dt>
+            <dt className="text-muted">상금</dt>
             <dd className="mt-1 font-medium">
               {current.prizeAmount} {view?.symbol}
             </dd>
           </div>
           <div>
-            <dt className="text-zinc-500">전체 티켓</dt>
+            <dt className="text-muted">전체 티켓</dt>
             <dd className="mt-1 font-medium">{current.totalTickets}장</dd>
           </div>
         </dl>
-        <p className="text-xs leading-5 text-zinc-500">
-          라운드가 종료된 뒤 당첨자를 추첨합니다. 추첨 후에는 되돌릴 수 없습니다.
+        <p className="text-xs leading-5 text-muted">
+          라운드가 종료된 뒤 당첨자를 추첨합니다. 추첨 후에는 되돌릴 수
+          없습니다.
         </p>
       </ActionSheet>
     </>

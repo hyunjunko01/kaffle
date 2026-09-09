@@ -17,15 +17,16 @@ function RoundStatusSpinner() {
     >
       <div
         aria-hidden="true"
-        className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-950 dark:border-zinc-700 dark:border-t-zinc-50"
+        className="h-10 w-10 animate-spin rounded-full border-2 border-border border-t-foreground"
       />
-      <p className="text-sm text-zinc-500">라운드 확인 중…</p>
+      <p className="text-sm text-muted">라운드 확인 중…</p>
     </div>
   );
 }
 
 export function RaffleEnterPanel() {
-  const explorerBaseUrl = NETWORKS[getPublicChainConfig().slug].blockExplorerUrl;
+  const explorerBaseUrl =
+    NETWORKS[getPublicChainConfig().slug].blockExplorerUrl;
   const { view, setView, loading, pageError, setPageError } = useRaffleView();
   const [enterBusy, setEnterBusy] = useState(false);
   const [settleBusy, setSettleBusy] = useState(false);
@@ -66,7 +67,7 @@ export function RaffleEnterPanel() {
             />
 
             {pageError ? (
-              <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+              <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
                 {pageError}
               </p>
             ) : null}
@@ -102,13 +103,13 @@ export function RaffleEnterPanel() {
         ) : (
           <>
             {pageError ? (
-              <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+              <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
                 {pageError}
               </p>
             ) : null}
             {view && !current ? (
-              <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 text-center dark:border-zinc-800">
-                <p className="text-sm text-zinc-500">열린 라운드가 없습니다.</p>
+              <div className="rounded-[var(--kaffle-radius-md)] border border-border p-5 text-center">
+                <p className="text-sm text-muted">열린 라운드가 없습니다.</p>
               </div>
             ) : null}
           </>

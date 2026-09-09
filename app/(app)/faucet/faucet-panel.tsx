@@ -99,13 +99,13 @@ export function FaucetPanel() {
   return (
     <section className="mt-8 space-y-4">
       {error ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
           {error}
         </p>
       ) : null}
 
       {success ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
           {success}
           {txUrl ? (
             <>
@@ -119,43 +119,37 @@ export function FaucetPanel() {
       ) : null}
 
       {loading && !view ? (
-        <p className="text-center text-sm text-zinc-500">온체인 미션 확인 중…</p>
+        <p className="text-center text-sm text-muted">온체인 미션 확인 중…</p>
       ) : view ? (
         <>
-          <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
-            <p className="text-sm text-zinc-500">내 지갑</p>
-            <p className="mt-1 break-all font-mono text-xs">
-              {view.wallet}
-            </p>
+          <div className="rounded-[var(--kaffle-radius-md)] border border-border p-5">
+            <p className="text-sm text-muted">내 지갑</p>
+            <p className="mt-1 break-all font-mono text-xs">{view.wallet}</p>
             <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
               <div>
-                <dt className="text-zinc-500">내 {view.symbol}</dt>
+                <dt className="text-muted">내 {view.symbol}</dt>
                 <dd className="mt-1 font-medium">
                   {view.walletBalance} {view.symbol}
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">미션 보상</dt>
+                <dt className="text-muted">미션 보상</dt>
                 <dd className="mt-1 font-medium">
                   {view.claimAmount} {view.symbol}
                 </dd>
               </div>
               <div className="col-span-2">
-                <dt className="text-zinc-500">Faucet</dt>
+                <dt className="text-muted">Faucet</dt>
                 <dd className="mt-1 font-mono text-xs">
                   {shortAddress(view.faucet)}
                 </dd>
               </div>
               {view.hash ? (
                 <div className="col-span-2">
-                  <dt className="text-zinc-500">최근 트랜잭션</dt>
+                  <dt className="text-muted">최근 트랜잭션</dt>
                   <dd className="mt-1 break-all font-mono text-xs">
                     {txUrl ? (
-                      <Link
-                        href={txUrl}
-                        target="_blank"
-                        className="underline"
-                      >
+                      <Link href={txUrl} target="_blank" className="underline">
                         {shortAddress(view.hash)}
                       </Link>
                     ) : (
@@ -167,18 +161,18 @@ export function FaucetPanel() {
             </dl>
           </div>
 
-          <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
+          <div className="rounded-[var(--kaffle-radius-md)] border border-border p-5">
             <h2 className="text-base font-semibold">첫 USDC 받기</h2>
-            <p className="mt-1 text-sm leading-6 text-zinc-500">
-              버튼을 누르면 플랫폼이 가스비를 내고 내 지갑으로 {view.claimAmount}{" "}
-              {view.symbol}를 보냅니다. 트랜잭션을 Basescan에서 확인하면
-              티켓 1장을 받습니다.
+            <p className="mt-1 text-sm leading-6 text-muted">
+              버튼을 누르면 플랫폼이 가스비를 내고 내 지갑으로{" "}
+              {view.claimAmount} {view.symbol}를 보냅니다. 트랜잭션을
+              Basescan에서 확인하면 티켓 1장을 받습니다.
             </p>
             <button
               type="button"
               onClick={() => void claim()}
               disabled={pending || !view.canClaim}
-              className="mt-6 h-11 w-full rounded-[var(--kaffle-radius-md)] bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+              className="mt-6 h-11 w-full rounded-[var(--kaffle-radius-md)] bg-foreground px-4 text-sm font-medium text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
             >
               {pending
                 ? "처리 중…"

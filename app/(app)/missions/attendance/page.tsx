@@ -17,7 +17,7 @@ export default async function AttendanceMissionPage() {
       <MissionBackLink />
       <header className="text-center">
         <h1 className="text-3xl font-semibold tracking-tight">출석 미션</h1>
-        <p className="mt-3 text-sm leading-6 text-zinc-500">
+        <p className="mt-3 text-sm leading-6 text-muted">
           하루 한 번 출석하고 티켓을 받습니다.
         </p>
       </header>

@@ -34,7 +34,8 @@ export function VaultPanel() {
       setError(
         body.error?.includes("is not set")
           ? "체인 컨트랙트 주소가 .env에 없습니다. CHAIN에 맞는 VAULT / PRIZE_TOKEN을 설정하세요."
-          : body.error ?? "Vault 상태를 읽지 못했습니다. RPC와 배포 주소를 확인하세요.",
+          : (body.error ??
+              "Vault 상태를 읽지 못했습니다. RPC와 배포 주소를 확인하세요."),
       );
       setLoading(false);
       return;
@@ -82,60 +83,62 @@ export function VaultPanel() {
     <section className="mt-8 space-y-4">
       <div>
         <h2 className="text-lg font-semibold tracking-tight">Vault</h2>
-        <p className="mt-1 text-sm leading-6 text-zinc-500">
-          상금 토큰을 vault에 넣습니다. Anvil은 mint, 테스트넷은 owner
-          지갑에서 transfer합니다.
+        <p className="mt-1 text-sm leading-6 text-muted">
+          상금 토큰을 vault에 넣습니다. Anvil은 mint, 테스트넷은 owner 지갑에서
+          transfer합니다.
         </p>
       </div>
 
       {error ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
           {error}
         </p>
       ) : null}
 
       {txHash ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
           입금 완료 · {shortAddress(txHash)}
         </p>
       ) : null}
 
       {loading && !status ? (
-        <p className="text-sm text-zinc-500">Vault 읽는 중…</p>
+        <p className="text-sm text-muted">Vault 읽는 중…</p>
       ) : status ? (
-        <div className="rounded-[var(--kaffle-radius-md)] border border-zinc-200 p-5 dark:border-zinc-800">
+        <div className="rounded-[var(--kaffle-radius-md)] border border-border p-5">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div>
-              <dt className="text-zinc-500">잔액</dt>
+              <dt className="text-muted">잔액</dt>
               <dd className="mt-1 font-medium">
                 {status.balance} {status.symbol}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-500">사용 가능</dt>
+              <dt className="text-muted">사용 가능</dt>
               <dd className="mt-1 font-medium">
                 {status.unallocated} {status.symbol}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-500">예약됨</dt>
+              <dt className="text-muted">예약됨</dt>
               <dd className="mt-1 font-medium">
                 {status.reserved} {status.symbol}
               </dd>
             </div>
             <div>
-              <dt className="text-zinc-500">토큰</dt>
-              <dd className="mt-1 font-mono text-xs">{shortAddress(status.token)}</dd>
+              <dt className="text-muted">토큰</dt>
+              <dd className="mt-1 font-mono text-xs">
+                {shortAddress(status.token)}
+              </dd>
             </div>
           </dl>
-          <p className="mt-4 font-mono text-xs text-zinc-500">
+          <p className="mt-4 font-mono text-xs text-muted">
             vault {shortAddress(status.vault)}
           </p>
         </div>
       ) : null}
 
       <form onSubmit={(event) => void fund(event)} className="space-y-3">
-        <label className="block text-sm text-zinc-500">
+        <label className="block text-sm text-muted">
           입금 금액
           <input
             type="text"
@@ -143,14 +146,14 @@ export function VaultPanel() {
             name="amount"
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
-            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 text-sm text-zinc-950 outline-none focus:border-zinc-400 dark:border-zinc-800 dark:text-zinc-50"
+            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </label>
         <div className="flex gap-2">
           <button
             type="submit"
             disabled={pending || amount.trim().length === 0}
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {pending ? "입금 중…" : "Vault에 넣기"}
           </button>
@@ -158,7 +161,7 @@ export function VaultPanel() {
             type="button"
             onClick={() => void load()}
             disabled={loading || pending}
-            className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-zinc-200 px-4 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
+            className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-border px-4 text-sm font-medium transition hover:bg-surface disabled:opacity-60"
           >
             새로고침
           </button>

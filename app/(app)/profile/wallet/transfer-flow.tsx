@@ -1,8 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { getAddress, isAddress, parseUnits, type Address, type Hex } from "viem";
-import { ActionSheet, type ActionSheetStep } from "@/components/ui/action-sheet";
+import {
+  getAddress,
+  isAddress,
+  parseUnits,
+  type Address,
+  type Hex,
+} from "viem";
+import {
+  ActionSheet,
+  type ActionSheetStep,
+} from "@/components/ui/action-sheet";
 import { connectMappedWalletProvider } from "@/lib/auth/web3auth";
 import {
   AUTHORIZATION_TTL_SECONDS,
@@ -50,7 +59,10 @@ function transferErrorMessage(error: unknown, bodyError?: string) {
   if (bodyError === "relayer insufficient funds") {
     return "플랫폼 relayer에 Base Sepolia ETH가 부족합니다. 관리자에게 relayer 지갑 충전을 요청해 주세요.";
   }
-  if (bodyError === "ERC3009InvalidSignature" || bodyError === "invalid signature") {
+  if (
+    bodyError === "ERC3009InvalidSignature" ||
+    bodyError === "invalid signature"
+  ) {
     return "전송 서명이 올바르지 않습니다. 다시 시도해 주세요.";
   }
   if (bodyError === "token does not support EIP-3009") {
@@ -207,7 +219,12 @@ export function TransferFlow({
       });
       const signature = (await provider.request({
         method: "eth_signTypedData_v4",
-        params: [from, JSON.stringify(serializeTransferWithAuthorizationTypedData(typedData))],
+        params: [
+          from,
+          JSON.stringify(
+            serializeTransferWithAuthorizationTypedData(typedData),
+          ),
+        ],
       })) as Hex;
 
       setSheet((current) =>
@@ -264,11 +281,12 @@ export function TransferFlow({
   if (!canTransfer) {
     return (
       <>
-        <p className="rounded-[var(--kaffle-radius-md)] bg-zinc-50 px-4 py-3 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+        <p className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-3 text-sm text-muted">
           자산 전송은 Base Sepolia에서만 지원합니다.
         </p>
-        <p className="text-xs leading-5 text-zinc-500">
-          잘못된 주소나 지원하지 않는 네트워크로 전송한 자산은 복구할 수 없습니다.
+        <p className="text-xs leading-5 text-muted">
+          잘못된 주소나 지원하지 않는 네트워크로 전송한 자산은 복구할 수
+          없습니다.
         </p>
       </>
     );
@@ -286,7 +304,7 @@ export function TransferFlow({
             onChange={(event) => setRecipient(event.target.value)}
             placeholder="0x..."
             disabled={transferBusy || disabled}
-            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 font-mono text-sm outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800"
+            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 font-mono text-sm outline-none focus:border-border-strong disabled:opacity-60"
           />
         </label>
         <label className="block text-sm font-medium">
@@ -298,7 +316,7 @@ export function TransferFlow({
             onChange={(event) => setAmount(event.target.value)}
             placeholder="0.0"
             disabled={transferBusy || disabled}
-            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-md)] border border-zinc-200 bg-transparent px-4 text-base outline-none focus:border-zinc-400 disabled:opacity-60 dark:border-zinc-800"
+            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-base outline-none focus:border-border-strong disabled:opacity-60"
           />
         </label>
         <button
@@ -309,13 +327,13 @@ export function TransferFlow({
             recipient.trim().length === 0 ||
             amount.trim().length === 0
           }
-          className="inline-flex h-14 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-zinc-950 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+          className="inline-flex h-14 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           {`${view.symbol} 전송하기`}
         </button>
       </form>
 
-      <p className="text-xs leading-5 text-zinc-500">
+      <p className="text-xs leading-5 text-muted">
         Base Sepolia에서는 ETH 없이 {view.symbol}만으로 전송할 수 있습니다.
         플랫폼 relayer가 네트워크 수수료를 대신 냅니다.
       </p>
@@ -344,27 +362,30 @@ export function TransferFlow({
         actionHref={txUrl}
         actionLabel="트랜잭션 확인"
       >
-        <div className="rounded-[var(--kaffle-radius-md)] bg-zinc-50 px-4 py-5 text-center dark:bg-zinc-900">
-          <p className="text-xs text-zinc-500">전송 수량</p>
+        <div className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-5 text-center">
+          <p className="text-xs text-muted">전송 수량</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {amount.trim()} {view.symbol}
           </p>
         </div>
         <dl className="space-y-3 text-sm">
           <div>
-            <dt className="text-zinc-500">네트워크</dt>
+            <dt className="text-muted">네트워크</dt>
             <dd className="mt-1 font-medium">{view.network}</dd>
           </div>
           <div>
-            <dt className="text-zinc-500">받는 주소</dt>
-            <dd className="mt-1 font-medium">{shortAddress(checksumRecipient)}</dd>
-            <dd className="mt-1 break-all font-mono text-xs text-zinc-600 dark:text-zinc-400">
+            <dt className="text-muted">받는 주소</dt>
+            <dd className="mt-1 font-medium">
+              {shortAddress(checksumRecipient)}
+            </dd>
+            <dd className="mt-1 break-all font-mono text-xs text-muted">
               {checksumRecipient}
             </dd>
           </div>
         </dl>
-        <p className="text-xs leading-5 text-zinc-500">
-          잘못된 주소로 보낸 자산은 복구할 수 없습니다. 내용이 맞는지 다시 확인해 주세요.
+        <p className="text-xs leading-5 text-muted">
+          잘못된 주소로 보낸 자산은 복구할 수 없습니다. 내용이 맞는지 다시
+          확인해 주세요.
         </p>
       </ActionSheet>
     </>
