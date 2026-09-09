@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/user";
 import { getMissionsOverview } from "@/lib/missions";
+import { getTicketBalance } from "@/lib/tickets";
 
 export default async function MissionsPage() {
   const user = await getCurrentUser();
@@ -8,16 +9,24 @@ export default async function MissionsPage() {
     return null;
   }
 
-  const missions = await getMissionsOverview(user.id);
+  const [missions, ticketBalance] = await Promise.all([
+    getMissionsOverview(user.id),
+    getTicketBalance(user.id),
+  ]);
 
   return (
     <main>
-      <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-        미션
-      </h1>
-      <p className="mt-3 text-sm leading-6 text-muted">
-        미션을 완료하면 티켓을 받습니다.
-      </p>
+      <header className="text-center">
+        <p className="text-sm font-medium text-muted">
+          보유 티켓{" "}
+          <span className="font-mono tabular-nums text-foreground">
+            {ticketBalance}장
+          </span>
+        </p>
+        <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">
+          티켓을 모아 래플에 참여하세요
+        </h1>
+      </header>
       <nav className="mt-8 space-y-3" aria-label="미션 목록">
         {missions.map((mission) => (
           <Link

@@ -3,21 +3,21 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function AttendanceButton({ disabled }: { disabled: boolean }) {
+export function GuideClaimButton({ disabled }: { disabled: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function checkIn() {
+  async function claim() {
     setPending(true);
     setError(null);
-    const res = await fetch("/api/missions/attendance", { method: "POST" });
+    const res = await fetch("/api/missions/guide", { method: "POST" });
     if (!res.ok) {
       setPending(false);
       setError(
         res.status === 409
-          ? "오늘은 이미 출석했습니다."
-          : "출석에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+          ? "이미 티켓을 받았습니다."
+          : "티켓 받기에 실패했습니다. 잠시 후 다시 시도해 주세요.",
       );
       return;
     }
@@ -28,11 +28,15 @@ export function AttendanceButton({ disabled }: { disabled: boolean }) {
     <div className="mt-6">
       <button
         type="button"
-        onClick={() => void checkIn()}
+        onClick={() => void claim()}
         disabled={disabled || pending}
-        className="h-11 w-full rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+        className="h-11 w-full rounded-sm bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
       >
-        {disabled ? "오늘 출석 완료" : pending ? "출석 중…" : "출석하고 티켓 받기"}
+        {disabled
+          ? "티켓 받기 완료"
+          : pending
+            ? "받는 중…"
+            : "티켓 받기"}
       </button>
       {error ? (
         <p className="mt-3 text-sm text-red-700 dark:text-red-300">{error}</p>

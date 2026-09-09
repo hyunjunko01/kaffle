@@ -8,8 +8,9 @@ import {
 
 export const ATTENDANCE_TICKETS = 1;
 export const ONCHAIN_TICKETS = 1;
+export const KAFFLE_GUIDE_TICKETS = 1;
 
-export type MissionId = "attendance" | "referral" | "on-chain";
+export type MissionId = "attendance" | "referral" | "on-chain" | "kaffle-guide";
 
 export type MissionCatalogItem = {
   id: MissionId;
@@ -21,6 +22,13 @@ export type MissionCatalogItem = {
 
 /** Static mission definitions for v0. Completions live in the DB. */
 export const MISSION_CATALOG: MissionCatalogItem[] = [
+  {
+    id: "kaffle-guide",
+    href: "/missions/guide",
+    title: "Kaffle 가이드",
+    description: "Kaffle이 어떻게 작동하는지 확인하고 티켓을 받습니다.",
+    tickets: KAFFLE_GUIDE_TICKETS,
+  },
   {
     id: "attendance",
     href: "/missions/attendance",
@@ -87,17 +95,41 @@ export async function hasOnchainMissionCompleted(userId: string) {
   return Boolean(existing);
 }
 
+export async function hasKaffleGuideCompleted(userId: string) {
+  const existing = await prisma.missionCompletion.findUnique({
+    where: {
+      userId_mission_extra: {
+        userId,
+        mission: "kaffle-guide",
+        extra: "",
+      },
+    },
+    select: { id: true },
+  });
+  return Boolean(existing);
+}
+
 /** Hub status for /missions. Catalog is code; completion flags come from DB. */
 export async function getMissionsOverview(
   userId: string,
 ): Promise<MissionOverviewItem[]> {
-  const [attendanceDone, inviteCount, onchainDone] = await Promise.all([
-    hasAttendanceToday(userId),
-    countSuccessfulReferrals(userId),
-    hasOnchainMissionCompleted(userId),
-  ]);
+  const [attendanceDone, inviteCount, onchainDone, guideDone] =
+    await Promise.all([
+      hasAttendanceToday(userId),
+      countSuccessfulReferrals(userId),
+      hasOnchainMissionCompleted(userId),
+      hasKaffleGuideCompleted(userId),
+    ]);
 
   return MISSION_CATALOG.map((mission) => {
+    if (mission.id === "kaffle-guide") {
+      return {
+        ...mission,
+        completed: guideDone,
+        available: !guideDone,
+        statusLabel: guideDone ? "완료" : "가능",
+      };
+    }
     if (mission.id === "attendance") {
       return {
         ...mission,
@@ -176,6 +208,38 @@ export async function grantOnchainMission(userId: string, faucetAddress: string)
           userId,
           amount: ONCHAIN_TICKETS,
           reason: "on-chain",
+          relatedId: completion.id,
+        },
+      });
+      return completion;
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function grantKaffleGuide(userId: string) {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const completion = await tx.missionCompletion.create({
+        data: {
+          userId,
+          mission: "kaffle-guide",
+          status: "granted",
+          extra: "",
+        },
+      });
+      await tx.ticketLedger.create({
+        data: {
+          userId,
+          amount: KAFFLE_GUIDE_TICKETS,
+          reason: "kaffle-guide",
           relatedId: completion.id,
         },
       });

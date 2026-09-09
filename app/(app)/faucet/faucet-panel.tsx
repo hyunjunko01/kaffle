@@ -119,10 +119,10 @@ export function FaucetPanel() {
       ) : null}
 
       {loading && !view ? (
-        <p className="text-sm text-zinc-500">온체인 미션 확인 중…</p>
+        <p className="text-center text-sm text-zinc-500">온체인 미션 확인 중…</p>
       ) : view ? (
         <>
-          <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+          <div className="rounded-sm border border-zinc-200 p-5 dark:border-zinc-800">
             <p className="text-sm text-zinc-500">내 지갑</p>
             <p className="mt-1 break-all font-mono text-xs">
               {view.wallet}
@@ -167,7 +167,7 @@ export function FaucetPanel() {
             </dl>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
+          <div className="rounded-sm border border-zinc-200 p-5 dark:border-zinc-800">
             <h2 className="text-base font-semibold">첫 USDC 받기</h2>
             <p className="mt-1 text-sm leading-6 text-zinc-500">
               버튼을 누르면 플랫폼이 가스비를 내고 내 지갑으로 {view.claimAmount}{" "}
@@ -178,7 +178,7 @@ export function FaucetPanel() {
               type="button"
               onClick={() => void claim()}
               disabled={pending || !view.canClaim}
-              className="mt-6 h-11 w-full rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+              className="mt-6 h-11 w-full rounded-sm bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-60 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
             >
               {pending
                 ? "처리 중…"
@@ -191,15 +191,6 @@ export function FaucetPanel() {
           </div>
         </>
       ) : null}
-
-      <button
-        type="button"
-        onClick={() => void load()}
-        disabled={loading || pending}
-        className="h-11 w-full rounded-xl border border-zinc-200 text-sm font-medium transition hover:bg-zinc-50 disabled:opacity-60 dark:border-zinc-800 dark:hover:bg-zinc-900"
-      >
-        새로고침
-      </button>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check, Copy } from "lucide-react";
 
 export function InviteLinkPanel({
   inviteLink,
@@ -32,25 +33,32 @@ export function InviteLinkPanel({
 
   return (
     <div className="mt-6 space-y-3">
-      <div className="rounded-xl bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
+      <div className="rounded-sm bg-zinc-50 px-4 py-3 dark:bg-zinc-900">
         <p className="text-xs text-zinc-500">초대 코드</p>
         <p className="mt-1 font-mono text-sm">{referralCode}</p>
         <p className="mt-3 text-xs text-zinc-500">초대 링크</p>
-        <p className="mt-1 break-all font-mono text-xs leading-5 text-zinc-700 dark:text-zinc-300">
-          {inviteLink}
-        </p>
+        <div className="mt-1 flex items-start gap-2">
+          <p className="min-w-0 flex-1 break-all font-mono text-xs leading-5 text-zinc-700 dark:text-zinc-300">
+            {inviteLink}
+          </p>
+          <button
+            type="button"
+            onClick={() => void copyLink()}
+            aria-label={copied ? "복사됨" : "초대 링크 복사"}
+            className="mt-0.5 inline-flex shrink-0 text-zinc-500 transition hover:text-zinc-950 dark:hover:text-zinc-50"
+          >
+            {copied ? (
+              <Check size={14} strokeWidth={1.75} aria-hidden="true" />
+            ) : (
+              <Copy size={14} strokeWidth={1.75} aria-hidden="true" />
+            )}
+          </button>
+        </div>
         <p className="mt-3 text-xs text-zinc-500">
           성공 {inviteCount}/{inviteCap}
           {remaining === 0 ? " · 보상 한도 도달" : null}
         </p>
       </div>
-      <button
-        type="button"
-        onClick={() => void copyLink()}
-        className="h-11 w-full rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
-      >
-        {copied ? "복사됨" : "링크 복사"}
-      </button>
       {error ? (
         <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
       ) : null}
