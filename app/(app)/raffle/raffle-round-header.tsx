@@ -1,3 +1,4 @@
+import { RefreshCw } from "lucide-react";
 import type { CurrentRaffle, RaffleView, RoundParticipant } from "./types";
 import { RaffleWheel } from "./raffle-wheel";
 import {
@@ -66,17 +67,37 @@ export function RaffleRoundHeader({
 export function RaffleRoundBoard({
   current,
   participants,
+  refreshing = false,
+  onRefresh,
 }: {
   current: CurrentRaffle;
   participants: RoundParticipant[];
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }) {
   return (
     <div className="rounded-[var(--kaffle-radius-md)] border border-border">
-      <div className="flex items-baseline justify-between gap-3 border-b border-border px-4 py-3">
-        <h3 className="text-sm font-semibold text-foreground">
-          이번 회차 참여자
-        </h3>
-        <p className="font-mono text-xs text-muted">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <h3 className="text-sm font-semibold text-foreground">
+            이번 회차 참여자
+          </h3>
+          {onRefresh ? (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={refreshing}
+              aria-label="참여자 목록 새로고침"
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-md)] text-muted transition hover:bg-surface hover:text-foreground disabled:opacity-60"
+            >
+              <RefreshCw
+                aria-hidden="true"
+                className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
+              />
+            </button>
+          ) : null}
+        </div>
+        <p className="shrink-0 font-mono text-xs text-muted">
           전체 {current.totalTickets}장 · {participants.length}명
         </p>
       </div>

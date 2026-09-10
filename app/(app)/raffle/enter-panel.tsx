@@ -27,10 +27,12 @@ function RoundStatusSpinner() {
 export function RaffleEnterPanel() {
   const explorerBaseUrl =
     NETWORKS[getPublicChainConfig().slug].blockExplorerUrl;
-  const { view, setView, loading, pageError, setPageError } = useRaffleView();
+  const { view, setView, loading, pageError, setPageError, reload } =
+    useRaffleView();
   const [enterBusy, setEnterBusy] = useState(false);
   const [settleBusy, setSettleBusy] = useState(false);
   const [claimBusy, setClaimBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const current = view?.current ?? null;
   const busy = enterBusy || settleBusy || claimBusy;
@@ -40,6 +42,15 @@ export function RaffleEnterPanel() {
     Boolean(current?.winner) &&
     Boolean(view?.wallet) &&
     current!.winner!.toLowerCase() === view!.wallet!.toLowerCase();
+
+  async function refreshRound() {
+    setRefreshing(true);
+    try {
+      await reload();
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   if (loading && !view) {
     return <RoundStatusSpinner />;
@@ -74,6 +85,8 @@ export function RaffleEnterPanel() {
             <RaffleRoundBoard
               current={current}
               participants={view.participants}
+              refreshing={refreshing}
+              onRefresh={() => void refreshRound()}
             />
 
             {canRequestWinner || settleBusy || Boolean(current.winner) ? (
