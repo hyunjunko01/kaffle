@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { getChainSlug } from "@/lib/chain/config";
 import { prisma } from "@/lib/db";
 import {
   REFERRAL_SUCCESS_CAP,
@@ -9,8 +10,15 @@ import {
 export const ATTENDANCE_TICKETS = 1;
 export const ONCHAIN_TICKETS = 1;
 export const KAFFLE_GUIDE_TICKETS = 1;
+/** Base Sepolia-only test faucet for wheel / raffle load testing. */
+export const TICKET_FAUCET_TICKETS = 20;
 
-export type MissionId = "attendance" | "referral" | "on-chain" | "kaffle-guide";
+export type MissionId =
+  | "attendance"
+  | "referral"
+  | "on-chain"
+  | "kaffle-guide"
+  | "ticket-faucet";
 
 export type MissionCatalogItem = {
   id: MissionId;
@@ -50,7 +58,24 @@ export const MISSION_CATALOG: MissionCatalogItem[] = [
     description: "테스트 토큰을 받고 지갑 트랜잭션을 확인합니다.",
     tickets: ONCHAIN_TICKETS,
   },
+  {
+    id: "ticket-faucet",
+    href: "/missions/ticket-faucet",
+    title: "티켓 faucet",
+    description: "Base Sepolia 테스트용으로 티켓 20장을 받습니다.",
+    tickets: TICKET_FAUCET_TICKETS,
+  },
 ];
+
+export function isTicketFaucetEnabled() {
+  return getChainSlug() === "base-sepolia";
+}
+
+export function getVisibleMissionCatalog(): MissionCatalogItem[] {
+  return MISSION_CATALOG.filter(
+    (mission) => mission.id !== "ticket-faucet" || isTicketFaucetEnabled(),
+  );
+}
 
 export type MissionOverviewItem = MissionCatalogItem & {
   completed: boolean;
@@ -121,7 +146,7 @@ export async function getMissionsOverview(
       hasKaffleGuideCompleted(userId),
     ]);
 
-  return MISSION_CATALOG.map((mission) => {
+  return getVisibleMissionCatalog().map((mission) => {
     if (mission.id === "kaffle-guide") {
       return {
         ...mission,
@@ -147,6 +172,14 @@ export async function getMissionsOverview(
         statusLabel: `${inviteCount}/${REFERRAL_SUCCESS_CAP}`,
         inviteCount,
         inviteCap: REFERRAL_SUCCESS_CAP,
+      };
+    }
+    if (mission.id === "ticket-faucet") {
+      return {
+        ...mission,
+        completed: false,
+        available: true,
+        statusLabel: "테스트",
       };
     }
     return {
@@ -192,7 +225,10 @@ export async function grantAttendance(userId: string) {
   }
 }
 
-export async function grantOnchainMission(userId: string, faucetAddress: string) {
+export async function grantOnchainMission(
+  userId: string,
+  faucetAddress: string,
+) {
   try {
     return await prisma.$transaction(async (tx) => {
       const completion = await tx.missionCompletion.create({
@@ -240,6 +276,44 @@ export async function grantKaffleGuide(userId: string) {
           userId,
           amount: KAFFLE_GUIDE_TICKETS,
           reason: "kaffle-guide",
+          relatedId: completion.id,
+        },
+      });
+      return completion;
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** Repeatable +20 ticket drip for Base Sepolia animation / load tests. */
+export async function grantTicketFaucet(userId: string) {
+  if (!isTicketFaucetEnabled()) {
+    return null;
+  }
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const completion = await tx.missionCompletion.create({
+        data: {
+          userId,
+          mission: "ticket-faucet",
+          status: "granted",
+          // Unique per claim so testers can drip repeatedly.
+          extra: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        },
+      });
+      await tx.ticketLedger.create({
+        data: {
+          userId,
+          amount: TICKET_FAUCET_TICKETS,
+          reason: "ticket-faucet",
           relatedId: completion.id,
         },
       });
