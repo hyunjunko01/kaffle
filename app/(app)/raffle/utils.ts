@@ -2,8 +2,24 @@ export function shortAddress(value: string) {
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
 }
 
+export function formatWinnerLabel(
+  winner: string | null | undefined,
+  winnerNickname?: string | null,
+) {
+  if (!winner) {
+    return "—";
+  }
+  const address = shortAddress(winner);
+  if (winnerNickname && winnerNickname.trim().length > 0) {
+    return `${winnerNickname}, ${address}`;
+  }
+  return address;
+}
+
 export function formatLocal(unix: number) {
-  return new Date(unix * 1000).toLocaleString();
+  return new Date(unix * 1000).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+  });
 }
 
 export function raffleStatusLabel(current: {

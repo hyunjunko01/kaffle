@@ -4,6 +4,7 @@ import {
   requestWinner,
   requestWinnerErrorMessage,
 } from "@/lib/raffle/request-winner";
+import { withWinnerNickname } from "@/lib/raffle/winner";
 import { getRaffleEntryTickets, getTicketBalance } from "@/lib/tickets";
 
 export async function POST() {
@@ -18,11 +19,15 @@ export async function POST() {
     const userTickets = result.current
       ? await getRaffleEntryTickets(user.id, result.current.address)
       : 0;
+    const current = result.current
+      ? {
+          ...(await withWinnerNickname(result.current)),
+          userTickets,
+        }
+      : null;
     return NextResponse.json({
       ...result,
-      current: result.current
-        ? { ...result.current, userTickets }
-        : null,
+      current,
       ticketBalance,
       wallet: user.wallet?.address ?? null,
       maxTicketsPerEnter: 100,
@@ -37,7 +42,9 @@ export async function POST() {
       message === "AlreadyRequested"
     ) {
       const status =
-        message === "RoundOpen" || message === "NoEntries" || message === "AlreadySettled"
+        message === "RoundOpen" ||
+        message === "NoEntries" ||
+        message === "AlreadySettled"
           ? 409
           : 400;
       return NextResponse.json({ error: message }, { status });

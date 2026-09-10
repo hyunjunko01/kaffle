@@ -11,6 +11,8 @@ type ActionSheetProps = {
   title: string;
   onClose: () => void;
   children?: ReactNode;
+  /** Shown during loading and success so media (e.g. a wheel) can keep mounting. */
+  media?: ReactNode;
   loadingMessage?: string;
   successMessage?: string;
   errorMessage?: string;
@@ -23,6 +25,8 @@ type ActionSheetProps = {
   onConfirm?: () => void;
   onRetry?: () => void;
   dismissible?: boolean;
+  /** When false, success close actions stay disabled (e.g. while an outro plays). */
+  actionsReady?: boolean;
 };
 
 function Spinner() {
@@ -40,6 +44,7 @@ export function ActionSheet({
   title,
   onClose,
   children,
+  media,
   loadingMessage = "처리 중…",
   successMessage,
   errorMessage,
@@ -52,16 +57,19 @@ export function ActionSheet({
   onConfirm,
   onRetry,
   dismissible = step !== "loading",
+  actionsReady = true,
 }: ActionSheetProps) {
   if (!open) {
     return null;
   }
 
   function handleBackdropClick() {
-    if (dismissible) {
+    if (dismissible && actionsReady) {
       onClose();
     }
   }
+
+  const showMedia = step === "loading" || step === "success";
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center">
@@ -70,7 +78,7 @@ export function ActionSheet({
         aria-label="닫기"
         className="absolute inset-0 bg-black/40"
         onClick={handleBackdropClick}
-        disabled={!dismissible}
+        disabled={!dismissible || !actionsReady}
       />
       <div
         role="dialog"
@@ -108,9 +116,15 @@ export function ActionSheet({
           </>
         ) : null}
 
+        {showMedia && media ? (
+          <div className="mt-6 flex flex-col items-center">{media}</div>
+        ) : null}
+
         {step === "loading" ? (
-          <div className="mt-8 flex flex-col items-center gap-4 pb-4 text-center">
-            <Spinner />
+          <div
+            className={`flex flex-col items-center gap-4 pb-4 text-center ${media ? "mt-4" : "mt-8"}`}
+          >
+            {media ? null : <Spinner />}
             <p className="text-sm text-muted">{loadingMessage}</p>
           </div>
         ) : null}
@@ -133,9 +147,10 @@ export function ActionSheet({
             <button
               type="button"
               onClick={onClose}
-              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
+              disabled={!actionsReady}
+              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
             >
-              {closeLabel}
+              {actionsReady ? closeLabel : "결과 확인 중…"}
             </button>
           </>
         ) : null}

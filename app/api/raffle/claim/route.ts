@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/user";
 import { claimErrorMessage, claimPrize } from "@/lib/raffle/claim";
+import { withWinnerNickname } from "@/lib/raffle/winner";
 import { getRaffleEntryTickets, getTicketBalance } from "@/lib/tickets";
 
 export async function POST() {
@@ -15,11 +16,15 @@ export async function POST() {
     const userTickets = result.current
       ? await getRaffleEntryTickets(user.id, result.current.address)
       : 0;
+    const current = result.current
+      ? {
+          ...(await withWinnerNickname(result.current)),
+          userTickets,
+        }
+      : null;
     return NextResponse.json({
       ...result,
-      current: result.current
-        ? { ...result.current, userTickets }
-        : null,
+      current,
       ticketBalance,
       wallet: user.wallet?.address ?? null,
       maxTicketsPerEnter: 100,

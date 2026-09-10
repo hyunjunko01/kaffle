@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/user";
 import { getRaffleStatus } from "@/lib/raffle/status";
+import { withWinnerNickname } from "@/lib/raffle/winner";
 import {
   getRaffleEntryTickets,
   getRoundParticipants,
@@ -24,18 +25,23 @@ export async function GET() {
         ? getRoundParticipants(status.current.address)
         : Promise.resolve([]),
     ]);
+    const current = status.current
+      ? {
+          ...(await withWinnerNickname(status.current)),
+          userTickets,
+        }
+      : null;
     return NextResponse.json({
       ...status,
-      current: status.current
-        ? { ...status.current, userTickets }
-        : null,
+      current,
       ticketBalance,
       wallet: user.wallet?.address ?? null,
       maxTicketsPerEnter: 100,
       participants,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "raffle read failed";
+    const message =
+      error instanceof Error ? error.message : "raffle read failed";
     const statusCode = message.includes("is not set") ? 500 : 502;
     return NextResponse.json({ error: message }, { status: statusCode });
   }

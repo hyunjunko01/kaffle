@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/user";
 import { enterErrorMessage, enterRaffle } from "@/lib/raffle/enter";
+import { withWinnerNickname } from "@/lib/raffle/winner";
 import { getRaffleEntryTickets, getRoundParticipants } from "@/lib/tickets";
 
 export async function POST(request: Request) {
@@ -40,11 +41,15 @@ export async function POST(request: Request) {
     const participants = result.current
       ? await getRoundParticipants(result.current.address)
       : [];
+    const current = result.current
+      ? {
+          ...(await withWinnerNickname(result.current)),
+          userTickets,
+        }
+      : null;
     return NextResponse.json({
       ...result,
-      current: result.current
-        ? { ...result.current, userTickets }
-        : null,
+      current,
       wallet: user.wallet.address,
       maxTicketsPerEnter: 100,
       participants,

@@ -2,9 +2,9 @@ import type { CurrentRaffle, RaffleView, RoundParticipant } from "./types";
 import { RaffleWheel } from "./raffle-wheel";
 import {
   formatLocal,
+  formatWinnerLabel,
   raffleStatusLabel,
   raffleStatusTone,
-  shortAddress,
 } from "./utils";
 
 const statusToneClass = {
@@ -16,13 +16,11 @@ const statusToneClass = {
 type RaffleRoundHeaderProps = {
   current: CurrentRaffle;
   view: RaffleView;
-  isWinner: boolean;
 };
 
 export function RaffleRoundHeader({
   current,
   view,
-  isWinner,
 }: RaffleRoundHeaderProps) {
   const tone = raffleStatusTone(current);
 
@@ -52,9 +50,8 @@ export function RaffleRoundHeader({
       {current.winner ? (
         <p className="mt-3 text-sm text-muted">
           당첨자{" "}
-          <span className="font-mono font-medium text-foreground">
-            {shortAddress(current.winner)}
-            {isWinner ? " · 나" : null}
+          <span className="font-medium text-foreground">
+            {formatWinnerLabel(current.winner, current.winnerNickname)}
           </span>
         </p>
       ) : null}
@@ -85,7 +82,7 @@ export function RaffleRoundBoard({
       </div>
       {participants.length > 0 ? (
         <ol className="divide-y divide-border text-sm">
-          {participants.map((entry, index) => (
+          {participants.slice(0, 20).map((entry, index) => (
             <li
               key={entry.userId}
               className="grid grid-cols-[2rem_minmax(0,1fr)_auto] items-baseline gap-3 px-4 py-3"
@@ -103,6 +100,11 @@ export function RaffleRoundBoard({
           아직 참여자가 없습니다.
         </p>
       )}
+      {participants.length > 20 ? (
+        <p className="border-t border-border px-4 py-3 text-center text-xs text-muted">
+          외 {participants.length - 20}명
+        </p>
+      ) : null}
     </div>
   );
 }

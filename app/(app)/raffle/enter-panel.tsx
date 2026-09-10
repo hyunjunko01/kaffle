@@ -53,7 +53,6 @@ export function RaffleEnterPanel() {
             <RaffleRoundHeader
               current={current}
               view={view}
-              isWinner={isWinner}
             />
 
             <EnterRaffleFlow
@@ -77,7 +76,7 @@ export function RaffleEnterPanel() {
               participants={view.participants}
             />
 
-            {canRequestWinner ? (
+            {canRequestWinner || settleBusy || Boolean(current.winner) ? (
               <SettleWinnerFlow
                 view={view}
                 current={current}
@@ -88,11 +87,10 @@ export function RaffleEnterPanel() {
               />
             ) : null}
 
-            {canClaim ? (
+            {canClaim && isWinner ? (
               <ClaimPrizeFlow
                 view={view}
                 current={current}
-                isWinner={isWinner}
                 explorerBaseUrl={explorerBaseUrl}
                 disabled={busy}
                 onBusyChange={setClaimBusy}

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/action-sheet";
 import type { CurrentRaffle, RaffleView } from "./types";
 import { toView } from "./types";
-import { shortAddress } from "./utils";
+import { formatWinnerLabel, shortAddress } from "./utils";
 
 type ActionSheetState = {
   step: ActionSheetStep;
@@ -21,7 +21,6 @@ type ActionSheetState = {
 type ClaimPrizeFlowProps = {
   view: RaffleView;
   current: CurrentRaffle;
-  isWinner: boolean;
   explorerBaseUrl: string;
   disabled: boolean;
   onBusyChange: (busy: boolean) => void;
@@ -57,7 +56,6 @@ function claimSheetTitle(step: ActionSheetStep) {
 export function ClaimPrizeFlow({
   view,
   current,
-  isWinner,
   explorerBaseUrl,
   disabled,
   onBusyChange,
@@ -72,6 +70,10 @@ export function ClaimPrizeFlow({
     sheet?.txHash && explorerBaseUrl
       ? `${explorerBaseUrl}/tx/${sheet.txHash}`
       : null;
+  const winnerLabel = formatWinnerLabel(
+    current.winner,
+    current.winnerNickname,
+  );
 
   function closeSheet() {
     if (sheet?.step === "loading") {
@@ -142,7 +144,7 @@ export function ClaimPrizeFlow({
         disabled={disabled}
         className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
       >
-        {isWinner ? "상금 받기" : "당첨자에게 상금 보내기"}
+        상금 받기
       </button>
 
       <ActionSheet
@@ -164,7 +166,7 @@ export function ClaimPrizeFlow({
         loadingMessage={sheet?.loadingMessage}
         successMessage={sheet?.successMessage}
         errorMessage={sheet?.errorMessage ?? undefined}
-        confirmLabel={isWinner ? "상금 받기" : "상금 보내기"}
+        confirmLabel="상금 받기"
         cancelLabel="취소"
         closeLabel="확인"
         actionHref={txUrl}
@@ -185,9 +187,8 @@ export function ClaimPrizeFlow({
           </div>
           <div>
             <dt className="text-muted">당첨자</dt>
-            <dd className="mt-1 font-mono font-medium">
-              {current.winner ? shortAddress(current.winner) : "—"}
-              {isWinner ? " · 나" : null}
+            <dd className="mt-1 font-medium">
+              {winnerLabel}
             </dd>
           </div>
           {current.winner ? (
@@ -200,8 +201,8 @@ export function ClaimPrizeFlow({
           ) : null}
         </dl>
         <p className="text-xs leading-5 text-muted">
-          상금은 당첨자 지갑으로 전송됩니다. 플랫폼 relayer가 네트워크 수수료를
-          대신 냅니다.
+          상금은 내 지갑으로 전송됩니다. 플랫폼 relayer가 네트워크 수수료를 대신
+          냅니다.
         </p>
       </ActionSheet>
     </>

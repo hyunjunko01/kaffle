@@ -137,6 +137,21 @@ body {
   }
 }
 
+@keyframes raffle-wheel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes raffle-wheel-stop {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(1080deg);
+  }
+}
+
 /* Keep space between the value and native number steppers */
 .ticket-count-input::-webkit-outer-spin-button,
 .ticket-count-input::-webkit-inner-spin-button {

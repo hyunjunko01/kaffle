@@ -10,6 +10,7 @@ export type CurrentRaffle = {
   userTickets: number;
   totalTickets: number;
   winner: string | null;
+  winnerNickname?: string | null;
   prizeAmount: string;
   prizeClaimed: boolean;
   prizeAttached: boolean;
@@ -19,6 +20,7 @@ export type RoundParticipant = {
   userId: string;
   nickname: string;
   ticketCount: number;
+  walletAddress?: string | null;
 };
 
 export type RaffleView = {

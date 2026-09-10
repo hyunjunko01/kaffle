@@ -30,7 +30,9 @@ function shortAddress(value: string) {
 }
 
 function formatLocal(unix: number) {
-  return new Date(unix * 1000).toLocaleString();
+  return new Date(unix * 1000).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+  });
 }
 
 export function RafflePanel() {
