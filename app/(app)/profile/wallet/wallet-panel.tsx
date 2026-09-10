@@ -10,7 +10,7 @@ export function WalletPanel() {
   return (
     <section className="mt-8 space-y-4">
       {pageError ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
+        <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
           {pageError}
         </p>
       ) : null}

@@ -171,7 +171,7 @@ function WheelDrawModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="wheel-draw-title"
-        className="relative w-full max-w-md rounded-[var(--kaffle-radius-lg)] border border-border bg-surface-elevated px-5 py-6 shadow-2xl sm:max-w-lg sm:px-8 sm:py-8"
+        className="relative w-full max-w-md rounded-[var(--kaffle-radius-xl)] border border-border bg-surface-elevated px-5 py-6 shadow-2xl sm:max-w-lg sm:px-8 sm:py-8"
       >
         <h2
           id="wheel-draw-title"
@@ -216,7 +216,7 @@ function WheelDrawModal({
           <button
             type="button"
             onClick={onClose}
-            className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
+            className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
           >
             확인
           </button>
@@ -505,7 +505,7 @@ export function SettleWinnerFlow({
           type="button"
           onClick={openRequestConfirm}
           disabled={disabled}
-          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           당첨자 요청
         </button>
@@ -516,7 +516,7 @@ export function SettleWinnerFlow({
           type="button"
           onClick={() => void executeReplay()}
           disabled={disabled}
-          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           당첨자 확인
         </button>
@@ -527,7 +527,7 @@ export function SettleWinnerFlow({
           type="button"
           onClick={() => void executeReplay()}
           disabled={disabled}
-          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] border border-border text-sm font-medium transition hover:bg-surface disabled:opacity-60"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] border border-border text-sm font-medium transition hover:bg-surface disabled:opacity-60"
         >
           추첨 다시보기
         </button>
@@ -553,7 +553,7 @@ export function SettleWinnerFlow({
         cancelLabel="취소"
         closeLabel="확인"
       >
-        <div className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-5 text-center">
+        <div className="rounded-[var(--kaffle-radius-lg)] bg-surface px-4 py-5 text-center">
           <p className="text-xs text-muted">회차</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {current.roundNumber ?? "—"}회차

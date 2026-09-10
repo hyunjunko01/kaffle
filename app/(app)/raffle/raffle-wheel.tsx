@@ -268,7 +268,7 @@ export function RaffleWheel({
         aria-busy={phase === "spinning" || phase === "stopping"}
         className={`relative mx-auto w-full max-w-lg ${className}`}
       >
-        <div className="relative h-36 overflow-hidden rounded-[var(--kaffle-radius-md)] border border-border bg-surface sm:h-40">
+        <div className="relative h-36 overflow-hidden rounded-[var(--kaffle-radius-lg)] border border-border bg-surface sm:h-40">
           <div className="absolute left-1/2 top-0 w-[min(150%,28rem)] -translate-x-1/2">
             <div className="relative aspect-square w-full">{disk}</div>
           </div>

@@ -89,7 +89,7 @@ export function LoginClient() {
         </p>
 
         {error ? (
-          <p className="mt-6 rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
+          <p className="mt-6 rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
             {error}
           </p>
         ) : null}
@@ -103,7 +103,7 @@ export function LoginClient() {
                 ? `/auth/kakao?ref=${encodeURIComponent(searchParams.get("ref")!)}`
                 : "/auth/kakao"
             }
-            className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--kaffle-radius-md)] bg-[#FEE500] text-sm font-semibold text-[#191919] transition hover:bg-[#f5dc00]"
+            className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--kaffle-radius-lg)] bg-[#FEE500] text-sm font-semibold text-[#191919] transition hover:bg-[#f5dc00]"
           >
             <KakaoMark />
             카카오 로그인

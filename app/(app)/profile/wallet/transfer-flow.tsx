@@ -281,7 +281,7 @@ export function TransferFlow({
   if (!canTransfer) {
     return (
       <>
-        <p className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-3 text-sm text-muted">
+        <p className="rounded-[var(--kaffle-radius-lg)] bg-surface px-4 py-3 text-sm text-muted">
           자산 전송은 Base Sepolia에서만 지원합니다.
         </p>
         <p className="text-xs leading-5 text-muted">
@@ -304,7 +304,7 @@ export function TransferFlow({
             onChange={(event) => setRecipient(event.target.value)}
             placeholder="0x..."
             disabled={transferBusy || disabled}
-            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 font-mono text-sm outline-none focus:border-border-strong disabled:opacity-60"
+            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 font-mono text-sm outline-none focus:border-border-strong disabled:opacity-60"
           />
         </label>
         <label className="block text-sm font-medium">
@@ -316,7 +316,7 @@ export function TransferFlow({
             onChange={(event) => setAmount(event.target.value)}
             placeholder="0.0"
             disabled={transferBusy || disabled}
-            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-base outline-none focus:border-border-strong disabled:opacity-60"
+            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 text-base outline-none focus:border-border-strong disabled:opacity-60"
           />
         </label>
         <button
@@ -327,7 +327,7 @@ export function TransferFlow({
             recipient.trim().length === 0 ||
             amount.trim().length === 0
           }
-          className="inline-flex h-14 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex h-14 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           {`${view.symbol} 전송하기`}
         </button>
@@ -362,7 +362,7 @@ export function TransferFlow({
         actionHref={txUrl}
         actionLabel="트랜잭션 확인"
       >
-        <div className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-5 text-center">
+        <div className="rounded-[var(--kaffle-radius-lg)] bg-surface px-4 py-5 text-center">
           <p className="text-xs text-muted">전송 수량</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {amount.trim()} {view.symbol}

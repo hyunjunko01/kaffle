@@ -150,7 +150,7 @@ export function OnboardingClient() {
         </p>
 
         {error ? (
-          <p className="mt-6 rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
+          <p className="mt-6 rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
             {error}
           </p>
         ) : null}
@@ -163,7 +163,7 @@ export function OnboardingClient() {
             maxLength={20}
             onChange={(event) => setNickname(event.target.value)}
             disabled={!data?.user.canChangeNickname || connecting}
-            className="mt-2 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 outline-none focus:border-border-strong disabled:bg-surface"
+            className="mt-2 h-12 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 outline-none focus:border-border-strong disabled:bg-surface"
           />
           <span className="mt-2 block text-xs font-normal leading-5 text-muted">
             기본 닉네임으로 바로 시작하거나, 지금 한 번 변경할 수 있습니다.
@@ -180,7 +180,7 @@ export function OnboardingClient() {
             readOnly={Boolean(data?.referralCode)}
             disabled={connecting}
             placeholder="초대 링크가 있다면 자동으로 적용됩니다"
-            className="mt-2 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 font-mono outline-none focus:border-border-strong read-only:bg-surface disabled:bg-surface"
+            className="mt-2 h-12 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 font-mono outline-none focus:border-border-strong read-only:bg-surface disabled:bg-surface"
           />
           <span className="mt-2 block text-xs font-normal leading-5 text-muted">
             {data?.referralCode
@@ -192,7 +192,7 @@ export function OnboardingClient() {
         <button
           type="submit"
           disabled={connecting || nickname.trim().length === 0}
-          className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           {connecting ? "지갑을 만드는 중…" : "지갑 만들고 시작하기"}
         </button>

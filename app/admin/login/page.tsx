@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
         </p>
 
         {error ? (
-          <p className="mt-6 rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
+          <p className="mt-6 rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
             {error}
           </p>
         ) : null}
@@ -63,13 +63,13 @@ export default function AdminLoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
+              className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
             />
           </label>
           <button
             type="submit"
             disabled={pending || password.length === 0}
-            className="inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+            className="inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {pending ? "확인 중…" : "관리자 로그인"}
           </button>

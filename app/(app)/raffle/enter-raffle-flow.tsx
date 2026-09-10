@@ -189,13 +189,13 @@ export function EnterRaffleFlow({
               onChange={(event) => setTicketCount(event.target.value)}
               disabled={enterBusy}
               placeholder="0"
-              className="ticket-count-input box-border h-full w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent py-0 pl-[3.75rem] pr-2 text-right text-sm leading-none tabular-nums text-foreground outline-none focus:border-border-strong disabled:opacity-60"
+              className="ticket-count-input box-border h-full w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent py-0 pl-[3.75rem] pr-2 text-right text-sm leading-none tabular-nums text-foreground outline-none focus:border-border-strong disabled:opacity-60"
             />
           </label>
           <button
             type="submit"
             disabled={disabled || !canEnter || ticketCount.trim().length === 0}
-            className="inline-flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-[var(--kaffle-radius-md)] bg-foreground px-5 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+            className="inline-flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-[var(--kaffle-radius-lg)] bg-foreground px-5 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {canEnter ? "티켓 사용" : "참여 불가"}
           </button>
@@ -229,7 +229,7 @@ export function EnterRaffleFlow({
       >
         {Number.isInteger(parsedTicketCount) ? (
           <>
-            <div className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-5 text-center">
+            <div className="rounded-[var(--kaffle-radius-lg)] bg-surface px-4 py-5 text-center">
               <p className="text-xs text-muted">사용할 티켓</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">
                 {parsedTicketCount}장

@@ -104,7 +104,7 @@ export function ProfileForm({
       </header>
 
       {message && !open ? (
-        <p className="mt-4 rounded-[var(--kaffle-radius-md)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
+        <p className="mt-4 rounded-[var(--kaffle-radius-lg)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
           {message}
         </p>
       ) : null}
@@ -121,7 +121,7 @@ export function ProfileForm({
             role="dialog"
             aria-modal="true"
             aria-labelledby={dialogTitleId}
-            className="relative z-10 w-full max-w-[20rem] rounded-[var(--kaffle-radius-md)] border border-border bg-surface-elevated p-4 shadow-xl"
+            className="relative z-10 w-full max-w-[20rem] rounded-[var(--kaffle-radius-lg)] border border-border bg-surface-elevated p-4 shadow-xl"
           >
             <div className="flex items-center justify-between gap-2">
               <h2 id={dialogTitleId} className="text-base font-semibold">
@@ -143,7 +143,7 @@ export function ProfileForm({
               className="mt-3 space-y-2.5"
             >
               {error ? (
-                <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-3 py-2 text-xs text-danger">
+                <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-3 py-2 text-xs text-danger">
                   {error}
                 </p>
               ) : null}
@@ -156,13 +156,13 @@ export function ProfileForm({
                   aria-label="닉네임"
                   onChange={(event) => setNickname(event.target.value)}
                   disabled={!canChangeNickname || saving}
-                  className="h-10 min-w-0 flex-1 rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-3 text-sm outline-none focus:border-border-strong disabled:bg-surface"
+                  className="h-10 min-w-0 flex-1 rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-3 text-sm outline-none focus:border-border-strong disabled:bg-surface"
                 />
                 {canChangeNickname ? (
                   <button
                     type="submit"
                     disabled={saving || nickname.trim() === initialNickname}
-                    className="inline-flex h-10 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground px-3 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+                    className="inline-flex h-10 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground px-3 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
                   >
                     {saving ? "저장 중…" : "변경"}
                   </button>

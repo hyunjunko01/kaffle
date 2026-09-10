@@ -9,9 +9,9 @@ import {
 } from "./utils";
 
 const statusToneClass = {
-  open: "bg-accent-soft text-accent-ink",
-  closed: "bg-danger-soft text-danger",
-  other: "bg-accent-soft text-accent-ink",
+  open: "border border-accent text-accent-ink",
+  closed: "border border-danger text-danger",
+  other: "border border-accent text-accent-ink",
 } as const;
 
 type RaffleRoundHeaderProps = {
@@ -28,17 +28,15 @@ export function RaffleRoundHeader({
   return (
     <div className="text-center">
       <div className="flex items-center justify-center gap-2">
-        <h2 className="text-base font-semibold tracking-tight text-foreground">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
           {current.roundNumber ?? "—"}회차
         </h2>
         <span
-          className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusToneClass[tone]}`}
+          className={`rounded-[var(--kaffle-radius-sm)] px-1 py-1 text-sm font-medium leading-none ${statusToneClass[tone]}`}
         >
           {raffleStatusLabel(current)}
         </span>
       </div>
-
-      <p className="mt-4 text-sm text-muted">상금</p>
       <p className="mt-1 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         {current.prizeAmount}{" "}
         <span className="text-xl font-semibold sm:text-2xl">{view.symbol}</span>
@@ -76,7 +74,7 @@ export function RaffleRoundBoard({
   onRefresh?: () => void;
 }) {
   return (
-    <div className="rounded-[var(--kaffle-radius-md)] border border-border">
+    <div className="rounded-[var(--kaffle-radius-lg)] border border-border">
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div className="flex min-w-0 items-center gap-1.5">
           <h3 className="text-sm font-semibold text-foreground">
@@ -88,7 +86,7 @@ export function RaffleRoundBoard({
               onClick={onRefresh}
               disabled={refreshing}
               aria-label="참여자 목록 새로고침"
-              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-md)] text-muted transition hover:bg-surface hover:text-foreground disabled:opacity-60"
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-lg)] text-muted transition hover:bg-surface hover:text-foreground disabled:opacity-60"
             >
               <RefreshCw
                 aria-hidden="true"

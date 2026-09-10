@@ -19,7 +19,7 @@ export function AdminLogoutButton() {
       type="button"
       onClick={() => void logout()}
       disabled={pending}
-      className="h-9 rounded-[var(--kaffle-radius-md)] border border-border px-3 text-sm font-medium transition hover:bg-surface disabled:opacity-60"
+      className="h-9 rounded-[var(--kaffle-radius-lg)] border border-border px-3 text-sm font-medium transition hover:bg-surface disabled:opacity-60"
     >
       {pending ? "로그아웃 중…" : "로그아웃"}
     </button>

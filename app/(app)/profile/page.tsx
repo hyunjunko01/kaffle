@@ -15,7 +15,7 @@ export default async function ProfilePage() {
         nickname={user.nickname}
         canChangeNickname={!user.postSignupNicknameChanged}
       />
-      <dl className="mt-8 space-y-4 rounded-[var(--kaffle-radius-md)] border border-border p-5 text-sm">
+      <dl className="mt-8 space-y-4 rounded-[var(--kaffle-radius-lg)] border border-border p-5 text-sm">
         <div>
           <dt className="text-muted">Wallet</dt>
           <dd className="mt-1 break-all font-mono">{me.wallet?.address}</dd>
@@ -27,7 +27,7 @@ export default async function ProfilePage() {
       </dl>
       <Link
         href="/profile/wallet"
-        className="mt-4 flex items-center justify-between rounded-[var(--kaffle-radius-md)] border border-border px-4 py-4 text-sm font-medium transition hover:bg-surface"
+        className="mt-4 flex items-center justify-between rounded-[var(--kaffle-radius-lg)] border border-border px-4 py-4 text-sm font-medium transition hover:bg-surface"
       >
         <span>지갑 관리</span>
         <span aria-hidden="true" className="text-lg text-muted-soft">

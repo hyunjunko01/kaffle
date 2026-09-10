@@ -142,7 +142,7 @@ export function ClaimPrizeFlow({
         type="button"
         onClick={openSheet}
         disabled={disabled}
-        className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+        className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
       >
         상금 받기
       </button>
@@ -172,7 +172,7 @@ export function ClaimPrizeFlow({
         actionHref={txUrl}
         actionLabel="트랜잭션 확인"
       >
-        <div className="rounded-[var(--kaffle-radius-md)] bg-surface px-4 py-5 text-center">
+        <div className="rounded-[var(--kaffle-radius-lg)] bg-surface px-4 py-5 text-center">
           <p className="text-xs text-muted">수령 상금</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {current.prizeAmount} {view.symbol}

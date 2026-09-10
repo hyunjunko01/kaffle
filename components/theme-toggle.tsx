@@ -31,7 +31,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
-      className="flex h-9 w-9 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-border text-muted transition hover:border-border-strong hover:bg-surface hover:text-foreground"
+      className="flex h-9 w-9 items-center justify-center rounded-[var(--kaffle-radius-lg)] border border-border text-muted transition hover:border-border-strong hover:bg-surface hover:text-foreground"
     >
       {theme === "light" ? <MoonIcon /> : <SunIcon />}
     </button>

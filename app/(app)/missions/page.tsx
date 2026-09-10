@@ -32,7 +32,7 @@ export default async function MissionsPage() {
           <Link
             key={mission.id}
             href={mission.href}
-            className="flex items-center justify-between gap-4 rounded-[var(--kaffle-radius-md)] border border-border bg-surface px-4 py-4 transition hover:border-border-strong hover:bg-surface-elevated"
+            className="flex items-center justify-between gap-4 rounded-[var(--kaffle-radius-lg)] border border-border bg-surface px-4 py-4 transition hover:border-border-strong hover:bg-surface-elevated"
           >
             <span className="min-w-0">
               <span className="flex items-center gap-2">

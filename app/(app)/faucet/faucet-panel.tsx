@@ -99,13 +99,13 @@ export function FaucetPanel() {
   return (
     <section className="mt-8 space-y-4">
       {error ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
+        <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
           {error}
         </p>
       ) : null}
 
       {success ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
+        <p className="rounded-[var(--kaffle-radius-lg)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
           {success}
           {txUrl ? (
             <>
@@ -122,7 +122,7 @@ export function FaucetPanel() {
         <p className="text-center text-sm text-muted">온체인 미션 확인 중…</p>
       ) : view ? (
         <>
-          <div className="rounded-[var(--kaffle-radius-md)] border border-border p-5">
+          <div className="rounded-[var(--kaffle-radius-lg)] border border-border p-5">
             <p className="text-sm text-muted">내 지갑</p>
             <p className="mt-1 break-all font-mono text-xs">{view.wallet}</p>
             <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
@@ -161,7 +161,7 @@ export function FaucetPanel() {
             </dl>
           </div>
 
-          <div className="rounded-[var(--kaffle-radius-md)] border border-border p-5">
+          <div className="rounded-[var(--kaffle-radius-lg)] border border-border p-5">
             <h2 className="text-base font-semibold">첫 USDC 받기</h2>
             <p className="mt-1 text-sm leading-6 text-muted">
               버튼을 누르면 플랫폼이 가스비를 내고 내 지갑으로{" "}
@@ -172,7 +172,7 @@ export function FaucetPanel() {
               type="button"
               onClick={() => void claim()}
               disabled={pending || !view.canClaim}
-              className="mt-6 h-11 w-full rounded-[var(--kaffle-radius-md)] bg-foreground px-4 text-sm font-medium text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+              className="mt-6 h-11 w-full rounded-[var(--kaffle-radius-lg)] bg-foreground px-4 text-sm font-medium text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
             >
               {pending
                 ? "처리 중…"

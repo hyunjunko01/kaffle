@@ -115,13 +115,13 @@ export function RafflePanel() {
       </div>
 
       {error ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-danger-soft px-4 py-3 text-sm text-danger">
+        <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
           {error}
         </p>
       ) : null}
 
       {txHash ? (
-        <p className="rounded-[var(--kaffle-radius-md)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
+        <p className="rounded-[var(--kaffle-radius-lg)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
           라운드 생성 완료 · {shortAddress(txHash)}
         </p>
       ) : null}
@@ -129,7 +129,7 @@ export function RafflePanel() {
       {loading && !status ? (
         <p className="text-sm text-muted">라운드 읽는 중…</p>
       ) : status ? (
-        <div className="rounded-[var(--kaffle-radius-md)] border border-border p-5">
+        <div className="rounded-[var(--kaffle-radius-lg)] border border-border p-5">
           <p className="text-sm text-muted">
             vault 사용 가능{" "}
             <span className="font-medium text-foreground">
@@ -199,7 +199,7 @@ export function RafflePanel() {
             name="durationSeconds"
             value={durationSeconds}
             onChange={(event) => setDurationSeconds(event.target.value)}
-            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
+            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </label>
         <label className="block text-sm text-muted">
@@ -210,7 +210,7 @@ export function RafflePanel() {
             name="prizeAmount"
             value={prizeAmount}
             onChange={(event) => setPrizeAmount(event.target.value)}
-            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-md)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
+            className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
           />
         </label>
         <div className="flex gap-2">
@@ -222,7 +222,7 @@ export function RafflePanel() {
               durationSeconds.trim().length === 0 ||
               prizeAmount.trim().length === 0
             }
-            className="inline-flex h-12 flex-1 items-center justify-center rounded-[var(--kaffle-radius-md)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+            className="inline-flex h-12 flex-1 items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {pending
               ? "생성 중…"
@@ -234,7 +234,7 @@ export function RafflePanel() {
             type="button"
             onClick={() => void load()}
             disabled={loading || pending}
-            className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-md)] border border-border px-4 text-sm font-medium transition hover:bg-surface disabled:opacity-60"
+            className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-lg)] border border-border px-4 text-sm font-medium transition hover:bg-surface disabled:opacity-60"
           >
             새로고침
           </button>

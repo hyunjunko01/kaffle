@@ -30,7 +30,7 @@ export function GuideClaimButton({ disabled }: { disabled: boolean }) {
         type="button"
         onClick={() => void claim()}
         disabled={disabled || pending}
-        className="h-11 w-full rounded-[var(--kaffle-radius-md)] bg-foreground px-4 text-sm font-medium text-ink-inverse transition hover:opacity-90 disabled:opacity-60 "
+        className="h-11 w-full rounded-[var(--kaffle-radius-lg)] bg-foreground px-4 text-sm font-medium text-ink-inverse transition hover:opacity-90 disabled:opacity-60 "
       >
         {disabled ? "티켓 받기 완료" : pending ? "받는 중…" : "티켓 받기"}
       </button>

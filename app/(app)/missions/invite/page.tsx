@@ -29,7 +29,7 @@ export default async function InviteMissionPage() {
         </p>
       </header>
 
-      <section className="mt-8 rounded-[var(--kaffle-radius-md)] border border-border p-5">
+      <section className="mt-8 rounded-[var(--kaffle-radius-lg)] border border-border p-5">
         <h2 className="text-base font-semibold">초대 링크 공유</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
           친구가 링크로 처음 가입하면 당신과 친구 모두 티켓을 받습니다.

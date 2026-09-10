@@ -47,7 +47,7 @@ export function AttendanceStampCard({
               ? "출석 처리 중"
               : "출석하고 티켓 받기"
         }
-        className={`mt-4 flex aspect-square w-40 items-center justify-center rounded-[var(--kaffle-radius-md)] border-2 border-dashed transition disabled:cursor-default ${
+        className={`mt-4 flex aspect-square w-40 items-center justify-center rounded-[var(--kaffle-radius-lg)] border-2 border-dashed transition disabled:cursor-default ${
           stamped
             ? "border-accent/50 bg-accent-soft"
             : "border-border bg-surface hover:border-border-strong"
@@ -55,7 +55,7 @@ export function AttendanceStampCard({
       >
         {stamped ? (
           <span
-            className="rotate-[-12deg] rounded-[var(--kaffle-radius-md)] border-2 border-accent px-3 py-2 font-display text-lg font-bold tracking-wide text-accent-ink"
+            className="rotate-[-12deg] rounded-[var(--kaffle-radius-lg)] border-2 border-accent px-3 py-2 font-display text-lg font-bold tracking-wide text-accent-ink"
             aria-hidden="true"
           >
             출석 완료
