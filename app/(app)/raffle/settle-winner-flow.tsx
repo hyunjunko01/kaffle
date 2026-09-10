@@ -19,6 +19,7 @@ import {
   buildTicketSlots,
   findWinnerSlotIndex,
 } from "./wheel-slots";
+import { wheelSound } from "./wheel-sound";
 
 const MIN_SPIN_MS = 2800;
 const REPLAY_SPIN_MS = 3200;
@@ -349,6 +350,7 @@ export function SettleWinnerFlow({
   async function executeReplay() {
     onBusyChange(true);
     try {
+      await wheelSound.unlock();
       await runRevealAnimation({
         winner: current.winner,
         winnerNickname: current.winnerNickname,
@@ -371,6 +373,7 @@ export function SettleWinnerFlow({
   async function executeSettleWinner() {
     setConfirmSheet(null);
     onBusyChange(true);
+    await wheelSound.unlock();
     setDrawModal({
       phase: "preparing",
       message: MSG_PREPARING,

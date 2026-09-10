@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { WheelSlot } from "./wheel-slots";
 import { targetRotationForSlot } from "./wheel-slots";
+import { wheelSound } from "./wheel-sound";
 
 type WheelPhase = "idle" | "spinning" | "stopping" | "stopped";
 
@@ -46,6 +47,34 @@ function buildConicGradient(count: number) {
   return `conic-gradient(from ${-slice / 2}deg, ${parts.join(", ")})`;
 }
 
+/** Which slot sits under the top pointer for a given disk rotation. */
+function slotIndexAtPointer(rotationDeg: number, slotCount: number) {
+  if (slotCount <= 0) return 0;
+  const slice = 360 / slotCount;
+  const mod = ((rotationDeg % 360) + 360) % 360;
+  return (
+    Math.floor((((( -mod + slice / 2) % 360) + 360) % 360) / slice) %
+    slotCount
+  );
+}
+
+function playTickForRotation(
+  rotationDeg: number,
+  slotCount: number,
+  lastSlotRef: { current: number | null },
+) {
+  if (slotCount <= 0) return;
+  const index = slotIndexAtPointer(rotationDeg, slotCount);
+  if (lastSlotRef.current === null) {
+    lastSlotRef.current = index;
+    return;
+  }
+  if (lastSlotRef.current !== index) {
+    lastSlotRef.current = index;
+    wheelSound.playTick();
+  }
+}
+
 export function RaffleWheel({
   phase = "idle",
   slots = [],
@@ -67,6 +96,7 @@ export function RaffleWheel({
   const rotationRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const lastTsRef = useRef<number | null>(null);
+  const lastTickSlotRef = useRef<number | null>(null);
   const [rotation, setRotation] = useState(0);
   const onStopCompleteRef = useRef(onStopComplete);
   onStopCompleteRef.current = onStopComplete;
@@ -88,6 +118,15 @@ export function RaffleWheel({
   }, [rotation]);
 
   useEffect(() => {
+    if (phase === "spinning" || phase === "stopping") {
+      void wheelSound.unlock();
+      lastTickSlotRef.current = slotIndexAtPointer(rotationRef.current, count);
+    } else {
+      lastTickSlotRef.current = null;
+    }
+  }, [phase, count]);
+
+  useEffect(() => {
     if (phase !== "spinning") {
       if (rafRef.current != null) {
         cancelAnimationFrame(rafRef.current);
@@ -105,6 +144,7 @@ export function RaffleWheel({
       lastTsRef.current = ts;
       const next = rotationRef.current + delta * SPIN_DEG_PER_MS;
       rotationRef.current = next;
+      playTickForRotation(next, count, lastTickSlotRef);
       setRotation(next);
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -116,7 +156,7 @@ export function RaffleWheel({
       }
       lastTsRef.current = null;
     };
-  }, [phase]);
+  }, [phase, count]);
 
   useEffect(() => {
     if (phase !== "stopping") {
@@ -149,6 +189,7 @@ export function RaffleWheel({
       const eased = 1 - (1 - t) ** 3;
       const next = startRotation + distance * eased;
       rotationRef.current = next;
+      playTickForRotation(next, count, lastTickSlotRef);
       setRotation(next);
 
       if (t < 1) {
@@ -160,6 +201,7 @@ export function RaffleWheel({
         completed = true;
         rotationRef.current = finalRotation;
         setRotation(finalRotation);
+        wheelSound.playStop();
         onStopCompleteRef.current?.();
       }
     };
