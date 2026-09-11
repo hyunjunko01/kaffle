@@ -2,21 +2,17 @@
 
 import Link from "next/link";
 import { LogoutButton } from "./logout-button";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppHeader({ nickname }: { nickname: string }) {
   return (
     <header className="border-b border-border bg-surface/80 backdrop-blur">
       <div className="mx-auto flex w-full max-w-lg items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/raffle"
-            className="font-display text-sm font-bold tracking-[0.22em] text-foreground"
-          >
-            KAFFLE
-          </Link>
-          <ThemeToggle />
-        </div>
+        <Link
+          href="/raffle"
+          className="font-display text-sm font-bold tracking-[0.22em] text-foreground"
+        >
+          KAFFLE
+        </Link>
         <div className="flex items-center gap-2">
           <Link
             href="/profile"

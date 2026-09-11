@@ -1,78 +1,10 @@
 @import "tailwindcss";
 
-/* Class-based dark: follows html.dark from theme toggle / boot script */
-@custom-variant dark (&:where(.dark, .dark *));
-
 /*
-  Light Stage — Kaffle v0 visual tone
-  Soft cool neutrals by day/night, single amber accent.
+  Kaffle v0 — dark-only visual tone
+  Soft cool neutrals, single amber accent.
 */
 :root {
-  color-scheme: light;
-
-  --background: #f3f3f1;
-  --foreground: #151515;
-  --surface: #fafaf9;
-  --surface-elevated: #ffffff;
-  --muted: #6a6a68;
-  --muted-soft: #92928f;
-  --border: #e2e2df;
-  --border-strong: #cbcbc7;
-  --accent: #bf8a22;
-  --accent-soft: #efe4cb;
-  --accent-ink: #745210;
-  --ink-inverse: #fafaf9;
-  --danger: #b42318;
-  --danger-soft: #fdeceb;
-
-  --kaffle-radius-sm: 0.375rem;
-  --kaffle-radius-md: 0.625rem;
-  --kaffle-radius-lg: 0.875rem;
-  --kaffle-radius-xl: 1.25rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-
-    --background: #131314;
-    --foreground: #f3f3f1;
-    --surface: #1b1b1d;
-    --surface-elevated: #242427;
-    --muted: #9a9a97;
-    --muted-soft: #727270;
-    --border: #323235;
-    --border-strong: #48484c;
-    --accent: #d9a53c;
-    --accent-soft: #32280f;
-    --accent-ink: #efe4cb;
-    --ink-inverse: #131314;
-    --danger: #f97066;
-    --danger-soft: #3b1814;
-  }
-}
-
-/* Manual overrides from theme toggle / boot script */
-html.light {
-  color-scheme: light;
-
-  --background: #f3f3f1;
-  --foreground: #151515;
-  --surface: #fafaf9;
-  --surface-elevated: #ffffff;
-  --muted: #6a6a68;
-  --muted-soft: #92928f;
-  --border: #e2e2df;
-  --border-strong: #cbcbc7;
-  --accent: #bf8a22;
-  --accent-soft: #efe4cb;
-  --accent-ink: #745210;
-  --ink-inverse: #fafaf9;
-  --danger: #b42318;
-  --danger-soft: #fdeceb;
-}
-
-html.dark {
   color-scheme: dark;
 
   --background: #131314;
@@ -89,6 +21,11 @@ html.dark {
   --ink-inverse: #131314;
   --danger: #f97066;
   --danger-soft: #3b1814;
+
+  --kaffle-radius-sm: 0.375rem;
+  --kaffle-radius-md: 0.625rem;
+  --kaffle-radius-lg: 0.875rem;
+  --kaffle-radius-xl: 1.25rem;
 }
 
 @theme inline {
