@@ -93,13 +93,13 @@ export function MissionsPanel({ missions }: { missions: MissionOverviewItem[] })
                   {mission.description}
                 </span>
               </span>
-              <span
-                className={
-                  mission.completed
-                    ? "shrink-0 text-xs font-medium text-muted-soft"
-                    : "shrink-0 rounded-[var(--kaffle-radius-sm)] border border-accent px-2 py-1 text-xs font-medium leading-none text-accent-ink"
-                }
-              >
+                <span
+                  className={
+                    mission.completed
+                      ? "shrink-0 rounded-[var(--kaffle-radius-sm)] border border-border px-2 py-1 text-xs font-medium leading-none text-muted-soft"
+                      : "shrink-0 rounded-[var(--kaffle-radius-sm)] border border-accent px-2 py-1 text-xs font-medium leading-none text-accent-ink"
+                  }
+                >
                 {mission.statusLabel}
               </span>
             </Link>

@@ -1,6 +1,7 @@
+import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/user";
-import { hasKaffleGuideCompleted, KAFFLE_GUIDE_TICKETS } from "@/lib/missions";
-import { BackLink } from "@/components/back-link";
+import { getMissionsOverview, KAFFLE_GUIDE_TICKETS } from "@/lib/missions";
+import { MissionDetailLayout } from "../mission-detail-header";
 import { GuideClaimButton } from "./guide-claim-button";
 
 export default async function KaffleGuideMissionPage() {
@@ -9,19 +10,16 @@ export default async function KaffleGuideMissionPage() {
     return null;
   }
 
-  const claimed = await hasKaffleGuideCompleted(user.id);
+  const missions = await getMissionsOverview(user.id);
+  const mission = missions.find((item) => item.id === "kaffle-guide");
+  if (!mission) {
+    notFound();
+  }
 
   return (
-    <main>
-      <BackLink href="/missions" label="미션 목록으로 돌아가기" />
-      <header className="text-center">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-          Kaffle 가이드
-        </h1>
-      </header>
-
-      <section className="mt-8 space-y-4 text-sm leading-6 text-muted">
-        <div className="rounded-[var(--kaffle-radius-lg)] border border-border p-5">
+    <MissionDetailLayout mission={mission}>
+      <div className="space-y-4 text-sm leading-6 text-muted">
+        <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
           <h2 className="text-base font-semibold text-foreground">
             Kaffle이란
           </h2>
@@ -34,7 +32,7 @@ export default async function KaffleGuideMissionPage() {
           </ul>
         </div>
 
-        <div className="rounded-[var(--kaffle-radius-lg)] border border-border p-5">
+        <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
           <h2 className="text-base font-semibold text-foreground">
             티켓 모으기
           </h2>
@@ -47,7 +45,7 @@ export default async function KaffleGuideMissionPage() {
           </ul>
         </div>
 
-        <div className="rounded-[var(--kaffle-radius-lg)] border border-border p-5">
+        <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
           <h2 className="text-base font-semibold text-foreground">래플 참여</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5">
             <li>래플 페이지에서 티켓을 사용해 현재 라운드에 참여합니다.</li>
@@ -59,16 +57,16 @@ export default async function KaffleGuideMissionPage() {
             </li>
           </ul>
         </div>
-      </section>
+      </div>
 
-      <section className="mt-8 rounded-[var(--kaffle-radius-lg)] border border-border p-5">
+      <section className="mt-8 rounded-[var(--kaffle-radius-sm)] border border-border p-5">
         <h2 className="text-base font-semibold text-foreground">티켓 받기</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
           가이드를 확인했다면 아래에서 티켓 {KAFFLE_GUIDE_TICKETS}장을 받을 수
           있습니다. 계정당 한 번만 가능합니다.
         </p>
-        <GuideClaimButton disabled={claimed} />
+        <GuideClaimButton disabled={mission.completed} />
       </section>
-    </main>
+    </MissionDetailLayout>
   );
 }

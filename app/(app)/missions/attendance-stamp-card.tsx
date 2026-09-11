@@ -32,7 +32,7 @@ export function AttendanceStampCard({
   }
 
   return (
-    <section className="mt-8 flex flex-col items-center">
+    <section className="flex flex-col items-center">
       <p className="font-mono text-base font-medium tabular-nums text-foreground">
         {dateLabel}
       </p>

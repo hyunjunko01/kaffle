@@ -1,12 +1,13 @@
+import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/user";
 import { getAppUrl } from "@/lib/env";
+import { getMissionsOverview } from "@/lib/missions";
 import {
   REFERRAL_SUCCESS_CAP,
   REFERRAL_TICKETS,
-  countSuccessfulReferrals,
 } from "@/lib/referrals";
-import { BackLink } from "@/components/back-link";
 import { InviteLinkPanel } from "../invite-link-panel";
+import { MissionDetailLayout } from "../mission-detail-header";
 
 export default async function InviteMissionPage() {
   const user = await getCurrentUser();
@@ -14,23 +15,22 @@ export default async function InviteMissionPage() {
     return null;
   }
 
-  const inviteCount = await countSuccessfulReferrals(user.id);
+  const missions = await getMissionsOverview(user.id);
+  const mission = missions.find((item) => item.id === "referral");
+  if (!mission) {
+    notFound();
+  }
+
   const inviteLink = `${getAppUrl()}/login?ref=${user.referralCode}`;
+  const inviteCount = mission.progress;
+  const inviteCap = mission.cap || REFERRAL_SUCCESS_CAP;
 
   return (
-    <main>
-      <BackLink href="/missions" label="미션 목록으로 돌아가기" />
-      <header className="text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          친구 초대 미션
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-muted">
-          친구를 초대하고 함께 티켓을 받습니다.
-        </p>
-      </header>
-
-      <section className="mt-8 rounded-[var(--kaffle-radius-lg)] border border-border p-5">
-        <h2 className="text-base font-semibold">초대 링크 공유</h2>
+    <MissionDetailLayout mission={mission}>
+      <section className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
+        <h2 className="text-base font-semibold text-foreground">
+          초대 링크 공유
+        </h2>
         <p className="mt-1 text-sm leading-6 text-muted">
           친구가 링크로 처음 가입하면 당신과 친구 모두 티켓을 받습니다.
         </p>
@@ -39,9 +39,9 @@ export default async function InviteMissionPage() {
           referralCode={user.referralCode}
           ticketsPerInvite={REFERRAL_TICKETS}
           inviteCount={inviteCount}
-          inviteCap={REFERRAL_SUCCESS_CAP}
+          inviteCap={inviteCap}
         />
       </section>
-    </main>
+    </MissionDetailLayout>
   );
 }
