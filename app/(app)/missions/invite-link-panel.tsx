@@ -6,13 +6,11 @@ import { Check, Copy } from "lucide-react";
 export function InviteLinkPanel({
   inviteLink,
   referralCode,
-  ticketsPerInvite,
   inviteCount,
   inviteCap,
 }: {
   inviteLink: string;
   referralCode: string;
-  ticketsPerInvite: number;
   inviteCount: number;
   inviteCap: number;
 }) {
@@ -60,10 +58,6 @@ export function InviteLinkPanel({
         </p>
       </div>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      <p className="text-xs leading-5 text-muted">
-        친구가 링크로 처음 가입하면 당신과 친구 각 {ticketsPerInvite}장.
-        공유만으로는 지급되지 않으며, 당신의 보상은 최대 {inviteCap}회입니다.
-      </p>
     </div>
   );
 }

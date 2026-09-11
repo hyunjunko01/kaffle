@@ -19,7 +19,7 @@ export default async function KaffleGuideMissionPage() {
   return (
     <MissionDetailLayout mission={mission}>
       <div className="space-y-4 text-sm leading-6 text-muted">
-        <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
+        <div className="rounded-[var(--kaffle-radius-sm)] border border-accent p-5">
           <h2 className="text-base font-semibold text-foreground">
             Kaffle이란
           </h2>
@@ -32,7 +32,7 @@ export default async function KaffleGuideMissionPage() {
           </ul>
         </div>
 
-        <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
+        <div className="rounded-[var(--kaffle-radius-sm)] border border-accent p-5">
           <h2 className="text-base font-semibold text-foreground">
             티켓 모으기
           </h2>
@@ -45,7 +45,7 @@ export default async function KaffleGuideMissionPage() {
           </ul>
         </div>
 
-        <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
+        <div className="rounded-[var(--kaffle-radius-sm)] border border-accent p-5">
           <h2 className="text-base font-semibold text-foreground">래플 참여</h2>
           <ul className="mt-3 list-disc space-y-2 pl-5">
             <li>래플 페이지에서 티켓을 사용해 현재 라운드에 참여합니다.</li>
@@ -59,7 +59,7 @@ export default async function KaffleGuideMissionPage() {
         </div>
       </div>
 
-      <section className="mt-8 rounded-[var(--kaffle-radius-sm)] border border-border p-5">
+      <section className="mt-8 rounded-[var(--kaffle-radius-sm)] border border-accent p-5">
         <h2 className="text-base font-semibold text-foreground">티켓 받기</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
           가이드를 확인했다면 아래에서 티켓 {KAFFLE_GUIDE_TICKETS}장을 받을 수

@@ -31,7 +31,7 @@ export function TicketFaucetClaimButton({ tickets }: { tickets: number }) {
         type="button"
         onClick={() => void claim()}
         disabled={pending}
-        className="h-11 w-full rounded-[var(--kaffle-radius-lg)] bg-foreground px-4 text-sm font-medium text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+        className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
       >
         {pending ? "받는 중…" : `티켓 ${tickets}장 받기`}
       </button>

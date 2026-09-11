@@ -26,7 +26,7 @@ export default async function TicketFaucetMissionPage() {
 
   return (
     <MissionDetailLayout mission={mission}>
-      <section className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
+      <section className="rounded-[var(--kaffle-radius-sm)] border border-accent p-5">
         <h2 className="text-base font-semibold text-foreground">테스트 티켓</h2>
         <p className="mt-1 text-sm leading-6 text-muted">
           한 번에 티켓 {TICKET_FAUCET_TICKETS}장을 받습니다. 필요할 때마다 다시
