@@ -345,6 +345,45 @@ export async function getLeaderboardPageFromDb(
   };
 }
 
+export async function getUserPrizeTotalFromDb(walletAddress: string | null): Promise<{
+  prizeTotal: string;
+  symbol: string;
+}> {
+  if (!walletAddress) {
+    return { prizeTotal: "0", symbol: "USDC" };
+  }
+
+  const address = normalizeAddress(walletAddress);
+  const claims = await prisma.prizeClaim.findMany({
+    where: { winnerAddress: address },
+    select: {
+      amountWei: true,
+      raffle: {
+        select: {
+          symbol: true,
+          tokenDecimals: true,
+        },
+      },
+    },
+  });
+
+  if (claims.length === 0) {
+    return { prizeTotal: "0", symbol: "USDC" };
+  }
+
+  const symbol = claims[0]?.raffle.symbol ?? "USDC";
+  const decimals = claims[0]?.raffle.tokenDecimals ?? 6;
+  let total = BigInt(0);
+  for (const claim of claims) {
+    total += BigInt(claim.amountWei);
+  }
+
+  return {
+    prizeTotal: formatUnits(total, decimals),
+    symbol,
+  };
+}
+
 export async function backfillRaffleHomeFromChain() {
   const { scanRecentWinnerFromChain } = await import("@/lib/raffle/recent-winner");
   const { scanVaultClaimsFromChain } = await import("@/lib/raffle/leaderboard");

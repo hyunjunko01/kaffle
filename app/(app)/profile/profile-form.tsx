@@ -4,12 +4,18 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, X } from "lucide-react";
 
+function shortAddress(value: string) {
+  return `${value.slice(0, 6)}…${value.slice(-4)}`;
+}
+
 export function ProfileForm({
   nickname: initialNickname,
   canChangeNickname,
+  walletAddress,
 }: {
   nickname: string;
   canChangeNickname: boolean;
+  walletAddress: string | null;
 }) {
   const router = useRouter();
   const dialogTitleId = useId();
@@ -89,22 +95,32 @@ export function ProfileForm({
 
   return (
     <>
-      <header className="flex items-center gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {initialNickname}
-        </h1>
-        <button
-          type="button"
-          onClick={openEditor}
-          aria-label="닉네임 수정"
-          className="inline-flex h-9 w-9 items-center justify-center text-muted transition hover:text-foreground"
-        >
-          <Pencil size={18} strokeWidth={1.75} aria-hidden="true" />
-        </button>
+      <header className="text-center">
+        <div className="flex items-center justify-center gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            {initialNickname}
+          </h1>
+          <button
+            type="button"
+            onClick={openEditor}
+            aria-label="닉네임 수정"
+            className="inline-flex h-9 w-9 items-center justify-center text-muted transition hover:text-foreground"
+          >
+            <Pencil size={18} strokeWidth={1.75} aria-hidden="true" />
+          </button>
+        </div>
+        {walletAddress ? (
+          <p className="mt-2 font-mono text-sm tabular-nums text-muted">
+            ({shortAddress(walletAddress)})
+          </p>
+        ) : null}
+        {canChangeNickname ? (
+          <p className="mt-3 text-xs text-accent-ink/80">닉네임 변경 1회 가능</p>
+        ) : null}
       </header>
 
       {message && !open ? (
-        <p className="mt-4 rounded-[var(--kaffle-radius-lg)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
+        <p className="mt-4 rounded-[var(--kaffle-radius-sm)] bg-accent-soft px-4 py-3 text-center text-sm text-accent-ink">
           {message}
         </p>
       ) : null}
@@ -121,7 +137,7 @@ export function ProfileForm({
             role="dialog"
             aria-modal="true"
             aria-labelledby={dialogTitleId}
-            className="relative z-10 w-full max-w-[20rem] rounded-[var(--kaffle-radius-lg)] border border-border bg-surface-elevated p-4 shadow-xl"
+            className="relative z-10 w-full max-w-[20rem] rounded-[var(--kaffle-radius-sm)] border border-accent bg-surface-elevated p-4 shadow-xl"
           >
             <div className="flex items-center justify-between gap-2">
               <h2 id={dialogTitleId} className="text-base font-semibold">
@@ -143,7 +159,7 @@ export function ProfileForm({
               className="mt-3 space-y-2.5"
             >
               {error ? (
-                <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-3 py-2 text-xs text-danger">
+                <p className="rounded-[var(--kaffle-radius-sm)] bg-danger-soft px-3 py-2 text-xs text-danger">
                   {error}
                 </p>
               ) : null}
@@ -156,13 +172,13 @@ export function ProfileForm({
                   aria-label="닉네임"
                   onChange={(event) => setNickname(event.target.value)}
                   disabled={!canChangeNickname || saving}
-                  className="h-10 min-w-0 flex-1 rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-3 text-sm outline-none focus:border-border-strong disabled:bg-surface"
+                  className="h-10 min-w-0 flex-1 rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent px-3 text-sm outline-none focus:border-accent disabled:bg-surface"
                 />
                 {canChangeNickname ? (
                   <button
                     type="submit"
                     disabled={saving || nickname.trim() === initialNickname}
-                    className="inline-flex h-10 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground px-3 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+                    className="inline-flex h-10 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-3 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
                   >
                     {saving ? "저장 중…" : "변경"}
                   </button>

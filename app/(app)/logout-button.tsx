@@ -3,7 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function LogoutButton() {
+const DEFAULT_CLASS =
+  "h-9 rounded-[var(--kaffle-radius-lg)] border border-border px-3 text-sm font-medium text-muted transition hover:border-border-strong hover:bg-surface hover:text-foreground disabled:opacity-60";
+
+export function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
@@ -19,7 +22,7 @@ export function LogoutButton() {
       type="button"
       onClick={() => void logout()}
       disabled={pending}
-      className="h-9 rounded-[var(--kaffle-radius-lg)] border border-border px-3 text-sm font-medium text-muted transition hover:border-border-strong hover:bg-surface hover:text-foreground disabled:opacity-60"
+      className={className ?? DEFAULT_CLASS}
     >
       {pending ? "로그아웃 중…" : "로그아웃"}
     </button>

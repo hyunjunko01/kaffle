@@ -7,6 +7,7 @@ import { getDeployScanBlock, getLogScanClient } from "@/lib/raffle/history";
 import {
   getLeaderboardPageFromDb,
   getPrizeLeaderboardFromDb,
+  getUserPrizeTotalFromDb,
   type LeaderboardSnapshotEntry,
 } from "@/lib/raffle/snapshot";
 
@@ -150,4 +151,8 @@ export async function getPrizeLeaderboard(
 
 export async function getLeaderboardPage(page: number) {
   return getLeaderboardPageFromDb(page, PAGE_SIZE);
+}
+
+export async function getUserPrizeTotal(walletAddress: string | null) {
+  return getUserPrizeTotalFromDb(walletAddress);
 }
