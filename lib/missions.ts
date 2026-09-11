@@ -80,10 +80,26 @@ export function getVisibleMissionCatalog(): MissionCatalogItem[] {
 export type MissionOverviewItem = MissionCatalogItem & {
   completed: boolean;
   available: boolean;
+  /** Times completed / claimed so far. */
+  progress: number;
+  /** Max times this mission can be completed in the current window. */
+  cap: number;
+  /** Hub chip: "완료" | "x/y" | "테스트" */
   statusLabel: string;
   inviteCount?: number;
   inviteCap?: number;
 };
+
+function hubStatusLabel(args: {
+  id: MissionId;
+  completed: boolean;
+  progress: number;
+  cap: number;
+}) {
+  if (args.completed) return "완료";
+  if (args.id === "ticket-faucet") return "테스트";
+  return `${args.progress}/${args.cap}`;
+}
 
 export function seoulDateKey(date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -148,45 +164,93 @@ export async function getMissionsOverview(
 
   return getVisibleMissionCatalog().map((mission) => {
     if (mission.id === "kaffle-guide") {
-      return {
-        ...mission,
-        completed: guideDone,
-        available: !guideDone,
-        statusLabel: guideDone ? "완료" : "가능",
-      };
-    }
-    if (mission.id === "attendance") {
-      return {
-        ...mission,
-        completed: attendanceDone,
-        available: !attendanceDone,
-        statusLabel: attendanceDone ? "완료" : "가능",
-      };
-    }
-    if (mission.id === "referral") {
-      const completed = inviteCount >= REFERRAL_SUCCESS_CAP;
+      const progress = guideDone ? 1 : 0;
+      const cap = 1;
+      const completed = guideDone;
       return {
         ...mission,
         completed,
         available: !completed,
-        statusLabel: `${inviteCount}/${REFERRAL_SUCCESS_CAP}`,
-        inviteCount,
-        inviteCap: REFERRAL_SUCCESS_CAP,
+        progress,
+        cap,
+        statusLabel: hubStatusLabel({
+          id: mission.id,
+          completed,
+          progress,
+          cap,
+        }),
+      };
+    }
+    if (mission.id === "attendance") {
+      const progress = attendanceDone ? 1 : 0;
+      const cap = 1;
+      const completed = attendanceDone;
+      return {
+        ...mission,
+        completed,
+        available: !completed,
+        progress,
+        cap,
+        statusLabel: hubStatusLabel({
+          id: mission.id,
+          completed,
+          progress,
+          cap,
+        }),
+      };
+    }
+    if (mission.id === "referral") {
+      const progress = inviteCount;
+      const cap = REFERRAL_SUCCESS_CAP;
+      const completed = progress >= cap;
+      return {
+        ...mission,
+        completed,
+        available: !completed,
+        progress,
+        cap,
+        statusLabel: hubStatusLabel({
+          id: mission.id,
+          completed,
+          progress,
+          cap,
+        }),
+        inviteCount: progress,
+        inviteCap: cap,
       };
     }
     if (mission.id === "ticket-faucet") {
+      const progress = 0;
+      const cap = 1;
       return {
         ...mission,
         completed: false,
         available: true,
-        statusLabel: "테스트",
+        progress,
+        cap,
+        statusLabel: hubStatusLabel({
+          id: mission.id,
+          completed: false,
+          progress,
+          cap,
+        }),
       };
     }
+    const progress = onchainDone ? 1 : 0;
+    const cap = 1;
+    const completed = onchainDone;
     return {
       ...mission,
-      completed: onchainDone,
-      available: !onchainDone,
-      statusLabel: onchainDone ? "완료" : "가능",
+      completed,
+      available: !completed,
+      progress,
+      cap,
+      statusLabel: hubStatusLabel({
+        id: mission.id,
+        completed,
+        progress,
+        cap,
+      }),
     };
   });
 }
