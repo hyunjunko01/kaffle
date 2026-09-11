@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { getCurrentUser, toMePayload } from "@/lib/auth/user";
 import { getUserPrizeTotal } from "@/lib/raffle/leaderboard";
 import { LogoutButton } from "../logout-button";
@@ -17,12 +18,14 @@ export default async function ProfilePage() {
 
   return (
     <main className="space-y-6">
-      <ProfileForm
-        nickname={user.nickname}
-        canChangeNickname={!user.postSignupNicknameChanged}
-        walletAddress={walletAddress}
-      />
-
+      <div className="space-y-2">
+        <BrandMark />
+        <ProfileForm
+          nickname={user.nickname}
+          canChangeNickname={!user.postSignupNicknameChanged}
+          walletAddress={walletAddress}
+        />
+      </div>
       <section
         aria-label="프로필 요약"
         className="relative grid grid-cols-2 overflow-hidden rounded-[var(--kaffle-radius-sm)] border border-accent bg-gradient-to-b from-accent-soft to-[#1a1610]"

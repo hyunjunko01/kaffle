@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { WinnerCarousel } from "@/components/winner-carousel";
 import { getLeaderboardPage } from "@/lib/raffle/leaderboard";
 import { getRecentWinners } from "@/lib/raffle/recent-winner";
@@ -41,9 +42,10 @@ export default async function LeaderboardPage({
   return (
     <main className="space-y-8">
       <header className="text-center">
+        <BrandMark />
         <h2
           id="leaderboard-heading"
-          className="text-3xl font-semibold tracking-tight text-foreground"
+          className="mt-2 text-3xl font-semibold tracking-tight text-foreground"
         >
           누적 상금 리더보드
         </h2>

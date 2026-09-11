@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/brand-mark";
 import { getCurrentUser } from "@/lib/auth/user";
 import { getMissionsOverview } from "@/lib/missions";
 import { getTicketBalance } from "@/lib/tickets";
@@ -16,7 +17,8 @@ export default async function MissionsPage() {
   ]);
 
   return (
-    <main>
+    <main className="space-y-2">
+      <BrandMark />
       <MissionsShell ticketBalance={ticketBalance}>
         <MissionsPanel missions={missions} />
       </MissionsShell>
