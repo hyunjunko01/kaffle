@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const DEFAULT_CLASS =
-  "h-9 rounded-[var(--kaffle-radius-lg)] border border-border px-3 text-sm font-medium text-muted transition hover:border-border-strong hover:bg-surface hover:text-foreground disabled:opacity-60";
+  "h-9 rounded-[var(--kaffle-radius-sm)] border border-border px-3 text-sm font-medium text-muted transition hover:border-border-strong hover:bg-surface hover:text-foreground disabled:opacity-60";
 
 export function LogoutButton({ className }: { className?: string }) {
   const router = useRouter();

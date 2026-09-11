@@ -123,7 +123,7 @@ export function RaffleEnterPanel() {
               </p>
             ) : null}
             {view && !current ? (
-              <div className="rounded-[var(--kaffle-radius-lg)] border border-border p-5 text-center">
+              <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5 text-center">
                 <p className="text-sm text-muted">열린 라운드가 없습니다.</p>
               </div>
             ) : null}

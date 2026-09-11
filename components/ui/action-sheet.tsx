@@ -84,7 +84,7 @@ export function ActionSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="action-sheet-title"
-        className="relative w-full max-w-lg rounded-t-[var(--kaffle-radius-lg)] border border-border bg-surface-elevated px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 shadow-xl"
+        className="relative w-full max-w-lg rounded-t-[var(--kaffle-radius-xl)] border border-border bg-surface-elevated px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 shadow-xl"
       >
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border-strong" />
         <h2

@@ -330,17 +330,19 @@ export async function getLeaderboardPageFromDb(
   totalPages: number;
 }> {
   const all = await buildPrizeLeaderboardFromDb();
-  const total = all.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const podium = all.slice(0, 3);
+  const tableEntries = all.slice(3);
+  const tableTotal = tableEntries.length;
+  const totalPages = Math.max(1, Math.ceil(tableTotal / pageSize));
   const safePage = Math.min(Math.max(1, page), totalPages);
   const offset = (safePage - 1) * pageSize;
 
   return {
-    podium: all.slice(0, 3),
-    entries: all.slice(offset, offset + pageSize),
+    podium,
+    entries: tableEntries.slice(offset, offset + pageSize),
     page: safePage,
     pageSize,
-    total,
+    total: all.length,
     totalPages,
   };
 }

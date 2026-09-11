@@ -24,7 +24,7 @@ export default async function InviteMissionPage() {
 
   return (
     <MissionDetailLayout mission={mission}>
-      <section className="rounded-[var(--kaffle-radius-sm)] border border-accent p-5">
+      <section className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
         <h2 className="text-base font-semibold text-foreground">
           초대 링크 공유
         </h2>

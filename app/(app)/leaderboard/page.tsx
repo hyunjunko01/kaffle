@@ -6,18 +6,6 @@ import { getLeaderboardPage } from "@/lib/raffle/leaderboard";
 import { getRecentWinners } from "@/lib/raffle/recent-winner";
 import { LeaderboardPodium } from "./leaderboard-podium";
 
-const RANK_ROW_CLASS: Record<number, string> = {
-  1: "bg-gradient-to-r from-accent-soft via-[#2a210f]/80 to-transparent",
-  2: "bg-gradient-to-r from-[#2c2e32] via-[#242628]/70 to-transparent",
-  3: "bg-gradient-to-r from-[#2f2418] via-[#241c14]/70 to-transparent",
-};
-
-const RANK_PRIZE_CLASS: Record<number, string> = {
-  1: "text-accent",
-  2: "text-[#e8eaed]",
-  3: "text-[#e8c4a0]",
-};
-
 function parsePage(value: string | string[] | undefined) {
   const raw = Array.isArray(value) ? value[0] : value;
   const page = Number(raw ?? "1");
@@ -37,7 +25,11 @@ export default async function LeaderboardPage({
     getLeaderboardPage(requestedPage),
   ]);
 
-  const { podium, entries, page, totalPages } = board;
+  const { podium, entries, page, totalPages, total } = board;
+  const tableEmptyMessage =
+    total === 0
+      ? "아직 수령한 상금이 없습니다."
+      : "4위 이하 기록이 없습니다.";
 
   return (
     <main className="space-y-8">
@@ -71,24 +63,18 @@ export default async function LeaderboardPage({
             entries.map((entry) => (
               <li
                 key={entry.winnerAddress}
-                className={`grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-3 border-b border-border px-4 py-4 last:border-b-0 ${
-                  RANK_ROW_CLASS[entry.rank] ?? ""
-                }`}
+                className="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-3 border-b border-border px-4 py-4 last:border-b-0"
               >
                 <span className="font-mono text-muted">{entry.rank}</span>
                 <span className="truncate font-medium">{entry.winnerLabel}</span>
-                <span
-                  className={`font-mono ${
-                    RANK_PRIZE_CLASS[entry.rank] ?? "text-accent-ink"
-                  }`}
-                >
+                <span className="font-mono text-accent-ink">
                   {entry.prizeTotal} {entry.symbol}
                 </span>
               </li>
             ))
           ) : (
             <li className="px-4 py-5 text-center text-sm text-muted">
-              아직 수령한 상금이 없습니다.
+              {tableEmptyMessage}
             </li>
           )}
         </ol>
@@ -100,7 +86,9 @@ export default async function LeaderboardPage({
           >
             {page > 1 ? (
               <Link
-                href={page === 2 ? "/leaderboard" : `/leaderboard?page=${page - 1}`}
+                href={
+                  page === 2 ? "/leaderboard" : `/leaderboard?page=${page - 1}`
+                }
                 className="inline-flex items-center gap-1 text-sm text-muted transition hover:text-foreground"
               >
                 <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />

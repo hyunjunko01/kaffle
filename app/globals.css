@@ -18,9 +18,18 @@
   --accent: #d9a53c;
   --accent-soft: #32280f;
   --accent-ink: #efe4cb;
+  --accent-deep: #1a1610;
   --ink-inverse: #131314;
   --danger: #f97066;
   --danger-soft: #3b1814;
+  --rank-silver: #c5c9ce;
+  --rank-silver-ink: #e8eaed;
+  --rank-silver-soft: #2c2e32;
+  --rank-silver-border: #9aa0a6;
+  --rank-bronze: #c9956c;
+  --rank-bronze-ink: #e8c4a0;
+  --rank-bronze-soft: #2f2418;
+  --rank-bronze-border: #b07d4f;
 
   --kaffle-radius-sm: 0.375rem;
   --kaffle-radius-md: 0.625rem;
@@ -40,9 +49,18 @@
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
+  --color-accent-deep: var(--accent-deep);
   --color-ink-inverse: var(--ink-inverse);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-rank-silver: var(--rank-silver);
+  --color-rank-silver-ink: var(--rank-silver-ink);
+  --color-rank-silver-soft: var(--rank-silver-soft);
+  --color-rank-silver-border: var(--rank-silver-border);
+  --color-rank-bronze: var(--rank-bronze);
+  --color-rank-bronze-ink: var(--rank-bronze-ink);
+  --color-rank-bronze-soft: var(--rank-bronze-soft);
+  --color-rank-bronze-border: var(--rank-bronze-border);
 
   --font-sans: var(--font-ibm-plex-sans-kr), "Apple SD Gothic Neo", sans-serif;
   --font-display: var(--font-syne), var(--font-ibm-plex-sans-kr), sans-serif;

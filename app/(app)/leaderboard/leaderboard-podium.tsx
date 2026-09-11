@@ -5,22 +5,22 @@ const PODIUM_ORDER = [2, 1, 3] as const;
 
 const TONE = {
   1: {
-    card: "border-accent bg-gradient-to-b from-accent-soft to-[#1a1610] text-accent-ink",
+    card: "border-accent bg-gradient-to-b from-accent-soft to-accent-deep text-accent-ink",
     badge: "border-accent bg-accent/15 text-accent",
     icon: "text-accent",
     prize: "text-accent",
   },
   2: {
-    card: "border-[#9aa0a6]/45 bg-gradient-to-b from-[#2c2e32] to-[#1a1b1d] text-[#d7dbe0]",
-    badge: "border-[#c5c9ce]/70 bg-[#c5c9ce]/10 text-[#e8eaed]",
+    card: "border-rank-silver-border/45 bg-gradient-to-b from-rank-silver-soft to-background text-rank-silver-ink",
+    badge: "border-rank-silver/70 bg-rank-silver/10 text-rank-silver-ink",
     icon: "",
-    prize: "text-[#e8eaed]",
+    prize: "text-rank-silver-ink",
   },
   3: {
-    card: "border-[#b07d4f]/50 bg-gradient-to-b from-[#2f2418] to-[#1a1510] text-[#e0b892]",
-    badge: "border-[#c9956c]/70 bg-[#c9956c]/10 text-[#e8c4a0]",
+    card: "border-rank-bronze-border/50 bg-gradient-to-b from-rank-bronze-soft to-accent-deep text-rank-bronze-ink",
+    badge: "border-rank-bronze/70 bg-rank-bronze/10 text-rank-bronze-ink",
     icon: "",
-    prize: "text-[#e8c4a0]",
+    prize: "text-rank-bronze-ink",
   },
 } as const;
 

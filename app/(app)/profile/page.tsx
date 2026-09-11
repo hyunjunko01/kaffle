@@ -62,7 +62,7 @@ export default async function ProfilePage() {
         </div>
       </section>
 
-      <dl className="space-y-4 rounded-[var(--kaffle-radius-sm)] border border-accent p-5 text-sm">
+      <dl className="space-y-4 rounded-[var(--kaffle-radius-sm)] border border-border p-5 text-sm">
         <div>
           <dt className="text-muted">지갑 주소</dt>
           <dd className="mt-1 break-all font-mono text-xs leading-5 text-foreground">

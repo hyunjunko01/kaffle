@@ -137,7 +137,7 @@ export function ProfileForm({
             role="dialog"
             aria-modal="true"
             aria-labelledby={dialogTitleId}
-            className="relative z-10 w-full max-w-[20rem] rounded-[var(--kaffle-radius-sm)] border border-accent bg-surface-elevated p-4 shadow-xl"
+            className="relative z-10 w-full max-w-[20rem] rounded-[var(--kaffle-radius-sm)] border border-border bg-surface-elevated p-4 shadow-xl"
           >
             <div className="flex items-center justify-between gap-2">
               <h2 id={dialogTitleId} className="text-base font-semibold">
