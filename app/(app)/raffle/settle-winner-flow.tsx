@@ -522,7 +522,7 @@ export function SettleWinnerFlow({
           type="button"
           onClick={openRequestConfirm}
           disabled={disabled}
-          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-foreground px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           당첨자 요청
         </button>

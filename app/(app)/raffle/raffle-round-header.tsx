@@ -10,9 +10,10 @@ import {
 } from "./utils";
 
 const statusToneClass = {
-  open: "border border-accent text-accent-ink",
+  open: "border border-success text-success-ink",
+  request: "border border-info text-info-ink",
+  settled: "border border-accent text-accent-ink",
   closed: "border border-danger text-danger",
-  other: "border border-accent text-accent-ink",
 } as const;
 
 type RaffleRoundHeaderProps = {

@@ -2,7 +2,7 @@
 
 /*
   Kaffle v0 — dark-only visual tone
-  Soft cool neutrals, single amber accent.
+  Soft cool neutrals, amber brand accent, plus status greens/blues.
 */
 :root {
   color-scheme: dark;
@@ -22,6 +22,12 @@
   --ink-inverse: #131314;
   --danger: #f97066;
   --danger-soft: #3b1814;
+  --success: #6fbf7a;
+  --success-soft: #16301b;
+  --success-ink: #d5edd8;
+  --info: #6ea8e8;
+  --info-soft: #152536;
+  --info-ink: #d4e6f7;
   --rank-silver: #c5c9ce;
   --rank-silver-ink: #e8eaed;
   --rank-silver-soft: #2c2e32;
@@ -53,6 +59,12 @@
   --color-ink-inverse: var(--ink-inverse);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-ink: var(--success-ink);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-ink: var(--info-ink);
   --color-rank-silver: var(--rank-silver);
   --color-rank-silver-ink: var(--rank-silver-ink);
   --color-rank-silver-soft: var(--rank-silver-soft);

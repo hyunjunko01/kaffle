@@ -57,13 +57,11 @@ export function raffleStatusTone(current: {
   if (current.isOpen) {
     return "open";
   }
-  if (
-    current.prizeClaimed ||
-    current.winner ||
-    current.isFinished ||
-    current.canRequestWinner
-  ) {
-    return "other";
+  if (current.prizeClaimed || current.winner || current.isFinished) {
+    return "settled";
+  }
+  if (current.canRequestWinner) {
+    return "request";
   }
   return "closed";
 }
