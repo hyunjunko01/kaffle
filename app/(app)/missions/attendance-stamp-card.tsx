@@ -61,8 +61,20 @@ export function AttendanceStampCard({
             출석 완료
           </span>
         ) : pending ? (
-          <span className="text-sm text-muted">출석 중…</span>
-        ) : null}
+          <span
+            className="rotate-[-12deg] rounded-[var(--kaffle-radius-lg)] border-2 border-border-strong px-3 py-2 font-display text-lg font-bold tracking-wide text-muted-soft"
+            aria-hidden="true"
+          >
+            출석 중…
+          </span>
+        ) : (
+          <span
+            className="rotate-[-12deg] rounded-[var(--kaffle-radius-lg)] border-2 border-border-strong px-3 py-2 font-display text-lg font-bold tracking-wide text-muted-soft"
+            aria-hidden="true"
+          >
+            출석하기
+          </span>
+        )}
       </button>
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
     </section>
