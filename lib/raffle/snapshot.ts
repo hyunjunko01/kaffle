@@ -243,13 +243,14 @@ export type LeaderboardSnapshotEntry = {
   rank: number;
   winnerAddress: string;
   winnerLabel: string;
+  nickname: string | null;
   prizeTotal: string;
   symbol: string;
 };
 
-export async function getPrizeLeaderboardFromDb(
-  limit = 3,
-): Promise<LeaderboardSnapshotEntry[]> {
+async function buildPrizeLeaderboardFromDb(): Promise<
+  LeaderboardSnapshotEntry[]
+> {
   const claims = await prisma.prizeClaim.findMany({
     select: {
       winnerAddress: true,
@@ -276,14 +277,12 @@ export async function getPrizeLeaderboardFromDb(
     totals.set(winner, (totals.get(winner) ?? BigInt(0)) + amount);
   }
 
-  const ranked = Array.from(totals.entries())
-    .sort((left, right) => {
-      if (left[1] === right[1]) {
-        return left[0].localeCompare(right[0]);
-      }
-      return left[1] > right[1] ? -1 : 1;
-    })
-    .slice(0, limit);
+  const ranked = Array.from(totals.entries()).sort((left, right) => {
+    if (left[1] === right[1]) {
+      return left[0].localeCompare(right[0]);
+    }
+    return left[1] > right[1] ? -1 : 1;
+  });
 
   const wallets = await prisma.wallet.findMany({
     where: {
@@ -295,13 +294,55 @@ export async function getPrizeLeaderboardFromDb(
     wallets.map((wallet) => [wallet.address, wallet.user.nickname]),
   );
 
-  return ranked.map(([address, total], index) => ({
-    rank: index + 1,
-    winnerAddress: address,
-    winnerLabel: labels.get(address) ?? shortAddress(address),
-    prizeTotal: formatUnits(total, decimals),
-    symbol,
-  }));
+  return ranked.map(([address, total], index) => {
+    const nickname = labels.get(address) ?? null;
+    return {
+      rank: index + 1,
+      winnerAddress: address,
+      winnerLabel: nickname ?? shortAddress(address),
+      nickname,
+      prizeTotal: formatUnits(total, decimals),
+      symbol,
+    };
+  });
+}
+
+export async function getPrizeLeaderboardFromDb(
+  limit = 3,
+  offset = 0,
+): Promise<{ entries: LeaderboardSnapshotEntry[]; total: number }> {
+  const all = await buildPrizeLeaderboardFromDb();
+  return {
+    entries: all.slice(offset, offset + limit),
+    total: all.length,
+  };
+}
+
+export async function getLeaderboardPageFromDb(
+  page: number,
+  pageSize = 10,
+): Promise<{
+  podium: LeaderboardSnapshotEntry[];
+  entries: LeaderboardSnapshotEntry[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}> {
+  const all = await buildPrizeLeaderboardFromDb();
+  const total = all.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(Math.max(1, page), totalPages);
+  const offset = (safePage - 1) * pageSize;
+
+  return {
+    podium: all.slice(0, 3),
+    entries: all.slice(offset, offset + pageSize),
+    page: safePage,
+    pageSize,
+    total,
+    totalPages,
+  };
 }
 
 export async function backfillRaffleHomeFromChain() {

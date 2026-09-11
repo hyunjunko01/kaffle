@@ -5,12 +5,14 @@ import { getPublicClient } from "@/lib/chain/clients";
 import { prisma } from "@/lib/db";
 import { getDeployScanBlock, getLogScanClient } from "@/lib/raffle/history";
 import {
+  getLeaderboardPageFromDb,
   getPrizeLeaderboardFromDb,
   type LeaderboardSnapshotEntry,
 } from "@/lib/raffle/snapshot";
 
 const LOG_CHUNK_SIZE = BigInt(9_000);
 const DEFAULT_LIMIT = 3;
+const PAGE_SIZE = 10;
 
 export type LeaderboardEntry = LeaderboardSnapshotEntry;
 
@@ -125,17 +127,27 @@ export async function buildLeaderboardFromChain(limit: number) {
     wallets.map((wallet) => [wallet.address, wallet.user.nickname]),
   );
 
-  return ranked.map(([address, total], index) => ({
-    rank: index + 1,
-    winnerAddress: address,
-    winnerLabel: labels.get(address) ?? shortAddress(address),
-    prizeTotal: formatUnits(total, decimals),
-    symbol,
-  }));
+  return ranked.map(([address, total], index) => {
+    const nickname = labels.get(address) ?? null;
+    return {
+      rank: index + 1,
+      winnerAddress: address,
+      winnerLabel: nickname ?? shortAddress(address),
+      nickname,
+      prizeTotal: formatUnits(total, decimals),
+      symbol,
+    };
+  });
 }
 
 export async function getPrizeLeaderboard(
   limit = DEFAULT_LIMIT,
+  offset = 0,
 ): Promise<LeaderboardEntry[]> {
-  return getPrizeLeaderboardFromDb(limit);
+  const { entries } = await getPrizeLeaderboardFromDb(limit, offset);
+  return entries;
+}
+
+export async function getLeaderboardPage(page: number) {
+  return getLeaderboardPageFromDb(page, PAGE_SIZE);
 }
