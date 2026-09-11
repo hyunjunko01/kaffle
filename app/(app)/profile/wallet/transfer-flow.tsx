@@ -327,7 +327,7 @@ export function TransferFlow({
             recipient.trim().length === 0 ||
             amount.trim().length === 0
           }
-          className="inline-flex h-14 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           {`${view.symbol} 전송하기`}
         </button>

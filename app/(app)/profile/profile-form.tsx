@@ -130,7 +130,7 @@ export function ProfileForm({
           <button
             type="button"
             aria-label="닫기"
-            className="absolute inset-0 bg-foreground/40"
+            className="absolute inset-0 bg-black/60"
             onClick={closeEditor}
           />
           <div
