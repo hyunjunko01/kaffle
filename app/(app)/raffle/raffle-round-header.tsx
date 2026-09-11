@@ -1,5 +1,6 @@
 import { RefreshCw } from "lucide-react";
 import type { CurrentRaffle, RaffleView, RoundParticipant } from "./types";
+import { PrizeAmount } from "./prize-amount";
 import { RaffleWheel } from "./raffle-wheel";
 import {
   formatLocal,
@@ -17,36 +18,36 @@ const statusToneClass = {
 type RaffleRoundHeaderProps = {
   current: CurrentRaffle;
   view: RaffleView;
+  /** Show on-chain winner only after the user has confirmed the reveal. */
+  showWinner?: boolean;
 };
 
 export function RaffleRoundHeader({
   current,
   view,
+  showWinner = false,
 }: RaffleRoundHeaderProps) {
   const tone = raffleStatusTone(current);
 
   return (
     <div className="text-center">
-      <div className="flex items-center justify-center gap-2">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+      <div className="flex items-center justify-center gap-2 leading-none">
+        <h2 className="font-prize text-2xl font-medium tracking-[0.04em] text-foreground sm:text-3xl">
           {current.roundNumber ?? "—"}회차
         </h2>
         <span
-          className={`rounded-[var(--kaffle-radius-sm)] px-1 py-1 text-sm font-medium leading-none ${statusToneClass[tone]}`}
+          className={`rounded-[var(--kaffle-radius-sm)] px-1.5 py-1 text-base font-medium leading-none ${statusToneClass[tone]}`}
         >
           {raffleStatusLabel(current)}
         </span>
       </div>
-      <p className="mt-1 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-        {current.prizeAmount}{" "}
-        <span className="text-xl font-semibold sm:text-2xl">{view.symbol}</span>
-      </p>
+      <PrizeAmount amount={current.prizeAmount} symbol={view.symbol} />
 
       <p className="mt-3 text-sm text-muted">
         마감 {formatLocal(current.endTime)}
       </p>
 
-      {current.winner ? (
+      {showWinner && current.winner ? (
         <p className="mt-3 text-sm text-muted">
           당첨자{" "}
           <span className="font-medium text-foreground">
@@ -55,8 +56,8 @@ export function RaffleRoundHeader({
         </p>
       ) : null}
 
-      <div className="mx-auto mt-6 w-40 opacity-80">
-        <RaffleWheel />
+      <div className="mt-4">
+        <RaffleWheel variant="teaser" />
       </div>
     </div>
   );
@@ -74,7 +75,7 @@ export function RaffleRoundBoard({
   onRefresh?: () => void;
 }) {
   return (
-    <div className="rounded-[var(--kaffle-radius-lg)] border border-border">
+    <div className="rounded-[var(--kaffle-radius-sm)] border border-border">
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div className="flex min-w-0 items-center gap-1.5">
           <h3 className="text-sm font-semibold text-foreground">
@@ -86,7 +87,7 @@ export function RaffleRoundBoard({
               onClick={onRefresh}
               disabled={refreshing}
               aria-label="참여자 목록 새로고침"
-              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-lg)] text-muted transition hover:bg-surface hover:text-foreground disabled:opacity-60"
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--kaffle-radius-sm)] text-muted transition hover:bg-surface hover:text-foreground disabled:opacity-60"
             >
               <RefreshCw
                 aria-hidden="true"

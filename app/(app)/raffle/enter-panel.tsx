@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getPublicChainConfig, NETWORKS } from "@/lib/chain/config";
-import { ClaimPrizeFlow } from "./claim-prize-flow";
 import { EnterRaffleFlow } from "./enter-raffle-flow";
 import { RaffleRoundBoard, RaffleRoundHeader } from "./raffle-round-header";
 import { SettleWinnerFlow } from "./settle-winner-flow";
 import { useRaffleView } from "./use-raffle-view";
+import { hasSeenWinnerReveal } from "./winner-reveal-seen";
 
 function RoundStatusSpinner() {
   return (
@@ -33,6 +33,7 @@ export function RaffleEnterPanel() {
   const [settleBusy, setSettleBusy] = useState(false);
   const [claimBusy, setClaimBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [revealSeen, setRevealSeen] = useState(false);
 
   const current = view?.current ?? null;
   const busy = enterBusy || settleBusy || claimBusy;
@@ -42,6 +43,14 @@ export function RaffleEnterPanel() {
     Boolean(current?.winner) &&
     Boolean(view?.wallet) &&
     current!.winner!.toLowerCase() === view!.wallet!.toLowerCase();
+
+  useEffect(() => {
+    if (!current?.winner) {
+      setRevealSeen(false);
+      return;
+    }
+    setRevealSeen(hasSeenWinnerReveal(current.address, view?.wallet ?? null));
+  }, [current?.address, current?.winner, view?.wallet]);
 
   async function refreshRound() {
     setRefreshing(true);
@@ -64,17 +73,34 @@ export function RaffleEnterPanel() {
             <RaffleRoundHeader
               current={current}
               view={view}
+              showWinner={Boolean(current.winner) && revealSeen}
             />
 
-            <EnterRaffleFlow
-              view={view}
-              current={current}
-              explorerBaseUrl={explorerBaseUrl}
-              disabled={busy}
-              onBusyChange={setEnterBusy}
-              onViewUpdate={setView}
-              onPageError={setPageError}
-            />
+            {canRequestWinner ||
+            settleBusy ||
+            Boolean(current.winner) ? (
+              <SettleWinnerFlow
+                view={view}
+                current={current}
+                explorerBaseUrl={explorerBaseUrl}
+                disabled={busy}
+                onBusyChange={setSettleBusy}
+                onViewUpdate={setView}
+                onRevealSeenChange={setRevealSeen}
+                canClaim={canClaim && isWinner}
+                onClaimBusyChange={setClaimBusy}
+              />
+            ) : (
+              <EnterRaffleFlow
+                view={view}
+                current={current}
+                explorerBaseUrl={explorerBaseUrl}
+                disabled={busy}
+                onBusyChange={setEnterBusy}
+                onViewUpdate={setView}
+                onPageError={setPageError}
+              />
+            )}
 
             {pageError ? (
               <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
@@ -88,28 +114,6 @@ export function RaffleEnterPanel() {
               refreshing={refreshing}
               onRefresh={() => void refreshRound()}
             />
-
-            {canRequestWinner || settleBusy || Boolean(current.winner) ? (
-              <SettleWinnerFlow
-                view={view}
-                current={current}
-                explorerBaseUrl={explorerBaseUrl}
-                disabled={busy}
-                onBusyChange={setSettleBusy}
-                onViewUpdate={setView}
-              />
-            ) : null}
-
-            {canClaim && isWinner ? (
-              <ClaimPrizeFlow
-                view={view}
-                current={current}
-                explorerBaseUrl={explorerBaseUrl}
-                disabled={busy}
-                onBusyChange={setClaimBusy}
-                onViewUpdate={setView}
-              />
-            ) : null}
           </>
         ) : (
           <>

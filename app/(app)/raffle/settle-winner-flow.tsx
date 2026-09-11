@@ -7,6 +7,7 @@ import {
   ActionSheet,
   type ActionSheetStep,
 } from "@/components/ui/action-sheet";
+import { ClaimPrizeFlow } from "./claim-prize-flow";
 import type { CurrentRaffle, RaffleView } from "./types";
 import { toView } from "./types";
 import { RaffleWheel } from "./raffle-wheel";
@@ -62,6 +63,9 @@ type SettleWinnerFlowProps = {
   disabled: boolean;
   onBusyChange: (busy: boolean) => void;
   onViewUpdate: (view: RaffleView) => void;
+  onRevealSeenChange?: (seen: boolean) => void;
+  canClaim?: boolean;
+  onClaimBusyChange?: (busy: boolean) => void;
 };
 
 function settleErrorMessage(bodyError?: string) {
@@ -182,7 +186,7 @@ function WheelDrawModal({
 
         <div className="mt-6">
           <RaffleWheel
-            peek
+            variant="reveal"
             phase={wheelPhase}
             slots={slots}
             targetIndex={targetIndex}
@@ -216,7 +220,7 @@ function WheelDrawModal({
           <button
             type="button"
             onClick={onClose}
-            className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
+            className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent text-base font-semibold text-ink-inverse transition hover:opacity-90"
           >
             확인
           </button>
@@ -233,6 +237,9 @@ export function SettleWinnerFlow({
   disabled,
   onBusyChange,
   onViewUpdate,
+  onRevealSeenChange,
+  canClaim = false,
+  onClaimBusyChange,
 }: SettleWinnerFlowProps) {
   const router = useRouter();
   const [confirmSheet, setConfirmSheet] = useState<ConfirmSheetState | null>(
@@ -249,12 +256,21 @@ export function SettleWinnerFlow({
   const wallet = view?.wallet ?? null;
   const canRequest = current.canRequestWinner;
   const hasWinner = Boolean(current.winner);
+  const isWinner =
+    Boolean(current.winner) &&
+    Boolean(wallet) &&
+    current.winner!.toLowerCase() === wallet!.toLowerCase();
   const showPrimaryConfirm = hasWinner && seen === false;
-  const showReplay = hasWinner && seen === true;
+  const showClaim = hasWinner && seen === true && isWinner && canClaim;
+  const showClaimedComplete =
+    hasWinner && seen === true && isWinner && current.prizeClaimed;
+  const showConsolation = hasWinner && seen === true && !isWinner;
 
   useEffect(() => {
-    setSeen(hasSeenWinnerReveal(current.address, wallet));
-  }, [current.address, wallet, current.winner]);
+    const next = hasSeenWinnerReveal(current.address, wallet);
+    setSeen(next);
+    onRevealSeenChange?.(next);
+  }, [current.address, wallet, current.winner, onRevealSeenChange]);
 
   const txUrl =
     drawModal?.txHash && explorerBaseUrl
@@ -285,6 +301,7 @@ export function SettleWinnerFlow({
     if (drawModal.phase === "success" && drawModal.markSeenOnClose) {
       markWinnerRevealSeen(current.address, wallet);
       setSeen(true);
+      onRevealSeenChange?.(true);
     }
     setDrawModal(null);
     onBusyChange(false);
@@ -505,7 +522,7 @@ export function SettleWinnerFlow({
           type="button"
           onClick={openRequestConfirm}
           disabled={disabled}
-          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-foreground px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           당첨자 요청
         </button>
@@ -516,28 +533,46 @@ export function SettleWinnerFlow({
           type="button"
           onClick={() => void executeReplay()}
           disabled={disabled}
-          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           당첨자 확인
         </button>
       ) : null}
 
-      {showReplay ? (
-        <button
-          type="button"
-          onClick={() => void executeReplay()}
+      {showClaim && view && onClaimBusyChange ? (
+        <ClaimPrizeFlow
+          view={view}
+          current={current}
+          explorerBaseUrl={explorerBaseUrl}
           disabled={disabled}
-          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] border border-border text-sm font-medium transition hover:bg-surface disabled:opacity-60"
+          onBusyChange={onClaimBusyChange}
+          onViewUpdate={onViewUpdate}
+        />
+      ) : null}
+
+      {showClaimedComplete ? (
+        <div
+          role="status"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] border border-accent bg-surface px-5 text-base font-semibold text-accent"
         >
-          추첨 다시보기
-        </button>
+          축하합니다! 상금 수령 완료
+        </div>
+      ) : null}
+
+      {showConsolation ? (
+        <div
+          role="status"
+          className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] border border-border bg-surface px-5 text-base font-semibold text-muted"
+        >
+          아쉽지만 다음 기회에...
+        </div>
       ) : null}
 
       <ActionSheet
         open={confirmSheet !== null}
         step={confirmSheet?.step ?? "confirm"}
         title={
-          confirmSheet?.step === "error" ? "추첨 실패" : "당첨자 추첨 확인"
+          confirmSheet?.step === "error" ? "추첨 실패" : "당첨자 추첨"
         }
         onClose={closeConfirm}
         onConfirm={() => void executeSettleWinner()}
@@ -553,33 +588,34 @@ export function SettleWinnerFlow({
         cancelLabel="취소"
         closeLabel="확인"
       >
-        <div className="rounded-[var(--kaffle-radius-lg)] bg-surface px-4 py-5 text-center">
+        <div className="rounded-[var(--kaffle-radius-sm)] bg-surface px-4 py-5 text-center">
           <p className="text-xs text-muted">회차</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {current.roundNumber ?? "—"}회차
           </p>
         </div>
         <dl className="space-y-3 text-sm">
-          <div>
-            <dt className="text-muted">상금</dt>
-            <dd className="mt-1 font-medium">
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="shrink-0 text-muted">상금</dt>
+            <dd className="text-right font-medium">
               {current.prizeAmount} {view?.symbol}
             </dd>
           </div>
-          <div>
-            <dt className="text-muted">전체 티켓</dt>
-            <dd className="mt-1 font-medium">{current.totalTickets}장</dd>
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="shrink-0 text-muted">전체 티켓</dt>
+            <dd className="text-right font-medium tabular-nums">
+              {current.totalTickets}장
+            </dd>
           </div>
-          <div>
-            <dt className="text-muted">참여자</dt>
-            <dd className="mt-1 font-medium">
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="shrink-0 text-muted">참여자</dt>
+            <dd className="text-right font-medium tabular-nums">
               {view?.participants.length ?? 0}명
             </dd>
           </div>
         </dl>
         <p className="text-xs leading-5 text-muted">
-          확인 후 가운데 돌림판에서 추첨이 진행됩니다. 추첨 결과는 온체인
-          확정 후 돌림판이 멈춥니다.
+          난수는 Chainlink VRF로 온체인에서 생성됩니다.
         </p>
       </ActionSheet>
 

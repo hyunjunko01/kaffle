@@ -43,7 +43,7 @@ function enterErrorMessage(bodyError?: string) {
 function enterSheetTitle(step: ActionSheetStep) {
   switch (step) {
     case "confirm":
-      return "참여 내용 확인";
+      return "티켓 사용 확인";
     case "loading":
       return "래플 참여 중";
     case "success":
@@ -189,13 +189,13 @@ export function EnterRaffleFlow({
               onChange={(event) => setTicketCount(event.target.value)}
               disabled={enterBusy}
               placeholder="0"
-              className="ticket-count-input box-border h-full w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent py-0 pl-[3.75rem] pr-2 text-right text-sm leading-none tabular-nums text-foreground outline-none focus:border-border-strong disabled:opacity-60"
+              className="ticket-count-input box-border h-full w-full rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent py-0 pl-[3.75rem] pr-2 text-right text-sm leading-none tabular-nums text-foreground outline-none focus:border-border-strong disabled:opacity-60"
             />
           </label>
           <button
             type="submit"
             disabled={disabled || !canEnter || ticketCount.trim().length === 0}
-            className="inline-flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-[var(--kaffle-radius-lg)] bg-foreground px-5 text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+            className="inline-flex h-full shrink-0 items-center justify-center whitespace-nowrap rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {canEnter ? "티켓 사용" : "참여 불가"}
           </button>
@@ -221,7 +221,7 @@ export function EnterRaffleFlow({
         loadingMessage={sheet?.loadingMessage}
         successMessage={sheet?.successMessage}
         errorMessage={sheet?.errorMessage ?? undefined}
-        confirmLabel="참여하기"
+        confirmLabel="티켓 사용"
         cancelLabel="취소"
         closeLabel="확인"
         actionHref={txUrl}
@@ -229,34 +229,30 @@ export function EnterRaffleFlow({
       >
         {Number.isInteger(parsedTicketCount) ? (
           <>
-            <div className="rounded-[var(--kaffle-radius-lg)] bg-surface px-4 py-5 text-center">
+            <div className="rounded-[var(--kaffle-radius-sm)] bg-surface px-4 py-5 text-center">
               <p className="text-xs text-muted">사용할 티켓</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">
                 {parsedTicketCount}장
               </p>
             </div>
             <dl className="space-y-3 text-sm">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <dt className="text-muted">보유 티켓</dt>
-                  <dd className="mt-1 font-medium">{view.ticketBalance}장</dd>
-                </div>
-                <div>
-                  <dt className="text-muted">참여 후 잔여</dt>
-                  <dd className="mt-1 font-medium">
-                    {Math.max(view.ticketBalance - parsedTicketCount, 0)}장
-                  </dd>
-                </div>
-              </div>
-              <div>
-                <dt className="text-muted">상금</dt>
-                <dd className="mt-1 font-medium">
-                  {current.prizeAmount} {view.symbol}
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="shrink-0 text-muted">보유 티켓</dt>
+                <dd className="text-right font-medium tabular-nums">
+                  {view.ticketBalance}장
                 </dd>
               </div>
-              <div>
-                <dt className="text-muted">이번 회차 내 참여</dt>
-                <dd className="mt-1 font-medium">{current.userTickets}장</dd>
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="shrink-0 text-muted">사용 후 잔여 티켓</dt>
+                <dd className="text-right font-medium tabular-nums">
+                  {Math.max(view.ticketBalance - parsedTicketCount, 0)}장
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="shrink-0 text-muted">상금</dt>
+                <dd className="text-right font-medium">
+                  {current.prizeAmount} {view.symbol}
+                </dd>
               </div>
             </dl>
             <p className="text-xs leading-5 text-muted">

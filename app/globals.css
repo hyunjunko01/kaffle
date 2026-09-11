@@ -109,6 +109,7 @@ html.dark {
 
   --font-sans: var(--font-ibm-plex-sans-kr), "Apple SD Gothic Neo", sans-serif;
   --font-display: var(--font-syne), var(--font-ibm-plex-sans-kr), sans-serif;
+  --font-prize: var(--font-bebas), var(--font-ibm-plex-sans-kr), sans-serif;
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 }
 

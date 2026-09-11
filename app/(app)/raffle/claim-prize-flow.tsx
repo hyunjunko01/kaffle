@@ -63,6 +63,7 @@ export function ClaimPrizeFlow({
 }: ClaimPrizeFlowProps) {
   const router = useRouter();
   const [sheet, setSheet] = useState<ActionSheetState | null>(null);
+  const [pendingView, setPendingView] = useState<RaffleView | null>(null);
 
   const sheetOpen = sheet !== null;
   const sheetStep = sheet?.step ?? "confirm";
@@ -78,6 +79,10 @@ export function ClaimPrizeFlow({
   function closeSheet() {
     if (sheet?.step === "loading") {
       return;
+    }
+    if (pendingView) {
+      onViewUpdate(pendingView);
+      setPendingView(null);
     }
     setSheet(null);
     onBusyChange(false);
@@ -122,7 +127,22 @@ export function ClaimPrizeFlow({
       return;
     }
 
-    onViewUpdate(toView(body, view));
+    // Defer parent update until the sheet closes so this flow stays mounted
+    // through the success step. Force claimed flags in case the RPC read lags.
+    const nextView = toView(
+      {
+        ...body,
+        current: body.current
+          ? {
+              ...body.current,
+              canClaim: false,
+              prizeClaimed: true,
+            }
+          : body.current,
+      },
+      view,
+    );
+    setPendingView(nextView);
     onBusyChange(false);
     setSheet({
       step: "success",
@@ -142,7 +162,7 @@ export function ClaimPrizeFlow({
         type="button"
         onClick={openSheet}
         disabled={disabled}
-        className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+        className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
       >
         상금 받기
       </button>
@@ -172,38 +192,32 @@ export function ClaimPrizeFlow({
         actionHref={txUrl}
         actionLabel="트랜잭션 확인"
       >
-        <div className="rounded-[var(--kaffle-radius-lg)] bg-surface px-4 py-5 text-center">
+        <div className="rounded-[var(--kaffle-radius-sm)] bg-surface px-4 py-5 text-center">
           <p className="text-xs text-muted">수령 상금</p>
           <p className="mt-1 text-2xl font-semibold tracking-tight">
             {current.prizeAmount} {view.symbol}
           </p>
         </div>
         <dl className="space-y-3 text-sm">
-          <div>
-            <dt className="text-muted">회차</dt>
-            <dd className="mt-1 font-medium">
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="shrink-0 text-muted">회차</dt>
+            <dd className="text-right font-medium">
               {current.roundNumber ?? "—"}회차
             </dd>
           </div>
-          <div>
-            <dt className="text-muted">당첨자</dt>
-            <dd className="mt-1 font-medium">
-              {winnerLabel}
-            </dd>
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="shrink-0 text-muted">당첨자</dt>
+            <dd className="text-right font-medium">{winnerLabel}</dd>
           </div>
           {current.winner ? (
-            <div>
-              <dt className="text-muted">받는 지갑</dt>
-              <dd className="mt-1 break-all font-mono text-xs">
+            <div className="flex items-baseline justify-between gap-4">
+              <dt className="shrink-0 text-muted">받는 지갑</dt>
+              <dd className="max-w-[65%] break-all text-right font-mono text-xs">
                 {current.winner}
               </dd>
             </div>
           ) : null}
         </dl>
-        <p className="text-xs leading-5 text-muted">
-          상금은 내 지갑으로 전송됩니다. 플랫폼 relayer가 네트워크 수수료를 대신
-          냅니다.
-        </p>
       </ActionSheet>
     </>
   );

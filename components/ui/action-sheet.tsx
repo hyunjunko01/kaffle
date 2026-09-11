@@ -101,14 +101,14 @@ export function ActionSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-lg)] border border-border text-sm font-medium transition hover:bg-surface"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-sm)] border border-border text-base font-medium transition hover:bg-surface"
               >
                 {cancelLabel}
               </button>
               <button
                 type="button"
                 onClick={onConfirm}
-                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent text-base font-semibold text-ink-inverse transition hover:opacity-90"
               >
                 {confirmLabel}
               </button>
@@ -148,7 +148,7 @@ export function ActionSheet({
               type="button"
               onClick={onClose}
               disabled={!actionsReady}
-              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+              className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
             >
               {actionsReady ? closeLabel : "결과 확인 중…"}
             </button>
@@ -164,7 +164,7 @@ export function ActionSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-lg)] border border-border text-sm font-medium transition hover:bg-surface"
+                className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-sm)] border border-border text-base font-medium transition hover:bg-surface"
               >
                 {closeLabel}
               </button>
@@ -172,7 +172,7 @@ export function ActionSheet({
                 <button
                   type="button"
                   onClick={onRetry}
-                  className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90"
+                  className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent text-base font-semibold text-ink-inverse transition hover:opacity-90"
                 >
                   {retryLabel}
                 </button>

@@ -12,9 +12,12 @@ import { targetRotationForSlot } from "./wheel-slots";
 import { wheelSound } from "./wheel-sound";
 
 type WheelPhase = "idle" | "spinning" | "stopping" | "stopped";
+type WheelVariant = "teaser" | "reveal";
 
 const SEGMENT_COLORS = ["#18181b", "#a1a1aa", "#27272a", "#d4d4d8"] as const;
 const LIGHT_SEGMENTS = new Set([1, 3]);
+/** Decorative segment count when no slots are provided (teaser idle). */
+const IDLE_SEGMENT_COUNT = 16;
 /** Constant spin speed while waiting for on-chain result. */
 const SPIN_DEG_PER_MS = 360 / 700;
 /**
@@ -32,12 +35,9 @@ function truncateLabel(value: string, max = 6) {
 }
 
 function buildConicGradient(count: number) {
-  if (count <= 0) {
-    return "conic-gradient(from -22.5deg, #18181b 0deg 45deg, #a1a1aa 45deg 90deg, #27272a 90deg 135deg, #d4d4d8 135deg 180deg, #18181b 180deg 225deg, #a1a1aa 225deg 270deg, #27272a 270deg 315deg, #d4d4d8 315deg 360deg)";
-  }
-
-  const slice = 360 / count;
-  const parts = Array.from({ length: count }, (_, index) => {
+  const n = count > 0 ? count : IDLE_SEGMENT_COUNT;
+  const slice = 360 / n;
+  const parts = Array.from({ length: n }, (_, index) => {
     const color = SEGMENT_COLORS[index % SEGMENT_COLORS.length];
     const start = index * slice;
     const end = (index + 1) * slice;
@@ -79,7 +79,7 @@ export function RaffleWheel({
   phase = "idle",
   slots = [],
   targetIndex = null,
-  peek = false,
+  variant,
   className = "",
   label = "래플 돌림판",
   onStopComplete,
@@ -87,8 +87,8 @@ export function RaffleWheel({
   phase?: WheelPhase;
   slots?: WheelSlot[];
   targetIndex?: number | null;
-  /** Show only the top arc (~32% of diameter). */
-  peek?: boolean;
+  /** teaser — main page top arc; reveal — winner-draw sheet top arc */
+  variant: WheelVariant;
   className?: string;
   label?: string;
   onStopComplete?: () => void;
@@ -110,7 +110,7 @@ export function RaffleWheel({
     [slots],
   );
   const count = segments.length;
-  const slice = count > 0 ? 360 / count : 45;
+  const slice = count > 0 ? 360 / count : 360 / IDLE_SEGMENT_COUNT;
   const showLabel = count > 0 && slice >= 7;
 
   useEffect(() => {
@@ -220,47 +220,43 @@ export function RaffleWheel({
     transform: `rotate(${rotation}deg)`,
   };
 
+  const labels =
+    count > 0 && showLabel ? (
+      <ul className="absolute inset-0 z-[1]">
+        {segments.map((segment, index) => {
+          const angle = index * slice;
+          const light = LIGHT_SEGMENTS.has(index % SEGMENT_COLORS.length);
+          return (
+            <li
+              key={`${segment.nickname}-${index}`}
+              className="absolute inset-0 flex justify-center"
+              style={{ transform: `rotate(${angle}deg)` }}
+            >
+              <span
+                className={`mt-[11%] max-w-[42%] truncate text-center text-[0.62rem] font-semibold leading-none sm:text-xs ${
+                  light ? "text-zinc-950" : "text-zinc-50"
+                }`}
+              >
+                {segment.label}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    ) : null;
+
   const disk = (
     <div
       aria-hidden="true"
       className="relative h-full w-full overflow-hidden rounded-full border-[6px] border-surface-elevated shadow-lg will-change-transform"
       style={diskStyle}
     >
-      {count > 0 && showLabel ? (
-        <ul className="absolute inset-0">
-          {segments.map((segment, index) => {
-            const angle = index * slice;
-            const light = LIGHT_SEGMENTS.has(index % SEGMENT_COLORS.length);
-            return (
-              <li
-                key={`${segment.nickname}-${index}`}
-                className="absolute inset-0 flex justify-center"
-                style={{ transform: `rotate(${angle}deg)` }}
-              >
-                <span
-                  className={`mt-[11%] max-w-[42%] truncate text-center text-[0.62rem] font-semibold leading-none sm:text-xs ${
-                    light ? "text-zinc-950" : "text-zinc-50"
-                  }`}
-                >
-                  {segment.label}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-
-      {!peek ? (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex h-[30%] w-[30%] items-center justify-center rounded-full border-[3px] border-border bg-surface-elevated text-[0.55rem] font-semibold tracking-[0.18em] text-foreground shadow-md sm:text-[0.65rem]">
-            KAFFLE
-          </div>
-        </div>
-      ) : null}
+      {labels}
     </div>
   );
 
-  if (peek) {
+  if (variant === "reveal") {
+    // Winner sheet: same proportion as teaser (clip ≈ 38% of diameter), framed.
     return (
       <div
         role="img"
@@ -268,35 +264,54 @@ export function RaffleWheel({
         aria-busy={phase === "spinning" || phase === "stopping"}
         className={`relative mx-auto w-full max-w-lg ${className}`}
       >
-        <div className="relative h-36 overflow-hidden rounded-[var(--kaffle-radius-lg)] border border-border bg-surface sm:h-40">
-          <div className="absolute left-1/2 top-0 w-[min(150%,28rem)] -translate-x-1/2">
-            <div className="relative aspect-square w-full">{disk}</div>
+        <div className="overflow-hidden rounded-[var(--kaffle-radius-sm)] border border-border bg-surface">
+          <div className="relative aspect-[100/38] w-full overflow-hidden">
+            <div
+              aria-hidden="true"
+              className="absolute left-1/2 top-0 w-full -translate-x-1/2"
+              style={{ height: 0, paddingBottom: "100%" }}
+            >
+              <div className="absolute inset-0">{disk}</div>
+            </div>
+            <span
+              aria-hidden="true"
+              className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-[2px] border-x-[12px] border-t-[26px] border-x-transparent border-t-accent drop-shadow-sm"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface to-transparent"
+            />
           </div>
-          <span
-            aria-hidden="true"
-            className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-[2px] border-x-[7px] border-t-[16px] border-x-transparent border-t-amber-400 drop-shadow-sm"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-surface to-transparent"
-          />
         </div>
       </div>
     );
   }
 
+  // Main page teaser: clip ≈ 34% of diameter.
   return (
     <div
       role="img"
       aria-label={label}
       aria-busy={phase === "spinning" || phase === "stopping"}
-      className={`relative mx-auto flex aspect-square w-full items-center justify-center rounded-full bg-surface p-[4%] ${className}`}
+      className={`relative mx-auto w-full ${className}`}
     >
-      {disk}
-      <span
-        aria-hidden="true"
-        className="absolute -top-0.5 left-1/2 z-10 -translate-x-1/2 border-x-[7px] border-t-[16px] border-x-transparent border-t-amber-400 drop-shadow-sm"
-      />
+      <div className="relative aspect-[100/34] w-full overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="absolute left-1/2 top-0 w-full -translate-x-1/2"
+          style={{ height: 0, paddingBottom: "100%" }}
+        >
+          <div className="absolute inset-0">{disk}</div>
+        </div>
+        <span
+          aria-hidden="true"
+          className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-[3px] border-x-[14px] border-t-[30px] border-x-transparent border-t-accent drop-shadow-md"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-background to-transparent"
+        />
+      </div>
     </div>
   );
 }
