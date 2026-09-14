@@ -43,7 +43,7 @@ export default async function LandingPage() {
           type="submit"
           className="inline-flex h-11 items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-8 text-base font-semibold text-ink-inverse transition hover:opacity-90 active:translate-y-px"
         >
-          Join Kaffle
+          Kaffle 입장
         </button>
       </form>
     </main>
