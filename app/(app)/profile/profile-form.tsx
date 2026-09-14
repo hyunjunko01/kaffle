@@ -172,7 +172,7 @@ export function ProfileForm({
                   aria-label="닉네임"
                   onChange={(event) => setNickname(event.target.value)}
                   disabled={!canChangeNickname || saving}
-                  className="h-10 min-w-0 flex-1 rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent px-3 text-sm outline-none focus:border-accent disabled:bg-surface"
+                  className="h-10 min-w-0 flex-1 rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent px-3 text-sm outline-none focus:border-border-strong disabled:bg-surface"
                 />
                 {canChangeNickname ? (
                   <button

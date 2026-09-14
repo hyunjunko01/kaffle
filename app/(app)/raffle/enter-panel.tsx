@@ -103,7 +103,7 @@ export function RaffleEnterPanel() {
             )}
 
             {pageError ? (
-              <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
+              <p className="rounded-[var(--kaffle-radius-sm)] bg-danger-soft px-4 py-3 text-sm text-danger">
                 {pageError}
               </p>
             ) : null}
@@ -118,7 +118,7 @@ export function RaffleEnterPanel() {
         ) : (
           <>
             {pageError ? (
-              <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
+              <p className="rounded-[var(--kaffle-radius-sm)] bg-danger-soft px-4 py-3 text-sm text-danger">
                 {pageError}
               </p>
             ) : null}

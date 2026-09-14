@@ -13,7 +13,7 @@ const statusToneClass = {
   open: "border border-success text-success-ink",
   request: "border border-info text-info-ink",
   settled: "border border-accent text-accent-ink",
-  closed: "border border-danger text-danger",
+  pending: "border border-border text-muted",
 } as const;
 
 type RaffleRoundHeaderProps = {

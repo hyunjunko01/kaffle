@@ -44,7 +44,7 @@ export function raffleStatusLabel(current: {
   if (current.canRequestWinner) {
     return "당첨자 요청 가능";
   }
-  return "참여 마감";
+  return "준비 중";
 }
 
 export function raffleStatusTone(current: {
@@ -63,5 +63,5 @@ export function raffleStatusTone(current: {
   if (current.canRequestWinner) {
     return "request";
   }
-  return "closed";
+  return "pending";
 }

@@ -41,7 +41,7 @@ export default async function LandingPage() {
       <form action={enterFromLanding} className="mt-10 flex justify-center">
         <button
           type="submit"
-          className="inline-flex h-12 items-center justify-center rounded-[var(--kaffle-radius-lg)] border border-border bg-surface-elevated px-8 text-base font-medium transition hover:bg-surface active:translate-y-px"
+          className="inline-flex h-11 items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-8 text-base font-semibold text-ink-inverse transition hover:opacity-90 active:translate-y-px"
         >
           Join Kaffle
         </button>

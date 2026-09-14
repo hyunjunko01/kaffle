@@ -151,7 +151,7 @@ export function RafflePanel() {
                     ? "종료"
                     : status.current.isOpen
                       ? "진행 중"
-                      : "참여 마감"}
+                      : "준비 중"}
                 </dd>
               </div>
               <div>

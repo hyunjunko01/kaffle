@@ -28,7 +28,7 @@ export default async function ProfilePage() {
       </div>
       <section
         aria-label="프로필 요약"
-        className="relative grid grid-cols-2 overflow-hidden rounded-[var(--kaffle-radius-sm)] border border-accent bg-gradient-to-b from-accent-soft to-[#1a1610]"
+        className="relative grid grid-cols-2 overflow-hidden rounded-[var(--kaffle-radius-sm)] border border-accent bg-gradient-to-b from-accent-soft to-accent-deep"
       >
         <div className="px-3 py-6 text-center sm:px-5">
           <p className="text-xs font-medium tracking-[0.18em] text-muted">

@@ -99,13 +99,13 @@ export function FaucetPanel() {
   return (
     <section className="space-y-4">
       {error ? (
-        <p className="rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
+        <p className="rounded-[var(--kaffle-radius-sm)] bg-danger-soft px-4 py-3 text-sm text-danger">
           {error}
         </p>
       ) : null}
 
       {success ? (
-        <p className="rounded-[var(--kaffle-radius-lg)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
+        <p className="rounded-[var(--kaffle-radius-sm)] bg-accent-soft px-4 py-3 text-sm text-accent-ink">
           {success}
           {txUrl ? (
             <>

@@ -6,19 +6,19 @@ const PODIUM_ORDER = [2, 1, 3] as const;
 const TONE = {
   1: {
     card: "border-accent bg-gradient-to-b from-accent-soft to-accent-deep text-accent-ink",
-    badge: "border-accent bg-accent/15 text-accent",
+    badge: "border-accent text-accent",
     icon: "text-accent",
     prize: "text-accent",
   },
   2: {
     card: "border-rank-silver-border/45 bg-gradient-to-b from-rank-silver-soft to-background text-rank-silver-ink",
-    badge: "border-rank-silver/70 bg-rank-silver/10 text-rank-silver-ink",
+    badge: "border-rank-silver/70 text-rank-silver-ink",
     icon: "",
     prize: "text-rank-silver-ink",
   },
   3: {
     card: "border-rank-bronze-border/50 bg-gradient-to-b from-rank-bronze-soft to-accent-deep text-rank-bronze-ink",
-    badge: "border-rank-bronze/70 bg-rank-bronze/10 text-rank-bronze-ink",
+    badge: "border-rank-bronze/70 text-rank-bronze-ink",
     icon: "",
     prize: "text-rank-bronze-ink",
   },

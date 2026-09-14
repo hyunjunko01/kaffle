@@ -13,7 +13,7 @@ type WinnerEntry = {
 const INTERVAL_MS = 4000;
 
 const BANNER_CLASS =
-  "relative overflow-hidden rounded-[var(--kaffle-radius-sm)] border border-accent bg-gradient-to-r from-background via-[#1c170f] to-background px-5 py-4";
+  "relative overflow-hidden rounded-[var(--kaffle-radius-sm)] border border-accent bg-gradient-to-r from-background via-accent-mid to-background px-5 py-4";
 
 export function WinnerCarousel({ winners }: { winners: WinnerEntry[] }) {
   const [index, setIndex] = useState(0);
