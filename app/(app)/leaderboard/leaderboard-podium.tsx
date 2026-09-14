@@ -98,14 +98,30 @@ export function LeaderboardPodium({ entries }: { entries: LeaderboardEntry[] }) 
               )}
             </div>
 
-            <p
-              className={`mt-10 font-mono font-semibold leading-tight tabular-nums ${isFirst
-                ? `text-base sm:text-lg ${tone.prize}`
-                : `text-sm sm:text-base ${tone.prize}`
-                }`}
-            >
-              {entry ? `${entry.prizeTotal} ${entry.symbol}` : "—"}
-            </p>
+            <div className={`mt-auto w-full min-w-0 ${tone.prize}`}>
+              {entry ? (
+                <p className="inline-flex max-w-full items-baseline justify-center gap-1">
+                  <span
+                    className={`font-prize font-normal leading-none tracking-[0.02em] ${
+                      isFirst ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"
+                    }`}
+                  >
+                    {entry.prizeTotal}
+                  </span>
+                  <span className="shrink-0 font-mono text-xs tracking-[0.08em]">
+                    {entry.symbol}
+                  </span>
+                </p>
+              ) : (
+                <p
+                  className={`font-prize font-normal leading-none ${
+                    isFirst ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl"
+                  }`}
+                >
+                  —
+                </p>
+              )}
+            </div>
           </article>
         );
       })}
