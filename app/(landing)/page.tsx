@@ -29,7 +29,7 @@ export default async function LandingPage() {
         <p className="mt-4 text-base font-medium text-muted sm:text-lg">
           {user.nickname} 님, 환영합니다
         </p>
-        <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
           행운의 주인공이 되어보세요
         </h1>
       </section>

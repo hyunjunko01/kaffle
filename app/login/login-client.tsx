@@ -78,7 +78,7 @@ export function LoginClient() {
     <main className="flex min-h-full flex-1 flex-col items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm text-center">
         <BrandMark />
-        <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
           카카오로 시작하기
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted">
