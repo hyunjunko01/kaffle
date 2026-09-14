@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { BrandMark } from "@/components/brand-mark";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -35,18 +36,16 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-full flex-1 flex-col items-center justify-center px-6">
+    <main className="flex min-h-full flex-1 flex-col items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm text-center">
-        <p className="text-sm font-medium tracking-[0.2em] text-muted">
-          KAFFLE
-        </p>
+        <BrandMark />
         <h1 className="mt-3 text-3xl font-semibold tracking-tight">관리자</h1>
         <p className="mt-3 text-sm leading-6 text-muted">
           라운드를 여는 관리자만 들어올 수 있습니다.
         </p>
 
         {error ? (
-          <p className="mt-6 rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
+          <p className="mt-6 rounded-[var(--kaffle-radius-sm)] bg-danger-soft px-4 py-3 text-sm text-danger">
             {error}
           </p>
         ) : null}
@@ -55,7 +54,7 @@ export default function AdminLoginPage() {
           onSubmit={(event) => void login(event)}
           className="mt-8 space-y-3 text-left"
         >
-          <label className="block text-sm text-muted">
+          <label className="block text-sm font-medium">
             비밀번호
             <input
               type="password"
@@ -63,13 +62,13 @@ export default function AdminLoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="mt-1 h-12 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
+              className="mt-2 h-11 w-full rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent px-4 text-sm text-foreground outline-none focus:border-border-strong"
             />
           </label>
           <button
             type="submit"
             disabled={pending || password.length === 0}
-            className="inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+            className="inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
           >
             {pending ? "확인 중…" : "관리자 로그인"}
           </button>
