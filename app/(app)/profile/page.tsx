@@ -35,9 +35,9 @@ export default async function ProfilePage() {
             누적 상금
           </p>
           <div className="mt-2 inline-flex max-w-full flex-col items-stretch">
-            <p className="font-prize text-3xl font-normal leading-none tracking-[0.02em] text-accent sm:text-4xl">
-              {prize.prizeTotal}
-              <span className="ml-1 text-[0.45em] tracking-[0.08em]">
+            <p className="text-3xl font-semibold tracking-tight text-accent sm:text-4xl">
+              {prize.prizeTotal}{" "}
+              <span className="text-[0.55em] font-medium tracking-[0.04em]">
                 {prize.symbol}
               </span>
             </p>
@@ -53,9 +53,8 @@ export default async function ProfilePage() {
             보유 티켓
           </p>
           <div className="mt-2 inline-flex flex-col items-stretch">
-            <p className="font-prize text-3xl font-normal leading-none tracking-[0.02em] text-accent sm:text-4xl">
+            <p className="text-3xl font-semibold tracking-tight text-accent sm:text-4xl">
               {me.ticketBalance}
-              <span className="ml-1 text-[0.45em] tracking-[0.08em]">장</span>
             </p>
             <div aria-hidden="true" className="mt-1 h-px w-full bg-border" />
           </div>

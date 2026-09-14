@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BrandMark } from "@/components/brand-mark";
 import type { MeResponse } from "@/lib/auth/user";
 
 type Status = "checking" | "ready";
@@ -76,9 +77,7 @@ export function LoginClient() {
   return (
     <main className="flex min-h-full flex-1 flex-col items-center justify-center bg-background px-6">
       <div className="w-full max-w-sm text-center">
-        <p className="font-display text-sm font-bold tracking-[0.22em] text-foreground">
-          KAFFLE
-        </p>
+        <BrandMark />
         <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">
           카카오로 시작하기
         </h1>

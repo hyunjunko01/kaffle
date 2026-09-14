@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { LANDING_SEEN_COOKIE } from "@/lib/auth/landing";
 import { getCurrentUser } from "@/lib/auth/user";
 import { getRecentWinners } from "@/lib/raffle/recent-winner";
+import { BrandMark } from "@/components/brand-mark";
 import { WinnerCarousel } from "@/components/winner-carousel";
 import { enterFromLanding } from "./actions";
 
@@ -24,9 +25,7 @@ export default async function LandingPage() {
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16">
       <section className="text-center">
-        <p className="font-display text-xs font-bold tracking-[0.22em] text-accent-ink">
-          KAFFLE
-        </p>
+        <BrandMark />
         <p className="mt-4 text-base font-medium text-muted sm:text-lg">
           {user.nickname} 님, 환영합니다
         </p>

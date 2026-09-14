@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BrandMark } from "@/components/brand-mark";
 import { connectMappedWallet, isWeb3AuthConfigured } from "@/lib/auth/web3auth";
 
 type OnboardingData = {
@@ -28,7 +29,7 @@ function errorMessage(value: string | undefined) {
   }
 }
 
-export function OnboardingClient() {
+export function OnboardingClient({ preview = false }: { preview?: boolean }) {
   const router = useRouter();
   const [data, setData] = useState<OnboardingData | null>(null);
   const [nickname, setNickname] = useState("");
@@ -56,7 +57,7 @@ export function OnboardingClient() {
         if (cancelled) {
           return;
         }
-        if (body.user.wallet) {
+        if (body.user.wallet && !preview) {
           router.replace("/");
           return;
         }
@@ -80,10 +81,14 @@ export function OnboardingClient() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [preview, router]);
 
   async function complete(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (preview) {
+      setError("개발 preview에서는 가입을 완료할 수 없습니다.");
+      return;
+    }
     setConnecting(true);
     setError(null);
 
@@ -139,9 +144,7 @@ export function OnboardingClient() {
         onSubmit={(event) => void complete(event)}
         className="w-full max-w-sm"
       >
-        <p className="text-center text-sm font-medium tracking-[0.2em] text-muted">
-          KAFFLE
-        </p>
+        <BrandMark />
         <h1 className="mt-3 text-center text-3xl font-semibold tracking-tight">
           가입을 완료해 주세요
         </h1>
@@ -149,8 +152,14 @@ export function OnboardingClient() {
           간단한 정보를 확인한 뒤 지갑을 만들고 시작합니다.
         </p>
 
+        {preview ? (
+          <p className="mt-6 rounded-[var(--kaffle-radius-sm)] bg-accent-soft px-4 py-3 text-center text-sm text-accent-ink">
+            개발 preview — UI만 확인합니다. 제출은 비활성입니다.
+          </p>
+        ) : null}
+
         {error ? (
-          <p className="mt-6 rounded-[var(--kaffle-radius-lg)] bg-danger-soft px-4 py-3 text-sm text-danger">
+          <p className="mt-6 rounded-[var(--kaffle-radius-sm)] bg-danger-soft px-4 py-3 text-sm text-danger">
             {error}
           </p>
         ) : null}
@@ -163,7 +172,7 @@ export function OnboardingClient() {
             maxLength={20}
             onChange={(event) => setNickname(event.target.value)}
             disabled={!data?.user.canChangeNickname || connecting}
-            className="mt-2 h-12 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 outline-none focus:border-border-strong disabled:bg-surface"
+            className="mt-2 h-11 w-full rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent px-4 outline-none focus:border-border-strong disabled:bg-surface"
           />
           <span className="mt-2 block text-xs font-normal leading-5 text-muted">
             기본 닉네임으로 바로 시작하거나, 지금 한 번 변경할 수 있습니다.
@@ -180,7 +189,7 @@ export function OnboardingClient() {
             readOnly={Boolean(data?.referralCode)}
             disabled={connecting}
             placeholder="초대 링크가 있다면 자동으로 적용됩니다"
-            className="mt-2 h-12 w-full rounded-[var(--kaffle-radius-lg)] border border-border bg-transparent px-4 font-mono outline-none focus:border-border-strong read-only:bg-surface disabled:bg-surface"
+            className="mt-2 h-11 w-full rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent px-4 font-mono outline-none focus:border-border-strong read-only:bg-surface disabled:bg-surface"
           />
           <span className="mt-2 block text-xs font-normal leading-5 text-muted">
             {data?.referralCode
@@ -191,8 +200,8 @@ export function OnboardingClient() {
 
         <button
           type="submit"
-          disabled={connecting || nickname.trim().length === 0}
-          className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-[var(--kaffle-radius-lg)] bg-foreground text-sm font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
+          disabled={preview || connecting || nickname.trim().length === 0}
+          className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90 disabled:opacity-60"
         >
           {connecting ? "지갑을 만드는 중…" : "지갑 만들고 시작하기"}
         </button>

@@ -20,7 +20,6 @@ export function MissionsShell({
         <div className="mt-1 inline-flex flex-col items-stretch">
           <p className="font-prize text-6xl font-normal leading-none tracking-[0.02em] text-accent sm:text-7xl">
             {ticketBalance}
-            <span className="ml-1 text-[0.45em] tracking-[0.08em]">장</span>
           </p>
           <div aria-hidden="true" className="mt-1 h-px w-full bg-border" />
         </div>

@@ -232,7 +232,7 @@ export function EnterRaffleFlow({
             <div className="rounded-[var(--kaffle-radius-sm)] bg-surface px-4 py-5 text-center">
               <p className="text-xs text-muted">사용할 티켓</p>
               <p className="mt-1 text-2xl font-semibold tracking-tight">
-                {parsedTicketCount}장
+                {parsedTicketCount}
               </p>
             </div>
             <dl className="space-y-3 text-sm">
