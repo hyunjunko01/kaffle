@@ -77,6 +77,14 @@ export default async function ProfilePage() {
       </dl>
 
       <Link
+        href="/profile/unclaimed"
+        className="inline-flex h-11 w-full items-center justify-between rounded-[var(--kaffle-radius-sm)] border border-accent px-5 text-base font-semibold text-accent-ink transition hover:bg-accent-soft"
+      >
+        <span>미수령 상금 확인</span>
+        <ChevronRight size={18} strokeWidth={1.75} aria-hidden="true" />
+      </Link>
+
+      <Link
         href="/profile/wallet"
         className="inline-flex h-11 w-full items-center justify-between rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90"
       >
@@ -85,7 +93,7 @@ export default async function ProfilePage() {
       </Link>
 
       <div className="flex justify-center pt-2">
-        <LogoutButton className="h-9 rounded-[var(--kaffle-radius-sm)] border border-accent px-3 text-sm font-medium text-accent-ink transition hover:bg-accent-soft disabled:opacity-60" />
+        <LogoutButton />
       </div>
     </main>
   );
