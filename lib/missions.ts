@@ -10,6 +10,8 @@ import {
 export const ATTENDANCE_TICKETS = 1;
 export const ONCHAIN_TICKETS = 1;
 export const KAFFLE_GUIDE_TICKETS = 1;
+/** One-time bonus after the user's first successful raffle enter. */
+export const FIRST_ENTER_TICKETS = 3;
 /** Base Sepolia-only test faucet for wheel / raffle load testing. */
 export const TICKET_FAUCET_TICKETS = 20;
 
@@ -17,6 +19,7 @@ export type MissionId =
   | "attendance"
   | "referral"
   | "on-chain"
+  | "first-enter"
   | "kaffle-guide"
   | "ticket-faucet";
 
@@ -50,6 +53,13 @@ export const MISSION_CATALOG: MissionCatalogItem[] = [
     title: "친구 초대",
     description: "친구를 초대하고 티켓을 받습니다.",
     tickets: REFERRAL_TICKETS,
+  },
+  {
+    id: "first-enter",
+    href: "/missions/first-enter",
+    title: "첫 래플 참여",
+    description: "래플에 처음 참여한 뒤 보상을 받습니다.",
+    tickets: FIRST_ENTER_TICKETS,
   },
   {
     id: "on-chain",
@@ -136,6 +146,33 @@ export async function hasOnchainMissionCompleted(userId: string) {
   return Boolean(existing);
 }
 
+export async function hasFirstEnterCompleted(userId: string) {
+  const existing = await prisma.missionCompletion.findUnique({
+    where: {
+      userId_mission_extra: {
+        userId,
+        mission: "first-enter",
+        extra: "",
+      },
+    },
+    select: { id: true },
+  });
+  return Boolean(existing);
+}
+
+/** True if the user has a net successful raffle entry (spend not fully refunded). */
+export async function hasRaffleEntered(userId: string) {
+  const grouped = await prisma.ticketLedger.groupBy({
+    by: ["relatedId"],
+    where: {
+      userId,
+      reason: { in: ["raffle_entry", "raffle_entry_refund"] },
+    },
+    _sum: { amount: true },
+  });
+  return grouped.some((row) => (row._sum.amount ?? 0) < 0);
+}
+
 export async function hasKaffleGuideCompleted(userId: string) {
   const existing = await prisma.missionCompletion.findUnique({
     where: {
@@ -154,11 +191,12 @@ export async function hasKaffleGuideCompleted(userId: string) {
 export async function getMissionsOverview(
   userId: string,
 ): Promise<MissionOverviewItem[]> {
-  const [attendanceDone, inviteCount, onchainDone, guideDone] =
+  const [attendanceDone, inviteCount, onchainDone, firstEnterDone, guideDone] =
     await Promise.all([
       hasAttendanceToday(userId),
       countSuccessfulReferrals(userId),
       hasOnchainMissionCompleted(userId),
+      hasFirstEnterCompleted(userId),
       hasKaffleGuideCompleted(userId),
     ]);
 
@@ -217,6 +255,24 @@ export async function getMissionsOverview(
         }),
         inviteCount: progress,
         inviteCap: cap,
+      };
+    }
+    if (mission.id === "first-enter") {
+      const progress = firstEnterDone ? 1 : 0;
+      const cap = 1;
+      const completed = firstEnterDone;
+      return {
+        ...mission,
+        completed,
+        available: !completed,
+        progress,
+        cap,
+        statusLabel: hubStatusLabel({
+          id: mission.id,
+          completed,
+          progress,
+          cap,
+        }),
       };
     }
     if (mission.id === "ticket-faucet") {
@@ -308,6 +364,44 @@ export async function grantOnchainMission(
           userId,
           amount: ONCHAIN_TICKETS,
           reason: "on-chain",
+          relatedId: completion.id,
+        },
+      });
+      return completion;
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** Grant once after the user has successfully entered a raffle at least once. */
+export async function grantFirstEnterMission(userId: string) {
+  const entered = await hasRaffleEntered(userId);
+  if (!entered) {
+    throw new Error("raffle not entered");
+  }
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const completion = await tx.missionCompletion.create({
+        data: {
+          userId,
+          mission: "first-enter",
+          status: "granted",
+          extra: "",
+        },
+      });
+      await tx.ticketLedger.create({
+        data: {
+          userId,
+          amount: FIRST_ENTER_TICKETS,
+          reason: "first-enter",
           relatedId: completion.id,
         },
       });
