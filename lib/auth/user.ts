@@ -11,7 +11,7 @@ export async function getCurrentUser() {
 
   return prisma.user.findUnique({
     where: { id: session.sub },
-    include: { wallet: true },
+    include: { wallet: true, personalWallet: true },
   });
 }
 
@@ -31,19 +31,19 @@ export function createNickname() {
   return `user-${randomBytes(4).toString("hex")}`;
 }
 
-export function toMeResponse(
-  user: {
-    id: string;
-    kakaoId: string;
-    nickname: string;
-    nicknameChangeCount: number;
-    postSignupNicknameChanged: boolean;
-    referralCode: string;
-    createdAt: Date;
-    wallet: { address: string } | null;
-  },
-  ticketBalance: number,
-) {
+type MeUserInput = {
+  id: string;
+  kakaoId: string;
+  nickname: string;
+  nicknameChangeCount: number;
+  postSignupNicknameChanged: boolean;
+  referralCode: string;
+  createdAt: Date;
+  wallet: { address: string } | null;
+  personalWallet?: { address: string; verifiedAt: Date } | null;
+};
+
+export function toMeResponse(user: MeUserInput, ticketBalance: number) {
   return {
     user: {
       id: user.id,
@@ -54,20 +54,17 @@ export function toMeResponse(
       createdAt: user.createdAt.toISOString(),
     },
     wallet: user.wallet ? { address: user.wallet.address } : null,
+    personalWallet: user.personalWallet
+      ? {
+          address: user.personalWallet.address,
+          verifiedAt: user.personalWallet.verifiedAt.toISOString(),
+        }
+      : null,
     ticketBalance,
   };
 }
 
-export async function toMePayload(user: {
-  id: string;
-  kakaoId: string;
-  nickname: string;
-  nicknameChangeCount: number;
-  postSignupNicknameChanged: boolean;
-  referralCode: string;
-  createdAt: Date;
-  wallet: { address: string } | null;
-}) {
+export async function toMePayload(user: MeUserInput) {
   return toMeResponse(user, await getTicketBalance(user.id));
 }
 

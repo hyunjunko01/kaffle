@@ -6,11 +6,16 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /** Bump when Prisma schema changes so dev HMR picks up new models without a full restart. */
-const PRISMA_SCHEMA_VERSION = 2;
+const PRISMA_SCHEMA_VERSION = 3;
 
 function createPrismaClient() {
   const client = new PrismaClient();
-  if (!("raffleSnapshot" in client) || !("prizeClaim" in client)) {
+  if (
+    !("raffleSnapshot" in client) ||
+    !("prizeClaim" in client) ||
+    !("personalWallet" in client) ||
+    !("walletOwnershipChallenge" in client)
+  ) {
     throw new Error(
       "Prisma client is out of date. Run `npx prisma generate`, then restart the dev server.",
     );

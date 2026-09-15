@@ -8,17 +8,19 @@ datasource db {
 }
 
 model User {
-  id                        String              @id @default(cuid())
-  kakaoId                   String              @unique
+  id                        String                      @id @default(cuid())
+  kakaoId                   String                      @unique
   nickname                  String
-  nicknameChangeCount       Int                 @default(0)
-  postSignupNicknameChanged Boolean             @default(false)
-  referralCode              String              @unique
+  nicknameChangeCount       Int                         @default(0)
+  postSignupNicknameChanged Boolean                     @default(false)
+  referralCode              String                      @unique
   referredByUserId          String?
-  createdAt                 DateTime            @default(now())
+  createdAt                 DateTime                    @default(now())
   wallet                    Wallet?
-  referredBy                User?               @relation("Referrals", fields: [referredByUserId], references: [id])
-  referrals                 User[]              @relation("Referrals")
+  personalWallet            PersonalWallet?
+  walletOwnershipChallenges WalletOwnershipChallenge[]
+  referredBy                User?                       @relation("Referrals", fields: [referredByUserId], references: [id])
+  referrals                 User[]                      @relation("Referrals")
   ticketLedger              TicketLedger[]
   missionCompletions        MissionCompletion[]
 }
@@ -28,6 +30,29 @@ model Wallet {
   userId  String @unique
   address String @unique
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/** User-owned external wallet (e.g. MetaMask), proven via signed challenge. */
+model PersonalWallet {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  address    String   @unique
+  verifiedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WalletOwnershipChallenge {
+  id        String    @id @default(cuid())
+  userId    String
+  address   String
+  nonce     String    @unique
+  message   String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, address])
 }
 
 model TicketLedger {

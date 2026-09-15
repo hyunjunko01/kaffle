@@ -5,6 +5,7 @@ import { getCurrentUser, toMePayload } from "@/lib/auth/user";
 import { getUserPrizeTotal } from "@/lib/raffle/leaderboard";
 import { LogoutButton } from "../logout-button";
 import { ProfileForm } from "./profile-form";
+import { WalletManageMenu } from "./wallet-manage-menu";
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
@@ -71,6 +72,12 @@ export default async function ProfilePage() {
           </dd>
         </div>
         <div>
+          <dt className="text-muted">개인 지갑 주소</dt>
+          <dd className="mt-1 break-all font-mono text-xs leading-5 text-foreground">
+            {user.personalWallet?.address ?? "—"}
+          </dd>
+        </div>
+        <div>
           <dt className="text-muted">추천 코드</dt>
           <dd className="mt-1 font-mono text-foreground">{user.referralCode}</dd>
         </div>
@@ -84,13 +91,7 @@ export default async function ProfilePage() {
         <ChevronRight size={18} strokeWidth={1.75} aria-hidden="true" />
       </Link>
 
-      <Link
-        href="/profile/wallet"
-        className="inline-flex h-11 w-full items-center justify-between rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90"
-      >
-        <span>지갑 관리</span>
-        <ChevronRight size={18} strokeWidth={1.75} aria-hidden="true" />
-      </Link>
+      <WalletManageMenu />
 
       <div className="flex justify-center pt-2">
         <LogoutButton />
