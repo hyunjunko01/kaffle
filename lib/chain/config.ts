@@ -160,6 +160,11 @@ export function getChainSlug(): ChainSlug {
   return parseChainSlug(value);
 }
 
+/** Metadata-only. Does not require deployed addresses or keys. */
+export function isActiveChainTestnet() {
+  return NETWORKS[getChainSlug()].isTestnet;
+}
+
 /**
  * Browser-safe chain info for Web3Auth / wallet UI.
  * Uses `NEXT_PUBLIC_CHAIN` + `NEXT_PUBLIC_RPC_URL` only.

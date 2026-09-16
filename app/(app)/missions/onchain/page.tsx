@@ -1,10 +1,17 @@
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/user";
-import { getMissionsOverview } from "@/lib/missions";
+import {
+  getMissionsOverview,
+  isOnchainMissionEnabled,
+} from "@/lib/missions";
 import { FaucetPanel } from "../../faucet/faucet-panel";
 import { MissionDetailLayout } from "../mission-detail-header";
 
 export default async function OnchainMissionPage() {
+  if (!isOnchainMissionEnabled()) {
+    notFound();
+  }
+
   const user = await getCurrentUser();
   if (!user) {
     return null;

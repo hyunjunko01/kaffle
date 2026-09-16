@@ -2,13 +2,26 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/user";
 import { getChainConfig } from "@/lib/chain/config";
 import { claimFaucet, faucetErrorMessage, getFaucetStatus } from "@/lib/faucet";
-import { grantOnchainMission } from "@/lib/missions";
+import {
+  grantOnchainMission,
+  isOnchainMissionEnabled,
+} from "@/lib/missions";
 import { getTicketBalance } from "@/lib/tickets";
+
+function onchainMissionForbidden() {
+  return NextResponse.json(
+    { error: "On-chain mission is only available on testnet" },
+    { status: 403 },
+  );
+}
 
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isOnchainMissionEnabled()) {
+    return onchainMissionForbidden();
   }
   if (!user.wallet) {
     return NextResponse.json({ error: "wallet required" }, { status: 400 });
@@ -36,6 +49,9 @@ export async function POST() {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isOnchainMissionEnabled()) {
+    return onchainMissionForbidden();
   }
   if (!user.wallet) {
     return NextResponse.json({ error: "wallet required" }, { status: 400 });

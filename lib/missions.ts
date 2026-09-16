@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { getChainSlug } from "@/lib/chain/config";
+import { getChainSlug, isActiveChainTestnet } from "@/lib/chain/config";
 import { prisma } from "@/lib/db";
 import {
   REFERRAL_SUCCESS_CAP,
@@ -91,10 +91,16 @@ export function isTicketFaucetEnabled() {
   return getChainSlug() === "base-sepolia";
 }
 
+export function isOnchainMissionEnabled() {
+  return isActiveChainTestnet();
+}
+
 export function getVisibleMissionCatalog(): MissionCatalogItem[] {
-  return MISSION_CATALOG.filter(
-    (mission) => mission.id !== "ticket-faucet" || isTicketFaucetEnabled(),
-  );
+  return MISSION_CATALOG.filter((mission) => {
+    if (mission.id === "ticket-faucet") return isTicketFaucetEnabled();
+    if (mission.id === "on-chain") return isOnchainMissionEnabled();
+    return true;
+  });
 }
 
 export type MissionOverviewItem = MissionCatalogItem & {
@@ -406,6 +412,10 @@ export async function grantOnchainMission(
   userId: string,
   faucetAddress: string,
 ) {
+  if (!isOnchainMissionEnabled()) {
+    return null;
+  }
+
   try {
     return await prisma.$transaction(async (tx) => {
       const completion = await tx.missionCompletion.create({
