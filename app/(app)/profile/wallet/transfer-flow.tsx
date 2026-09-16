@@ -296,7 +296,7 @@ export function TransferFlow({
     <>
       <form onSubmit={handleFormSubmit} className="space-y-4">
         <label className="block text-sm font-medium">
-          받는 지갑 주소
+          출금 주소
           <input
             type="text"
             inputMode="text"
@@ -374,7 +374,7 @@ export function TransferFlow({
             <dd className="mt-1 font-medium">{view.network}</dd>
           </div>
           <div>
-            <dt className="text-muted">받는 주소</dt>
+            <dt className="text-muted">출금 주소</dt>
             <dd className="mt-1 font-medium">
               {shortAddress(checksumRecipient)}
             </dd>

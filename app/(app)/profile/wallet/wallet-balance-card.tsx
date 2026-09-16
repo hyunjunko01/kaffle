@@ -20,7 +20,7 @@ export function WalletBalanceCard({ view }: WalletBalanceCardProps) {
         </div>
       </dl>
       <div className="mt-5 border-t border-border pt-4">
-        <p className="text-xs text-muted">내 지갑</p>
+        <p className="text-xs text-muted">Kaffle 지갑</p>
         <p className="mt-1 break-all font-mono text-xs">{view.wallet}</p>
       </div>
     </div>

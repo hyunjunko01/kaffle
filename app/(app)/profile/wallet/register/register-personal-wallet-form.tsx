@@ -109,7 +109,7 @@ export function RegisterPersonalWalletForm({
         if (!response.ok) {
           setError(
             errorMessageFromBody(body.error) ??
-              "등록된 지갑을 삭제하지 못했습니다.",
+              "등록된 출금 주소를 삭제하지 못했습니다.",
           );
           return;
         }
@@ -133,7 +133,7 @@ export function RegisterPersonalWalletForm({
     const provider = getInjectedProvider();
     if (!provider) {
       setError(
-        "이더리움 지갑을 연결할 수 없습니다. 지갑을 설치하거나 지원 브라우저에서 다시 시도해 주세요.",
+        "지갑을 연결할 수 없습니다. 지갑을 설치하거나 지원 브라우저에서 다시 시도해 주세요.",
       );
       return;
     }
@@ -169,7 +169,7 @@ export function RegisterPersonalWalletForm({
     const provider = getInjectedProvider();
     if (!provider) {
       setError(
-        "이더리움 지갑을 연결할 수 없습니다. 지갑을 설치하거나 지원 브라우저에서 다시 시도해 주세요.",
+        "지갑을 연결할 수 없습니다. 지갑을 설치하거나 지원 브라우저에서 다시 시도해 주세요.",
       );
       return;
     }
@@ -193,7 +193,7 @@ export function RegisterPersonalWalletForm({
       if (!challengeResponse.ok) {
         setError(
           errorMessageFromBody(challengeBody.error) ??
-            "소유권 확인 요청을 만들지 못했습니다.",
+            "서명 요청을 만들지 못했습니다.",
         );
         return;
       }
@@ -230,7 +230,7 @@ export function RegisterPersonalWalletForm({
       if (!verifyResponse.ok) {
         setError(
           errorMessageFromBody(verifyBody.error) ??
-            "지갑 소유권 확인에 실패했습니다.",
+            "서명 확인에 실패했습니다.",
         );
         return;
       }
@@ -240,7 +240,7 @@ export function RegisterPersonalWalletForm({
       setRegisteredAddress(nextAddress);
       setConnectedAddress(null);
       setIsEditing(false);
-      setSuccess("개인 지갑 주소가 등록되었습니다.");
+      setSuccess("출금 주소가 등록되었습니다.");
     } catch {
       setError("일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
@@ -269,7 +269,7 @@ export function RegisterPersonalWalletForm({
       {registeredAddress ? (
         <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
           <p className="text-xs font-medium tracking-[0.18em] text-muted">
-            등록된 개인 지갑
+            등록된 출금 주소
           </p>
           <p className="mt-2 break-all font-mono text-sm leading-5 text-foreground">
             {registeredAddress}

@@ -40,7 +40,7 @@ export function WalletManageMenu() {
               지갑 관리
             </h2>
             <p className="mt-2 text-sm leading-6 text-muted">
-              출금용 개인지갑을 등록하거나 USDC를 전송합니다.
+              출금 주소를 등록하거나, Kaffle 지갑의 USDC를 전송합니다.
             </p>
 
             <div className="mt-5 space-y-3">
@@ -49,7 +49,7 @@ export function WalletManageMenu() {
                 onClick={() => setOpen(false)}
                 className="inline-flex h-12 w-full items-center justify-between rounded-[var(--kaffle-radius-sm)] border border-accent px-4 text-base font-semibold text-accent-ink transition hover:bg-accent-soft"
               >
-                <span>개인 지갑 주소 등록</span>
+                <span>출금 주소 등록</span>
                 <ChevronRight
                   size={18}
                   strokeWidth={1.75}

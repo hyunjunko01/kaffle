@@ -66,13 +66,13 @@ export default async function ProfilePage() {
 
       <dl className="space-y-4 rounded-[var(--kaffle-radius-sm)] border border-border p-5 text-sm">
         <div>
-          <dt className="text-muted">지갑 주소</dt>
+          <dt className="text-muted">Kaffle 지갑</dt>
           <dd className="mt-1 break-all font-mono text-xs leading-5 text-foreground">
             {walletAddress ?? "—"}
           </dd>
         </div>
         <div>
-          <dt className="text-muted">개인 지갑 주소</dt>
+          <dt className="text-muted">출금 주소</dt>
           <dd className="mt-1 break-all font-mono text-xs leading-5 text-foreground">
             {user.personalWallet?.address ?? "—"}
           </dd>
