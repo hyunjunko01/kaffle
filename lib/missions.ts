@@ -10,6 +10,8 @@ import {
 export const ATTENDANCE_TICKETS = 1;
 export const ONCHAIN_TICKETS = 1;
 export const KAFFLE_GUIDE_TICKETS = 1;
+/** One-time bonus after the user's first payout address registration. */
+export const PAYOUT_ADDRESS_TICKETS = 1;
 /** One-time bonus after the user's first successful raffle enter. */
 export const FIRST_ENTER_TICKETS = 3;
 /** Base Sepolia-only test faucet for wheel / raffle load testing. */
@@ -21,6 +23,7 @@ export type MissionId =
   | "on-chain"
   | "first-enter"
   | "kaffle-guide"
+  | "payout-address"
   | "ticket-faucet";
 
 export type MissionCatalogItem = {
@@ -39,6 +42,13 @@ export const MISSION_CATALOG: MissionCatalogItem[] = [
     title: "Kaffle 가이드",
     description: "Kaffle이 어떻게 작동하는지 확인하고 티켓을 받습니다.",
     tickets: KAFFLE_GUIDE_TICKETS,
+  },
+  {
+    id: "payout-address",
+    href: "/missions/payout-address",
+    title: "첫 출금 주소 등록",
+    description: "상금을 받을 출금 주소를 등록하고 티켓을 받습니다.",
+    tickets: PAYOUT_ADDRESS_TICKETS,
   },
   {
     id: "attendance",
@@ -187,18 +197,47 @@ export async function hasKaffleGuideCompleted(userId: string) {
   return Boolean(existing);
 }
 
+export async function hasPayoutAddressCompleted(userId: string) {
+  const existing = await prisma.missionCompletion.findUnique({
+    where: {
+      userId_mission_extra: {
+        userId,
+        mission: "payout-address",
+        extra: "",
+      },
+    },
+    select: { id: true },
+  });
+  return Boolean(existing);
+}
+
+export async function hasPayoutAddressRegistered(userId: string) {
+  const existing = await prisma.personalWallet.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+  return Boolean(existing);
+}
+
 /** Hub status for /missions. Catalog is code; completion flags come from DB. */
 export async function getMissionsOverview(
   userId: string,
 ): Promise<MissionOverviewItem[]> {
-  const [attendanceDone, inviteCount, onchainDone, firstEnterDone, guideDone] =
-    await Promise.all([
-      hasAttendanceToday(userId),
-      countSuccessfulReferrals(userId),
-      hasOnchainMissionCompleted(userId),
-      hasFirstEnterCompleted(userId),
-      hasKaffleGuideCompleted(userId),
-    ]);
+  const [
+    attendanceDone,
+    inviteCount,
+    onchainDone,
+    firstEnterDone,
+    guideDone,
+    payoutAddressDone,
+  ] = await Promise.all([
+    hasAttendanceToday(userId),
+    countSuccessfulReferrals(userId),
+    hasOnchainMissionCompleted(userId),
+    hasFirstEnterCompleted(userId),
+    hasKaffleGuideCompleted(userId),
+    hasPayoutAddressCompleted(userId),
+  ]);
 
   return getVisibleMissionCatalog().map((mission) => {
     if (mission.id === "kaffle-guide") {
@@ -261,6 +300,24 @@ export async function getMissionsOverview(
       const progress = firstEnterDone ? 1 : 0;
       const cap = 1;
       const completed = firstEnterDone;
+      return {
+        ...mission,
+        completed,
+        available: !completed,
+        progress,
+        cap,
+        statusLabel: hubStatusLabel({
+          id: mission.id,
+          completed,
+          progress,
+          cap,
+        }),
+      };
+    }
+    if (mission.id === "payout-address") {
+      const progress = payoutAddressDone ? 1 : 0;
+      const cap = 1;
+      const completed = payoutAddressDone;
       return {
         ...mission,
         completed,
@@ -402,6 +459,44 @@ export async function grantFirstEnterMission(userId: string) {
           userId,
           amount: FIRST_ENTER_TICKETS,
           reason: "first-enter",
+          relatedId: completion.id,
+        },
+      });
+      return completion;
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** Grant once after the user has registered a payout address. */
+export async function grantPayoutAddressMission(userId: string) {
+  const registered = await hasPayoutAddressRegistered(userId);
+  if (!registered) {
+    throw new Error("payout address not registered");
+  }
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      const completion = await tx.missionCompletion.create({
+        data: {
+          userId,
+          mission: "payout-address",
+          status: "granted",
+          extra: "",
+        },
+      });
+      await tx.ticketLedger.create({
+        data: {
+          userId,
+          amount: PAYOUT_ADDRESS_TICKETS,
+          reason: "payout-address",
           relatedId: completion.id,
         },
       });
