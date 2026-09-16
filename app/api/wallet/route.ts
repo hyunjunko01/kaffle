@@ -12,7 +12,11 @@ export async function GET() {
   }
 
   try {
-    return NextResponse.json(await getWalletStatus(user.wallet.address));
+    const status = await getWalletStatus(user.wallet.address);
+    return NextResponse.json({
+      ...status,
+      payoutAddress: user.personalWallet?.address ?? null,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "wallet read failed";
     const statusCode = message.includes("is not set") ? 500 : 502;

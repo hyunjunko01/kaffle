@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getAddress, isAddress } from "viem";
 import { getCurrentUser } from "@/lib/auth/user";
 import {
   submitUsdcTransferWithAuthorization,
@@ -39,6 +40,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid payload" }, { status: 400 });
   }
 
+  const payoutAddress = user.personalWallet?.address;
+  if (
+    !payoutAddress ||
+    !isAddress(body.recipient) ||
+    getAddress(body.recipient).toLowerCase() !==
+      getAddress(payoutAddress).toLowerCase()
+  ) {
+    return NextResponse.json(
+      { error: "unregistered recipient" },
+      { status: 400 },
+    );
+  }
+
   try {
     const result = await submitUsdcTransferWithAuthorization({
       walletAddress: user.wallet.address,
@@ -49,12 +63,16 @@ export async function POST(request: Request) {
       validBefore: body.validBefore,
       signature: body.signature as `0x${string}`,
     });
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      payoutAddress,
+    });
   } catch (error) {
     const message = walletTransferErrorMessage(error);
     if (
       message === "unsupported chain" ||
       message === "invalid recipient" ||
+      message === "unregistered recipient" ||
       message === "invalid amount" ||
       message === "invalid nonce" ||
       message === "authorization expired"

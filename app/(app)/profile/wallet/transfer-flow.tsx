@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import {
   getAddress,
   isAddress,
@@ -44,6 +46,9 @@ function transferErrorMessage(error: unknown, bodyError?: string) {
   if (bodyError === "unsupported chain") {
     return "Base Sepolia에서만 전송할 수 있습니다.";
   }
+  if (bodyError === "unregistered recipient") {
+    return "등록된 출금 주소로만 전송할 수 있습니다.";
+  }
   if (bodyError === "invalid recipient") {
     return "받는 주소를 확인해 주세요.";
   }
@@ -74,6 +79,9 @@ function transferErrorMessage(error: unknown, bodyError?: string) {
   if (error.message === "invalid recipient") {
     return "받는 주소를 확인해 주세요.";
   }
+  if (error.message === "unregistered recipient") {
+    return "등록된 출금 주소로만 전송할 수 있습니다.";
+  }
   if (error.message === "invalid amount") {
     return "전송 수량을 올바르게 입력해 주세요.";
   }
@@ -99,6 +107,105 @@ function transferSheetTitle(step: ActionSheetStep) {
   }
 }
 
+function PayoutAddressPicker({
+  payoutAddress,
+  recipient,
+  disabled,
+  onSelect,
+}: {
+  payoutAddress: string;
+  recipient: string;
+  disabled: boolean;
+  onSelect: (address: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const selected =
+    isAddress(recipient) &&
+    getAddress(recipient).toLowerCase() ===
+      getAddress(payoutAddress).toLowerCase();
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(event: PointerEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        onClick={() => setOpen((current) => !current)}
+        className="mt-2 flex min-h-14 w-full items-center justify-between gap-3 rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent px-4 py-3 text-left outline-none transition hover:border-border-strong focus:border-border-strong disabled:opacity-60"
+      >
+        {selected ? (
+          <span className="min-w-0 break-all font-mono text-sm text-foreground">
+            {getAddress(payoutAddress)}
+          </span>
+        ) : (
+          <span className="text-sm text-muted">출금 주소를 선택해 주세요</span>
+        )}
+        <ChevronDown
+          size={18}
+          strokeWidth={1.75}
+          aria-hidden="true"
+          className={`shrink-0 text-muted transition ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open ? (
+        <ul
+          role="listbox"
+          aria-label="등록된 출금 주소"
+          className="absolute z-10 mt-2 w-full overflow-hidden rounded-[var(--kaffle-radius-sm)] border border-border bg-surface shadow-xl"
+        >
+          <li>
+            <button
+              type="button"
+              role="option"
+              aria-selected={selected}
+              onClick={() => {
+                onSelect(getAddress(payoutAddress));
+                setOpen(false);
+              }}
+              className={`flex w-full flex-col items-start px-4 py-3 text-left transition hover:bg-surface-elevated/50 ${
+                selected ? "bg-accent-soft" : ""
+              }`}
+            >
+              <span className="text-xs font-medium text-muted">
+                등록된 출금 주소
+              </span>
+              <span className="mt-1 break-all font-mono text-sm text-foreground">
+                {getAddress(payoutAddress)}
+              </span>
+            </button>
+          </li>
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
 export function TransferFlow({
   view,
   disabled,
@@ -111,6 +218,7 @@ export function TransferFlow({
   const [sheet, setSheet] = useState<TransferSheetState | null>(null);
 
   const canTransfer = view.transferMode === "eip3009";
+  const payoutAddress = view.payoutAddress;
   const transferBusy = sheet?.step === "loading";
   const sheetOpen = sheet !== null;
   const sheetStep = sheet?.step ?? "confirm";
@@ -128,7 +236,6 @@ export function TransferFlow({
       return;
     }
     if (sheet?.step === "success") {
-      setRecipient("");
       setAmount("");
     }
     setSheet(null);
@@ -145,11 +252,15 @@ export function TransferFlow({
 
   function handleFormSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canTransfer) return;
+    if (!canTransfer || !payoutAddress) return;
 
     const rawRecipient = recipient.trim();
-    if (!isAddress(rawRecipient)) {
-      onPageError("받는 주소를 확인해 주세요.");
+    if (
+      !isAddress(rawRecipient) ||
+      getAddress(rawRecipient).toLowerCase() !==
+        getAddress(payoutAddress).toLowerCase()
+    ) {
+      onPageError("등록된 출금 주소로만 전송할 수 있습니다.");
       return;
     }
 
@@ -174,7 +285,7 @@ export function TransferFlow({
   }
 
   async function executeTransfer() {
-    if (!canTransfer) return;
+    if (!canTransfer || !payoutAddress) return;
 
     onBusyChange(true);
     setSheet({
@@ -292,21 +403,35 @@ export function TransferFlow({
     );
   }
 
+  if (!payoutAddress) {
+    return (
+      <div className="rounded-[var(--kaffle-radius-sm)] border border-border p-5">
+        <p className="text-sm leading-6 text-muted">
+          출금하려면 먼저 출금 주소를 등록해 주세요. 등록된 주소로만 전송할 수
+          있습니다.
+        </p>
+        <Link
+          href="/profile/wallet/register"
+          className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-[var(--kaffle-radius-sm)] bg-accent px-5 text-base font-semibold text-ink-inverse transition hover:opacity-90"
+        >
+          출금 주소 등록하기
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <>
       <form onSubmit={handleFormSubmit} className="space-y-4">
-        <label className="block text-sm font-medium">
-          출금 주소
-          <input
-            type="text"
-            inputMode="text"
-            value={recipient}
-            onChange={(event) => setRecipient(event.target.value)}
-            placeholder="0x..."
+        <div>
+          <p className="text-sm font-medium">출금 주소</p>
+          <PayoutAddressPicker
+            payoutAddress={payoutAddress}
+            recipient={recipient}
             disabled={transferBusy || disabled}
-            className="mt-2 h-14 w-full rounded-[var(--kaffle-radius-sm)] border border-border bg-transparent px-4 font-mono text-sm outline-none focus:border-border-strong disabled:opacity-60"
+            onSelect={setRecipient}
           />
-        </label>
+        </div>
         <label className="block text-sm font-medium">
           전송 수량 ({view.symbol})
           <input
@@ -335,7 +460,8 @@ export function TransferFlow({
 
       <p className="text-xs leading-5 text-muted">
         Base Sepolia에서는 ETH 없이 {view.symbol}만으로 전송할 수 있습니다.
-        플랫폼 relayer가 네트워크 수수료를 대신 냅니다.
+        플랫폼 relayer가 네트워크 수수료를 대신 냅니다. 등록된 출금 주소로만
+        보낼 수 있습니다.
       </p>
 
       <ActionSheet

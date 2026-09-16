@@ -5,6 +5,7 @@ export type WalletView = {
   network: string;
   explorerBaseUrl: string;
   wallet: string;
+  payoutAddress: string | null;
   token: string;
   symbol: string;
   decimals: number;
