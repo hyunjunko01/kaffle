@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { OverlayPortal } from "@/components/ui/overlay-portal";
 
 export function WalletManageMenu() {
   const [open, setOpen] = useState(false);
@@ -19,7 +20,8 @@ export function WalletManageMenu() {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-[60] flex items-end justify-center">
+        <OverlayPortal>
+        <div className="fixed inset-0 z-[100] flex items-end justify-center">
           <button
             type="button"
             aria-label="닫기"
@@ -30,9 +32,8 @@ export function WalletManageMenu() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="wallet-manage-sheet-title"
-            className="relative w-full max-w-lg rounded-t-[var(--kaffle-radius-xl)] border border-border bg-surface-elevated px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-4 shadow-xl"
+            className="relative w-full max-w-lg rounded-t-[var(--kaffle-radius-xl)] border border-border bg-surface-elevated px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 shadow-xl"
           >
-            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border-strong" />
             <h2
               id="wallet-manage-sheet-title"
               className="text-lg font-semibold tracking-tight"
@@ -79,6 +80,7 @@ export function WalletManageMenu() {
             </button>
           </div>
         </div>
+        </OverlayPortal>
       ) : null}
     </>
   );

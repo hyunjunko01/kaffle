@@ -282,7 +282,7 @@ export function UnclaimedPanel() {
         cancelLabel="취소"
         closeLabel="확인"
         actionHref={txUrl}
-        actionLabel="트랜잭션 확인"
+        actionLabel="온체인 트랜잭션 확인"
       >
         {sheet ? (
           <>

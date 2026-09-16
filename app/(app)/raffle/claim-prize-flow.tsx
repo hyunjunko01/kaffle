@@ -190,7 +190,7 @@ export function ClaimPrizeFlow({
         cancelLabel="취소"
         closeLabel="확인"
         actionHref={txUrl}
-        actionLabel="트랜잭션 확인"
+        actionLabel="온체인 트랜잭션 확인"
       >
         <div className="rounded-[var(--kaffle-radius-sm)] bg-surface px-4 py-5 text-center">
           <p className="text-xs text-muted">수령 상금</p>

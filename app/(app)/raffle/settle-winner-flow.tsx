@@ -10,6 +10,7 @@ import {
 import { ClaimPrizeFlow } from "./claim-prize-flow";
 import type { CurrentRaffle, RaffleView } from "./types";
 import { toView } from "./types";
+import { OverlayPortal } from "@/components/ui/overlay-portal";
 import { RaffleWheel } from "./raffle-wheel";
 import { formatWinnerLabel } from "./utils";
 import {
@@ -163,7 +164,8 @@ function WheelDrawModal({
     phase === "preparing" || phase === "spinning" || phase === "stopping";
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <OverlayPortal>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <button
         type="button"
         aria-label="닫기"
@@ -211,7 +213,7 @@ function WheelDrawModal({
               rel="noreferrer"
               className="text-sm font-medium text-foreground underline underline-offset-4"
             >
-              트랜잭션 확인
+              온체인 트랜잭션 확인
             </Link>
           </div>
         ) : null}
@@ -227,6 +229,7 @@ function WheelDrawModal({
         ) : null}
       </div>
     </div>
+    </OverlayPortal>
   );
 }
 

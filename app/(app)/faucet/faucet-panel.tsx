@@ -111,7 +111,7 @@ export function FaucetPanel() {
             <>
               {" · "}
               <Link href={txUrl} target="_blank" className="underline">
-                트랜잭션 확인
+                온체인 트랜잭션 확인
               </Link>
             </>
           ) : null}

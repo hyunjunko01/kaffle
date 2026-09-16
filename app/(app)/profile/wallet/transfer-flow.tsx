@@ -486,7 +486,7 @@ export function TransferFlow({
         cancelLabel="취소"
         closeLabel="확인"
         actionHref={txUrl}
-        actionLabel="트랜잭션 확인"
+        actionLabel="온체인 트랜잭션 확인"
       >
         <div className="rounded-[var(--kaffle-radius-sm)] bg-surface px-4 py-5 text-center">
           <p className="text-xs text-muted">전송 수량</p>

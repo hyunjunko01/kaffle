@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, X } from "lucide-react";
+import { OverlayPortal } from "@/components/ui/overlay-portal";
 
 function shortAddress(value: string) {
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
@@ -126,7 +127,8 @@ export function ProfileForm({
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <OverlayPortal>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <button
             type="button"
             aria-label="닫기"
@@ -192,6 +194,7 @@ export function ProfileForm({
             </form>
           </div>
         </div>
+        </OverlayPortal>
       ) : null}
     </>
   );
