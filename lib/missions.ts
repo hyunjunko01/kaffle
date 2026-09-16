@@ -44,13 +44,6 @@ export const MISSION_CATALOG: MissionCatalogItem[] = [
     tickets: KAFFLE_GUIDE_TICKETS,
   },
   {
-    id: "payout-address",
-    href: "/missions/payout-address",
-    title: "첫 출금 주소 등록",
-    description: "상금을 받을 출금 주소를 등록하고 티켓을 받습니다.",
-    tickets: PAYOUT_ADDRESS_TICKETS,
-  },
-  {
     id: "attendance",
     href: "/missions/attendance",
     title: "출석",
@@ -70,6 +63,13 @@ export const MISSION_CATALOG: MissionCatalogItem[] = [
     title: "첫 래플 참여",
     description: "래플에 처음 참여한 뒤 보상을 받습니다.",
     tickets: FIRST_ENTER_TICKETS,
+  },
+  {
+    id: "payout-address",
+    href: "/missions/payout-address",
+    title: "첫 출금 주소 등록",
+    description: "상금을 받을 출금 주소를 등록하고 티켓을 받습니다.",
+    tickets: PAYOUT_ADDRESS_TICKETS,
   },
   {
     id: "on-chain",
