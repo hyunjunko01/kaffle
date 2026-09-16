@@ -8,6 +8,8 @@ import {
 } from "@/lib/referrals";
 
 export const ATTENDANCE_TICKETS = 1;
+export const ATTENDANCE_STREAK_DAYS = 7;
+export const ATTENDANCE_STREAK_BONUS_TICKETS = 7;
 export const ONCHAIN_TICKETS = 1;
 export const KAFFLE_GUIDE_TICKETS = 1;
 /** One-time bonus after the user's first payout address registration. */
@@ -136,6 +138,30 @@ export function seoulDateKey(date = new Date()) {
   }).format(date);
 }
 
+export function shiftSeoulDateKey(dateKey: string, days: number) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const shifted = new Date(Date.UTC(year, month - 1, day + days));
+  const nextYear = shifted.getUTCFullYear();
+  const nextMonth = String(shifted.getUTCMonth() + 1).padStart(2, "0");
+  const nextDay = String(shifted.getUTCDate()).padStart(2, "0");
+  return `${nextYear}-${nextMonth}-${nextDay}`;
+}
+
+export function attendanceStreakProgress(streak: number) {
+  if (streak <= 0) return 0;
+  return ((streak - 1) % ATTENDANCE_STREAK_DAYS) + 1;
+}
+
+export function countAttendanceStreak(dateKeys: Set<string>, endKey: string) {
+  let streak = 0;
+  let cursor = endKey;
+  while (dateKeys.has(cursor)) {
+    streak += 1;
+    cursor = shiftSeoulDateKey(cursor, -1);
+  }
+  return streak;
+}
+
 export async function hasAttendanceToday(userId: string) {
   const extra = seoulDateKey();
   const existing = await prisma.missionCompletion.findUnique({
@@ -148,6 +174,37 @@ export async function hasAttendanceToday(userId: string) {
     },
   });
   return Boolean(existing);
+}
+
+export async function getAttendanceDatesForMonth(
+  userId: string,
+  monthKey: string,
+) {
+  const rows = await prisma.missionCompletion.findMany({
+    where: {
+      userId,
+      mission: "attendance",
+      extra: { startsWith: `${monthKey}-` },
+    },
+    select: { extra: true },
+  });
+  return rows.map((row) => row.extra);
+}
+
+export async function getAttendanceStreak(
+  userId: string,
+  todayKey = seoulDateKey(),
+) {
+  const rows = await prisma.missionCompletion.findMany({
+    where: { userId, mission: "attendance" },
+    select: { extra: true },
+  });
+  const dates = new Set(rows.map((row) => row.extra));
+  const endKey = dates.has(todayKey)
+    ? todayKey
+    : shiftSeoulDateKey(todayKey, -1);
+  if (!dates.has(endKey)) return 0;
+  return countAttendanceStreak(dates, endKey);
 }
 
 export async function hasOnchainMissionCompleted(userId: string) {
@@ -395,6 +452,26 @@ export async function grantAttendance(userId: string) {
           relatedId: completion.id,
         },
       });
+
+      const rows = await tx.missionCompletion.findMany({
+        where: { userId, mission: "attendance" },
+        select: { extra: true },
+      });
+      const streak = countAttendanceStreak(
+        new Set(rows.map((row) => row.extra)),
+        extra,
+      );
+      if (streak > 0 && streak % ATTENDANCE_STREAK_DAYS === 0) {
+        await tx.ticketLedger.create({
+          data: {
+            userId,
+            amount: ATTENDANCE_STREAK_BONUS_TICKETS,
+            reason: "attendance_streak",
+            relatedId: completion.id,
+          },
+        });
+      }
+
       return completion;
     });
   } catch (error) {
