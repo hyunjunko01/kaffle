@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { ADMIN_COOKIE, verifyAdminSession } from "@/lib/admin/session";
+import { isAdminKakaoId } from "@/lib/admin/allowlist";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session-token";
 
-const PUBLIC_PREFIXES = ["/login", "/auth/", "/.well-known/", "/api/", "/admin/login"];
+const PUBLIC_PREFIXES = ["/login", "/auth/", "/.well-known/", "/api/"];
 
 function isPublicPath(pathname: string) {
   if (pathname === "/") {
@@ -27,20 +27,23 @@ export async function middleware(request: NextRequest) {
 }
 
 async function authorizeAdmin(request: NextRequest) {
-  const token = request.cookies.get(ADMIN_COOKIE)?.value;
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
   const secret = process.env.SESSION_SECRET;
-  const login = new URL("/admin/login", request.url);
+  const login = new URL("/login", request.url);
 
   if (!token || !secret) {
     return NextResponse.redirect(login);
   }
 
   try {
-    await verifyAdminSession(token, secret);
+    const session = await verifySession(token, secret);
+    if (!isAdminKakaoId(session.kakaoId)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
     return NextResponse.next();
   } catch {
     const response = NextResponse.redirect(login);
-    response.cookies.set(ADMIN_COOKIE, "", { path: "/", maxAge: 0 });
+    response.cookies.set(SESSION_COOKIE, "", { path: "/", maxAge: 0 });
     return response;
   }
 }

@@ -98,9 +98,8 @@ Winner (or relayer on their behalf) claims the prize from the vault.
 
 ## Admin
 
-Admin routes use a separate admin session (`/admin/login`).
+Admin routes reuse the Kakao user session. `ADMIN_KAKAO_IDS` must include that user’s Kakao ID.
 
-- `POST /api/admin/login` / `POST /api/admin/logout`
 - `POST /api/admin/raffle` — create a round (`durationSeconds`, `prizeAmount`)
 - `POST /api/admin/vault` — vault funding / admin vault actions
 
