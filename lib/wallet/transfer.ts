@@ -8,7 +8,7 @@ import {
   type Hex,
 } from "viem";
 import { usdcEip3009Abi } from "@/lib/chain/abis";
-import { getChainConfig } from "@/lib/chain/config";
+import { getChainConfig, supportsEip3009Transfer } from "@/lib/chain/config";
 import {
   getPublicClient,
   getRelayerWalletClient,
@@ -68,7 +68,7 @@ export async function submitUsdcTransferWithAuthorization(input: {
   signature: Hex;
 }) {
   const { slug, prizeToken } = getChainConfig();
-  if (slug !== "base-sepolia") {
+  if (!supportsEip3009Transfer(slug)) {
     throw new Error("unsupported chain");
   }
 

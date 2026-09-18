@@ -1,6 +1,6 @@
 import { formatUnits, type Address } from "viem";
 import { erc20Abi } from "@/lib/chain/abis";
-import { getChainConfig } from "@/lib/chain/config";
+import { getChainConfig, supportsEip3009Transfer } from "@/lib/chain/config";
 import { getPublicClient } from "@/lib/chain/clients";
 
 export async function getWalletStatus(walletAddress: string) {
@@ -31,7 +31,9 @@ export async function getWalletStatus(walletAddress: string) {
   return {
     chainId,
     slug,
-    transferMode: slug === "base-sepolia" ? ("eip3009" as const) : ("unsupported" as const),
+    transferMode: supportsEip3009Transfer(slug)
+      ? ("eip3009" as const)
+      : ("unsupported" as const),
     network: displayName,
     explorerBaseUrl: blockExplorerUrl,
     wallet: walletAddress,

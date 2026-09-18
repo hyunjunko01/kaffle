@@ -1,8 +1,8 @@
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia, foundry, sepolia, type Chain } from "viem/chains";
+import { base, baseSepolia, foundry, sepolia, type Chain } from "viem/chains";
 import type { Address, Hex } from "viem";
 
-export type ChainSlug = "anvil" | "sepolia" | "base-sepolia";
+export type ChainSlug = "anvil" | "sepolia" | "base-sepolia" | "base";
 
 type ChainEnvKeys = {
   rpcUrl: string;
@@ -29,7 +29,7 @@ type NetworkDefinition = {
   isTestnet: boolean;
   keys: ChainEnvKeys;
   prizeTokenEip712?: PrizeTokenEip712;
-  /** Narrow eth_getLogs scans for factory RaffleCreated events. */
+  /** Narrow eth_getLogs scans (backfill). Set after factory deploy. */
   factoryDeployBlock?: bigint;
   /** Optional RPC for log scans when the primary provider limits eth_getLogs range. */
   logRpcUrl?: string;
@@ -100,7 +100,33 @@ export const NETWORKS: Record<ChainSlug, NetworkDefinition> = {
       ticketSignerPrivateKey: "BASE_SEPOLIA_TICKET_SIGNER_PRIVATE_KEY",
     },
   },
+  base: {
+    chain: base,
+    displayName: "Base",
+    blockExplorerUrl: "https://basescan.org",
+    isTestnet: false,
+    // Native USDC EIP-712 uses default "USD Coin" / "2".
+    // Set factoryDeployBlock after DeployKaffle on Base mainnet.
+    logRpcUrl: "https://mainnet.base.org",
+    keys: {
+      rpcUrl: "BASE_RPC_URL",
+      factory: "BASE_KAFFLE_FACTORY",
+      vault: "BASE_KAFFLE_VAULT",
+      faucet: "BASE_KAFFLE_FAUCET",
+      implementation: "BASE_KAFFLE_IMPLEMENTATION",
+      prizeToken: "BASE_PRIZE_TOKEN",
+      vrfCoordinator: "BASE_VRF_COORDINATOR",
+      ownerPrivateKey: "BASE_OWNER_PRIVATE_KEY",
+      relayerPrivateKey: "BASE_RELAYER_PRIVATE_KEY",
+      ticketSignerPrivateKey: "BASE_TICKET_SIGNER_PRIVATE_KEY",
+    },
+  },
 };
+
+/** Chains where mapped-wallet USDC outbound uses EIP-3009 + relayer. */
+export function supportsEip3009Transfer(slug: ChainSlug) {
+  return slug === "base" || slug === "base-sepolia";
+}
 
 function readEnv(name: string): string | undefined {
   const value = process.env[name];
@@ -197,6 +223,7 @@ export function getPublicChainConfig() {
 /**
  * Server-side config: RPC, deployed addresses, and keys.
  * Owner / relayer / ticketSigner are separate env vars (values may match on testnets).
+ * Faucet is optional (testnet only; omit on mainnet).
  */
 export function getChainConfig() {
   const slug = getChainSlug();
@@ -217,7 +244,7 @@ export function getChainConfig() {
     rpcUrl: required(keys.rpcUrl),
     factory: requiredAddress(keys.factory),
     vault: requiredAddress(keys.vault),
-    faucet: requiredAddress(keys.faucet),
+    faucet: optionalAddress(keys.faucet),
     implementation: optionalAddress(keys.implementation),
     prizeToken: requiredAddress(keys.prizeToken),
     vrfCoordinator: requiredAddress(keys.vrfCoordinator),

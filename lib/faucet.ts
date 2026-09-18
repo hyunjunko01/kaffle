@@ -57,6 +57,9 @@ export async function getFaucetStatus(walletAddress: string): Promise<FaucetStat
   await syncChainClock();
 
   const { faucet, prizeToken } = getChainConfig();
+  if (!faucet) {
+    throw new Error("faucet is not configured");
+  }
   const client = getPublicClient();
   const user = walletAddress as Address;
 
@@ -129,6 +132,9 @@ export async function claimFaucet(walletAddress: string) {
   await syncChainClock();
 
   const { faucet, chainId, ticketSigner } = getChainConfig();
+  if (!faucet) {
+    throw new Error("faucet is not configured");
+  }
   const user = walletAddress as Address;
   const client = getPublicClient();
   const relayer = getRelayerWalletClient();

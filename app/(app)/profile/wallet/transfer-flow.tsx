@@ -42,9 +42,13 @@ function shortAddress(value: string) {
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
 }
 
-function transferErrorMessage(error: unknown, bodyError?: string) {
+function transferErrorMessage(
+  error: unknown,
+  bodyError?: string,
+  network = "현재 네트워크",
+) {
   if (bodyError === "unsupported chain") {
-    return "Base Sepolia에서만 전송할 수 있습니다.";
+    return `${network}에서는 전송할 수 없습니다.`;
   }
   if (bodyError === "unregistered recipient") {
     return "등록된 출금 주소로만 전송할 수 있습니다.";
@@ -62,7 +66,7 @@ function transferErrorMessage(error: unknown, bodyError?: string) {
     return "서명이 만료되었습니다. 다시 시도해 주세요.";
   }
   if (bodyError === "relayer insufficient funds") {
-    return "플랫폼 relayer에 Base Sepolia ETH가 부족합니다. 관리자에게 relayer 지갑 충전을 요청해 주세요.";
+    return `플랫폼 relayer에 ${network} ETH가 부족합니다. 관리자에게 relayer 지갑 충전을 요청해 주세요.`;
   }
   if (
     bodyError === "ERC3009InvalidSignature" ||
@@ -366,7 +370,11 @@ export function TransferFlow({
       };
       if (!response.ok) {
         throw new Error(
-          transferErrorMessage(new Error("transfer failed"), body.error),
+          transferErrorMessage(
+            new Error("transfer failed"),
+            body.error,
+            view.network,
+          ),
         );
       }
 
@@ -383,7 +391,7 @@ export function TransferFlow({
       setSheet({
         step: "error",
         loadingMessage: "",
-        errorMessage: transferErrorMessage(caught),
+        errorMessage: transferErrorMessage(caught, undefined, view.network),
         txHash: null,
       });
     }
@@ -393,7 +401,7 @@ export function TransferFlow({
     return (
       <>
         <p className="rounded-[var(--kaffle-radius-sm)] bg-surface px-4 py-3 text-sm text-muted">
-          자산 전송은 Base Sepolia에서만 지원합니다.
+          자산 전송은 {view.network}에서만 지원합니다.
         </p>
         <p className="text-xs leading-5 text-muted">
           잘못된 주소나 지원하지 않는 네트워크로 전송한 자산은 복구할 수
@@ -459,7 +467,7 @@ export function TransferFlow({
       </form>
 
       <p className="text-xs leading-5 text-muted">
-        Base Sepolia에서는 ETH 없이 {view.symbol}만으로 전송할 수 있습니다.
+        {view.network}에서는 ETH 없이 {view.symbol}만으로 전송할 수 있습니다.
         플랫폼 relayer가 네트워크 수수료를 대신 냅니다. 등록된 출금 주소로만
         보낼 수 있습니다.
       </p>

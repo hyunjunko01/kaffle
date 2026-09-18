@@ -27,25 +27,8 @@ contract HelperConfig is Script {
 
     uint256 public constant ETH_SEPOLIA_CHAIN_ID = 11_155_111;
     uint256 public constant BASE_SEPOLIA_CHAIN_ID = 84_532;
+    uint256 public constant BASE_CHAIN_ID = 8453;
     uint256 public constant LOCAL_CHAIN_ID = 31_337;
-
-    uint256 public constant DEFAULT_ANVIL_PRIVATE_KEY =
-        0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
-    address public constant DEFAULT_ANVIL_TICKET_SIGNER = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
-
-    uint16 public constant DEFAULT_REQUEST_CONFIRMATIONS = 3;
-    uint32 public constant DEFAULT_CALLBACK_GAS_LIMIT = 500_000;
-    bool public constant DEFAULT_NATIVE_PAYMENT = true;
-    uint256 public constant FAUCET_CLAIM_AMOUNT_USDC = 1000;
-    uint256 public constant FAUCET_CLAIM_AMOUNT_MOCK = 0.001e18;
-
-    address public constant SEPOLIA_VRF_COORDINATOR = 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B;
-    bytes32 public constant SEPOLIA_KEY_HASH = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
-    address public constant SEPOLIA_USDC = 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238;
-
-    address public constant BASE_SEPOLIA_VRF_COORDINATOR = 0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE;
-    bytes32 public constant BASE_SEPOLIA_KEY_HASH = 0x9e1344a1247c8a1785d0a4681a27152bffdb43666ae5bf7d14d24a5efd44bf71;
-    address public constant BASE_SEPOLIA_USDC = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
 
     NetworkConfig private _localNetworkConfig;
 
@@ -59,6 +42,9 @@ contract HelperConfig is Script {
         }
         if (chainId == BASE_SEPOLIA_CHAIN_ID) {
             return getBaseSepoliaConfig();
+        }
+        if (chainId == BASE_CHAIN_ID) {
+            return getBaseConfig();
         }
         if (chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilConfig();
@@ -77,26 +63,50 @@ contract HelperConfig is Script {
     }
 
     function getSepoliaConfig() public view returns (NetworkConfig memory) {
-        return _testnetConfig({
-            coordinator: SEPOLIA_VRF_COORDINATOR,
-            keyHash: SEPOLIA_KEY_HASH,
-            defaultPrizeToken: SEPOLIA_USDC,
+        return _remoteConfig({
+            deployerKeyName: "PRIVATE_KEY",
+            prizeTokenKey: "SEPOLIA_PRIZE_TOKEN",
+            vrfCoordinatorKey: "SEPOLIA_VRF_COORDINATOR",
+            keyHashKey: "SEPOLIA_VRF_KEY_HASH",
             subscriptionIdKey: "SEPOLIA_VRF_SUBSCRIPTION_ID",
+            requestConfirmationsKey: "SEPOLIA_VRF_REQUEST_CONFIRMATIONS",
+            callbackGasLimitKey: "SEPOLIA_VRF_CALLBACK_GAS_LIMIT",
+            nativePaymentKey: "SEPOLIA_VRF_NATIVE_PAYMENT",
             ticketSignerKey: "SEPOLIA_TICKET_SIGNER",
             ownerKey: "SEPOLIA_OWNER",
-            prizeTokenKey: "SEPOLIA_PRIZE_TOKEN"
+            faucetClaimAmountKey: "FAUCET_CLAIM_AMOUNT"
         });
     }
 
     function getBaseSepoliaConfig() public view returns (NetworkConfig memory) {
-        return _testnetConfig({
-            coordinator: BASE_SEPOLIA_VRF_COORDINATOR,
-            keyHash: BASE_SEPOLIA_KEY_HASH,
-            defaultPrizeToken: BASE_SEPOLIA_USDC,
+        return _remoteConfig({
+            deployerKeyName: "PRIVATE_KEY",
+            prizeTokenKey: "BASE_SEPOLIA_PRIZE_TOKEN",
+            vrfCoordinatorKey: "BASE_SEPOLIA_VRF_COORDINATOR",
+            keyHashKey: "BASE_SEPOLIA_VRF_KEY_HASH",
             subscriptionIdKey: "BASE_SEPOLIA_VRF_SUBSCRIPTION_ID",
+            requestConfirmationsKey: "BASE_SEPOLIA_VRF_REQUEST_CONFIRMATIONS",
+            callbackGasLimitKey: "BASE_SEPOLIA_VRF_CALLBACK_GAS_LIMIT",
+            nativePaymentKey: "BASE_SEPOLIA_VRF_NATIVE_PAYMENT",
             ticketSignerKey: "BASE_SEPOLIA_TICKET_SIGNER",
             ownerKey: "BASE_SEPOLIA_OWNER",
-            prizeTokenKey: "BASE_SEPOLIA_PRIZE_TOKEN"
+            faucetClaimAmountKey: "FAUCET_CLAIM_AMOUNT"
+        });
+    }
+
+    function getBaseConfig() public view returns (NetworkConfig memory) {
+        return _remoteConfig({
+            deployerKeyName: "PRIVATE_KEY",
+            prizeTokenKey: "BASE_PRIZE_TOKEN",
+            vrfCoordinatorKey: "BASE_VRF_COORDINATOR",
+            keyHashKey: "BASE_VRF_KEY_HASH",
+            subscriptionIdKey: "BASE_VRF_SUBSCRIPTION_ID",
+            requestConfirmationsKey: "BASE_VRF_REQUEST_CONFIRMATIONS",
+            callbackGasLimitKey: "BASE_VRF_CALLBACK_GAS_LIMIT",
+            nativePaymentKey: "BASE_VRF_NATIVE_PAYMENT",
+            ticketSignerKey: "BASE_TICKET_SIGNER",
+            ownerKey: "BASE_OWNER",
+            faucetClaimAmountKey: "FAUCET_CLAIM_AMOUNT"
         });
     }
 
@@ -105,9 +115,9 @@ contract HelperConfig is Script {
             return _localNetworkConfig;
         }
 
-        uint256 deployerKey = DEFAULT_ANVIL_PRIVATE_KEY;
-        address deployer = vm.addr(deployerKey);
-
+        uint256 deployerKey = _requiredUint("ANVIL_PRIVATE_KEY");
+        address owner = _requiredAddress("ANVIL_OWNER");
+        address ticketSigner = _requiredAddress("ANVIL_TICKET_SIGNER");
         address prizeToken = _optionalAddress("ANVIL_PRIZE_TOKEN", address(0));
 
         vm.startBroadcast(deployerKey);
@@ -120,44 +130,45 @@ contract HelperConfig is Script {
         _localNetworkConfig = NetworkConfig({
             prizeToken: prizeToken,
             vrfCoordinator: address(coordinator),
-            keyHash: bytes32(uint256(1)),
-            subscriptionId: 1,
-            requestConfirmations: DEFAULT_REQUEST_CONFIRMATIONS,
-            callbackGasLimit: DEFAULT_CALLBACK_GAS_LIMIT,
-            nativePayment: DEFAULT_NATIVE_PAYMENT,
-            ticketSigner: _optionalAddress("ANVIL_TICKET_SIGNER", DEFAULT_ANVIL_TICKET_SIGNER),
-            owner: _optionalAddress("ANVIL_OWNER", deployer),
+            keyHash: _optionalBytes32("ANVIL_VRF_KEY_HASH", bytes32(uint256(1))),
+            subscriptionId: _optionalUint("ANVIL_VRF_SUBSCRIPTION_ID", 1),
+            requestConfirmations: uint16(_optionalUint("ANVIL_VRF_REQUEST_CONFIRMATIONS", 3)),
+            callbackGasLimit: uint32(_optionalUint("ANVIL_VRF_CALLBACK_GAS_LIMIT", 500_000)),
+            nativePayment: _optionalBool("ANVIL_VRF_NATIVE_PAYMENT", true),
+            ticketSigner: ticketSigner,
+            owner: owner,
             deployerKey: deployerKey,
-            faucetClaimAmount: _optionalUint("FAUCET_CLAIM_AMOUNT", FAUCET_CLAIM_AMOUNT_MOCK)
+            faucetClaimAmount: _optionalUint("FAUCET_CLAIM_AMOUNT", 0.001e18)
         });
 
         return _localNetworkConfig;
     }
 
-    function _testnetConfig(
-        address coordinator,
-        bytes32 keyHash,
-        address defaultPrizeToken,
+    function _remoteConfig(
+        string memory deployerKeyName,
+        string memory prizeTokenKey,
+        string memory vrfCoordinatorKey,
+        string memory keyHashKey,
         string memory subscriptionIdKey,
+        string memory requestConfirmationsKey,
+        string memory callbackGasLimitKey,
+        string memory nativePaymentKey,
         string memory ticketSignerKey,
         string memory ownerKey,
-        string memory prizeTokenKey
+        string memory faucetClaimAmountKey
     ) private view returns (NetworkConfig memory) {
-        uint256 deployerKey = _requiredUint("PRIVATE_KEY");
-        address deployer = vm.addr(deployerKey);
-
         return NetworkConfig({
-            prizeToken: _optionalAddress(prizeTokenKey, defaultPrizeToken),
-            vrfCoordinator: coordinator,
-            keyHash: keyHash,
+            prizeToken: _requiredAddress(prizeTokenKey),
+            vrfCoordinator: _requiredAddress(vrfCoordinatorKey),
+            keyHash: _requiredBytes32(keyHashKey),
             subscriptionId: _requiredUint(subscriptionIdKey),
-            requestConfirmations: DEFAULT_REQUEST_CONFIRMATIONS,
-            callbackGasLimit: DEFAULT_CALLBACK_GAS_LIMIT,
-            nativePayment: DEFAULT_NATIVE_PAYMENT,
+            requestConfirmations: uint16(_optionalUint(requestConfirmationsKey, 3)),
+            callbackGasLimit: uint32(_optionalUint(callbackGasLimitKey, 500_000)),
+            nativePayment: _optionalBool(nativePaymentKey, true),
             ticketSigner: _requiredAddress(ticketSignerKey),
-            owner: _optionalAddress(ownerKey, deployer),
-            deployerKey: deployerKey,
-            faucetClaimAmount: _optionalUint("FAUCET_CLAIM_AMOUNT", FAUCET_CLAIM_AMOUNT_USDC)
+            owner: _requiredAddress(ownerKey),
+            deployerKey: _requiredUint(deployerKeyName),
+            faucetClaimAmount: _optionalUint(faucetClaimAmountKey, 1000)
         });
     }
 
@@ -169,6 +180,15 @@ contract HelperConfig is Script {
     function _requiredUint(string memory name) private view returns (uint256 value) {
         if (!vm.envExists(name)) revert HelperConfig__MissingEnv(name);
         try vm.envUint(name) returns (uint256 parsed) {
+            return parsed;
+        } catch {
+            revert HelperConfig__MissingEnv(name);
+        }
+    }
+
+    function _requiredBytes32(string memory name) private view returns (bytes32 value) {
+        if (!vm.envExists(name)) revert HelperConfig__MissingEnv(name);
+        try vm.envBytes32(name) returns (bytes32 parsed) {
             return parsed;
         } catch {
             revert HelperConfig__MissingEnv(name);
@@ -187,6 +207,24 @@ contract HelperConfig is Script {
     function _optionalUint(string memory name, uint256 fallbackValue) private view returns (uint256) {
         if (!vm.envExists(name)) return fallbackValue;
         try vm.envUint(name) returns (uint256 value) {
+            return value;
+        } catch {
+            return fallbackValue;
+        }
+    }
+
+    function _optionalBytes32(string memory name, bytes32 fallbackValue) private view returns (bytes32) {
+        if (!vm.envExists(name)) return fallbackValue;
+        try vm.envBytes32(name) returns (bytes32 value) {
+            return value;
+        } catch {
+            return fallbackValue;
+        }
+    }
+
+    function _optionalBool(string memory name, bool fallbackValue) private view returns (bool) {
+        if (!vm.envExists(name)) return fallbackValue;
+        try vm.envBool(name) returns (bool value) {
             return value;
         } catch {
             return fallbackValue;
