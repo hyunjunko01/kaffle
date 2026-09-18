@@ -61,7 +61,7 @@ A round:
 
 Round lifecycle is time-based, not capacity-based. After the window ends, `enter` is blocked. Settlement still needs a transaction: anyone can request a winner if the round has entries. The admin creates the next round after the current one is finished.
 
-Participation records live on-chain on the raffle clone. The app may store a `RaffleSnapshot` (and prize claim rows) for UI history — not a full off-chain entry ledger.
+Participation records live on-chain on the raffle clone. Round labels (`N회차`) are off-chain: the app stores them on `RaffleSnapshot` when the admin creates a round. Prize claim rows support UI history — not a full off-chain entry ledger.
 
 ## On-chain contracts
 

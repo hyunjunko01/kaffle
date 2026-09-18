@@ -1,7 +1,4 @@
 import { formatUnits } from "viem";
-import { erc20Abi } from "@/lib/chain/abis";
-import { getChainConfig } from "@/lib/chain/config";
-import { getPublicClient } from "@/lib/chain/clients";
 import { prisma } from "@/lib/db";
 import type { CurrentRaffle } from "@/lib/raffle/status";
 
@@ -26,55 +23,65 @@ export async function getRaffleRoundNumberFromDb(
   return snapshot.roundNumber;
 }
 
-/** Persist round number after a chain lookup so later reads can skip log scans. */
-export async function cacheRaffleRoundNumberInDb(
-  raffleAddress: string,
-  roundNumber: number,
-) {
-  if (roundNumber <= 0) {
-    return;
-  }
+export async function getRaffleEntriesNewestFirstFromDb() {
+  return prisma.raffleSnapshot.findMany({
+    where: { roundNumber: { gt: 0 } },
+    orderBy: { roundNumber: "desc" },
+    select: {
+      raffleAddress: true,
+      roundNumber: true,
+    },
+  });
+}
 
-  const normalized = normalizeAddress(raffleAddress);
+/** Next UI round label after admin createRaffle. Not stored on-chain. */
+export async function allocateNextRoundNumber() {
+  const agg = await prisma.raffleSnapshot.aggregate({
+    _max: { roundNumber: true },
+  });
+  return (agg._max.roundNumber ?? 0) + 1;
+}
+
+/** Create the snapshot row that owns this round's number. */
+export async function createRaffleSnapshotForNewRound(input: {
+  raffleAddress: string;
+  prizeAmount: string;
+  symbol: string;
+  tokenDecimals: number;
+}) {
+  const raffleAddress = normalizeAddress(input.raffleAddress);
   const existing = await prisma.raffleSnapshot.findUnique({
-    where: { raffleAddress: normalized },
+    where: { raffleAddress },
     select: { roundNumber: true },
   });
-  if (existing) {
-    if (existing.roundNumber === roundNumber) {
-      return;
-    }
-    await prisma.raffleSnapshot.update({
-      where: { raffleAddress: normalized },
-      data: { roundNumber },
-    });
-    return;
+  if (existing && existing.roundNumber > 0) {
+    return existing.roundNumber;
   }
 
-  const { prizeToken } = getChainConfig();
-  const client = getPublicClient();
-  const [symbol, decimals] = await Promise.all([
-    client.readContract({
-      address: prizeToken,
-      abi: erc20Abi,
-      functionName: "symbol",
-    }),
-    client.readContract({
-      address: prizeToken,
-      abi: erc20Abi,
-      functionName: "decimals",
-    }),
-  ]);
+  const roundNumber = await allocateNextRoundNumber();
+  if (existing) {
+    await prisma.raffleSnapshot.update({
+      where: { raffleAddress },
+      data: {
+        roundNumber,
+        prizeAmount: input.prizeAmount,
+        symbol: input.symbol,
+        tokenDecimals: input.tokenDecimals,
+      },
+    });
+    return roundNumber;
+  }
 
   await prisma.raffleSnapshot.create({
     data: {
-      raffleAddress: normalized,
+      raffleAddress,
       roundNumber,
-      prizeAmount: "0",
-      symbol,
-      tokenDecimals: Number(decimals),
+      prizeAmount: input.prizeAmount,
+      symbol: input.symbol,
+      tokenDecimals: input.tokenDecimals,
     },
   });
+  return roundNumber;
 }
 
 export async function upsertRaffleSnapshotFromCurrent(
@@ -123,9 +130,20 @@ export async function syncCurrentRaffleSnapshotIfStale(
     ? normalizeAddress(current.winner)
     : null;
 
+  // Round numbers are assigned only at admin createRaffle. Do not invent 0.
+  const roundNumber =
+    current.roundNumber && current.roundNumber > 0
+      ? current.roundNumber
+      : existing && existing.roundNumber > 0
+        ? existing.roundNumber
+        : null;
+  if (roundNumber === null) {
+    return;
+  }
+
   const needsSync =
     !existing ||
-    existing.roundNumber !== (current.roundNumber ?? 0) ||
+    existing.roundNumber !== roundNumber ||
     existing.winnerAddress !== winnerAddress ||
     existing.prizeClaimed !== current.prizeClaimed ||
     existing.prizeAmount !== current.prizeAmount ||
@@ -136,7 +154,11 @@ export async function syncCurrentRaffleSnapshotIfStale(
     return;
   }
 
-  await upsertRaffleSnapshotFromCurrent(current, symbol, tokenDecimals);
+  await upsertRaffleSnapshotFromCurrent(
+    { ...current, roundNumber },
+    symbol,
+    tokenDecimals,
+  );
 }
 
 export async function recordPrizeClaim(input: {

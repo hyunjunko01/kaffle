@@ -18,8 +18,11 @@ import {
   getPublicClient,
   syncChainClock,
 } from "@/lib/chain/clients";
-import { getRaffleRoundNumber, clearRaffleRoundCache } from "@/lib/raffle/history";
-import { syncCurrentRaffleSnapshotIfStale } from "@/lib/raffle/snapshot";
+import { getRaffleRoundNumber } from "@/lib/raffle/history";
+import {
+  createRaffleSnapshotForNewRound,
+  syncCurrentRaffleSnapshotIfStale,
+} from "@/lib/raffle/snapshot";
 
 export type CurrentRaffle = {
   address: string;
@@ -229,8 +232,6 @@ export async function createRaffle(input: {
     throw new Error("createRaffle transaction failed");
   }
 
-  clearRaffleRoundCache();
-
   let raffleAddress: string | null = null;
   for (const log of receipt.logs) {
     try {
@@ -246,6 +247,26 @@ export async function createRaffle(input: {
     } catch {
       // other contracts' logs
     }
+  }
+
+  const symbol = await publicClient.readContract({
+    address: prizeToken,
+    abi: erc20Abi,
+    functionName: "symbol",
+  });
+
+  if (!raffleAddress) {
+    const provisional = await getRaffleStatus();
+    raffleAddress = provisional.current?.address ?? null;
+  }
+
+  if (raffleAddress) {
+    await createRaffleSnapshotForNewRound({
+      raffleAddress,
+      prizeAmount: input.prizeAmount.trim(),
+      symbol,
+      tokenDecimals: Number(decimals),
+    });
   }
 
   const status = await getRaffleStatus();
