@@ -64,7 +64,7 @@ contract HelperConfig is Script {
 
     function getSepoliaConfig() public view returns (NetworkConfig memory) {
         return _remoteConfig({
-            deployerKeyName: "PRIVATE_KEY",
+            deployerKeyName: "TESTNET_DEPLOYER",
             prizeTokenKey: "SEPOLIA_PRIZE_TOKEN",
             vrfCoordinatorKey: "SEPOLIA_VRF_COORDINATOR",
             keyHashKey: "SEPOLIA_VRF_KEY_HASH",
@@ -80,7 +80,7 @@ contract HelperConfig is Script {
 
     function getBaseSepoliaConfig() public view returns (NetworkConfig memory) {
         return _remoteConfig({
-            deployerKeyName: "PRIVATE_KEY",
+            deployerKeyName: "TESTNET_DEPLOYER",
             prizeTokenKey: "BASE_SEPOLIA_PRIZE_TOKEN",
             vrfCoordinatorKey: "BASE_SEPOLIA_VRF_COORDINATOR",
             keyHashKey: "BASE_SEPOLIA_VRF_KEY_HASH",
@@ -96,7 +96,7 @@ contract HelperConfig is Script {
 
     function getBaseConfig() public view returns (NetworkConfig memory) {
         return _remoteConfig({
-            deployerKeyName: "PRIVATE_KEY",
+            deployerKeyName: "BASE_DEPLOYER",
             prizeTokenKey: "BASE_PRIZE_TOKEN",
             vrfCoordinatorKey: "BASE_VRF_COORDINATOR",
             keyHashKey: "BASE_VRF_KEY_HASH",
