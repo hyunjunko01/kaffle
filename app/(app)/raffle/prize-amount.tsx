@@ -6,8 +6,9 @@ import { useLayoutEffect, useRef } from "react";
  * Bebas Neue's em-box is much taller than the visible caps.
  * Clip to this fraction of font-size so the empty metric space
  * does not overlap the round/status row above.
+ * Keep enough height that cap tops are not clipped.
  */
-const CAP_BOX_RATIO = 0.72;
+const CAP_BOX_RATIO = 0.8;
 /** Fit to this fraction of the row width (1 = full width). */
 const WIDTH_FILL = 0.75;
 
@@ -69,7 +70,7 @@ export function PrizeAmount({
       <div className="inline-flex flex-col items-stretch">
         <div
           ref={frameRef}
-          className="flex items-center justify-center overflow-hidden"
+          className="flex items-start justify-center overflow-hidden"
         >
           <span
             ref={textRef}
