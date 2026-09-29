@@ -2,8 +2,8 @@
 
 v0 and v1 share the same product. The difference is where it runs.
 
-- **v0** — testnet only. A beta to confirm the minimum flow works.
-- **v1** — the same flow in production.
+- **v0** — testnet beta on Base Sepolia. Confirmed the minimum loop works.
+- **v1** — same loop on Base mainnet. Contracts are deployed and one smoke round has been completed; wider public operation is still early.
 
 NFT minting and extra social missions (for example SNS promotion) are out of scope for v0 and v1.
 
@@ -32,7 +32,9 @@ In scope for v0 / v1:
 - Kaffle guide (one-time product walkthrough)
 - attendance (once per Seoul calendar day)
 - friend invite / referral code
-- one on-chain activity (testnet faucet claim)
+- payout address registration (one-time)
+- first raffle enter bonus (one-time)
+- on-chain faucet claim (**testnet only**; hidden on mainnet)
 
 Out of scope:
 
@@ -40,25 +42,40 @@ Out of scope:
 - SNS promotion missions
 - additional missions beyond the list above
 
-## v0 — Testnet beta
+## v0 — Testnet beta (done)
 
-Deploy only to testnet (Base Sepolia). Goal: prove the loop end to end.
+Deployed to Base Sepolia. Goal was to prove the loop end to end.
 
 1. Kakao login creates an account and a mapped wallet.
 2. A user can complete the v0 missions and receive tickets.
 3. A user can spend tickets to enter the open raffle.
 4. When the round window ends, entries stop. Anyone can request a winner if there are entries. The winner claims from the vault. The admin starts the next round.
 
-If this loop is stable, v1 can reuse the same features on production.
+## v1 — Production (in progress)
 
-## v1 — Production
+Same features as v0, on Base mainnet.
 
-Same features as v0. Ship the verified loop as a live service, not a testnet beta.
+**Done**
+
+- `DeployKaffle` on Base (factory / vault / implementation). Addresses are listed in the root [README](../README.md).
+- App chain slug `base`, optional faucet, EIP-3009 transfers on Base.
+- Admin ops: Kakao allowlist, vault funding, owner/relayer balance view.
+- One mainnet smoke round: fund vault → create raffle → enter → VRF → claim.
+
+**Still early / not a full launch**
+
+- Limited operators and participants; not marketed as a public product yet.
+- Ongoing ops (relayer ETH, VRF subscription funding, round cadence) as needed.
+- Optional: Basescan verification, custom domain, Web3Auth `sapphire_mainnet` if moving beyond smoke tests.
+- **Follow-up:** operational recovery if Chainlink VRF fails after `requestWinner` (round can stick with prize reserved; see Architecture). To be designed later — not in the current deploy.
 
 ## Later
 
-Not planned yet:
+Planned / not built yet:
 
+- Chainlink VRF failure recovery (retry, timeout, or admin path to unblock a stuck round and reserved prize)
+- Fairer / more verifiable ticket issuance (less opaque off-chain ledger and admin-only adjustments; public rules, auditability, or stronger proofs where practical)
+- Transparency surface for users (contract links, round / VRF explanation)
 - NFT minting
 - more on-chain missions
 - SNS / extra social missions

@@ -1,6 +1,6 @@
 # API
 
-v0 backend surface as implemented under `app/api` and `app/auth`. Session cookies authenticate users unless noted.
+Backend surface as implemented under `app/api` and `app/auth`. Session cookies authenticate users unless noted.
 
 Friend invite is mostly cookie + onboarding based. `GET /api/referrals` exposes the user’s code and link; grants happen when an invitee completes first signup/onboarding with a referral.
 
@@ -18,7 +18,7 @@ OAuth callback. Creates or resumes the session.
 
 End the user session.
 
-### `POST /api/auth/web3auth-token`
+### `GET /api/auth/web3auth-token`
 
 Issue a short-lived JWT the client uses with Web3Auth (embedded wallet).
 
@@ -42,14 +42,17 @@ First-run nickname / wallet / referral completion after Kakao login.
 
 ### `GET /api/missions`
 
-List v0 missions and completion status for the current user.
+List missions and completion status for the current user. Testnet-only missions (on-chain faucet, ticket faucet) are omitted on Base mainnet.
 
-Missions in v0:
+Missions:
 
 - `kaffle-guide` — one-time product guide claim (`POST /api/missions/guide`)
 - `attendance` — once per Seoul calendar day (`POST /api/missions/attendance`)
 - `referral` — friend invite (status / counts; grants on successful invitee signup)
-- `on-chain` — faucet claim mission (credited after faucet success)
+- `payout-address` — one-time after registering a payout wallet (`POST /api/missions/payout-address`)
+- `first-enter` — one-time after first successful raffle enter (`POST /api/missions/first-enter`)
+- `on-chain` — faucet claim mission (testnet only; credited after faucet success)
+- `ticket-faucet` — Base Sepolia-only ticket drip (`POST /api/missions/ticket-faucet`)
 
 ### `POST /api/missions/attendance`
 
@@ -61,7 +64,7 @@ Claim the one-time Kaffle guide tickets.
 
 ### `POST /api/faucet`
 
-Claim testnet tokens to the mapped wallet (on-chain mission path).
+Claim testnet tokens to the mapped wallet (on-chain mission path). Available only when the active chain is a testnet and a faucet address is configured; omitted on Base mainnet.
 
 ### `GET` / `POST /api/referrals`
 
@@ -100,7 +103,8 @@ Winner (or relayer on their behalf) claims the prize from the vault.
 
 Admin routes reuse the Kakao user session. `ADMIN_KAKAO_IDS` must include that user’s Kakao ID.
 
+- `GET` / `POST /api/admin/vault` — read vault status; fund vault from the owner wallet
+- `GET /api/admin/ops-wallets` — owner / relayer ETH (and owner prize-token) balances
 - `POST /api/admin/raffle` — create a round (`durationSeconds`, `prizeAmount`)
-- `POST /api/admin/vault` — vault funding / admin vault actions
 
 There is no `/internal/raffles/close` job. Entry closes on-chain at `endTime`; the admin creates the next round when the current one is finished.

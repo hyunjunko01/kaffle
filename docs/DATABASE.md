@@ -1,6 +1,6 @@
 # Database
 
-v0 entity map aligned with `prisma/schema.prisma`. Mission definitions stay in code (`lib/missions.ts`). Raffle participation lives primarily on-chain; Postgres keeps identity, tickets, mission completions, and UI snapshots.
+Entity map aligned with `prisma/schema.prisma`. Mission definitions stay in code (`lib/missions.ts`). Raffle participation lives primarily on-chain; Postgres keeps identity, tickets, mission completions, and UI snapshots.
 
 ```
 User 1 ── 1 Wallet
@@ -35,11 +35,13 @@ The private key is not stored. Web3Auth holds key shares; we persist the address
 
 Every ticket grant and spend. Balance is the sum of these rows, not a separate number on `User`.
 
-Common reasons in v0:
+Common reasons:
 
 - `kaffle-guide` (`+n`)
 - `attendance` (`+n`)
-- `on-chain` (`+n`)
+- `on-chain` (`+n`, testnet)
+- `payout-address` (`+n`)
+- `first-enter` (`+n`)
 - `referral` / `referral_join` (`+n`)
 - `raffle_entry` (`-n`)
 - `raffle_entry_refund` (`+n`, if an enter fails after debit)
@@ -51,21 +53,22 @@ Each row: user id, amount, reason, related id, created at.
 Whether this user finished a mission (or a referral success event).
 
 - user id
-- mission (`kaffle-guide` | `attendance` | `on-chain` | `referral` | `referral_join` | …)
+- mission (`kaffle-guide` | `attendance` | `on-chain` | `referral` | `referral_join` | `payout-address` | `first-enter` | …)
 - status (`granted`, …)
 - extra (for example Seoul date key for attendance; empty string when unused)
 - created at
 
 Unique on `(userId, mission, extra)`.
 
-Rules for v0:
+Rules:
 
 - `kaffle-guide`: once per user
 - `attendance`: once per Seoul calendar day (`extra` = date key)
-- `on-chain`: once per user after faucet claim
+- `on-chain`: once per user after faucet claim (testnet)
+- `payout-address` / `first-enter`: once per user
 - `referral`: inviter success rows (capped); invitee join recorded separately
 
-There is no SNS mission table or status in v0.
+There is no SNS mission table or status.
 
 ## RaffleSnapshot
 

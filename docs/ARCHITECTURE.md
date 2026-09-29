@@ -6,9 +6,11 @@ Kaffle is split into an off-chain platform and an on-chain raffle layer. The pla
 
 1. A user signs in with Kakao.
 2. The platform creates an account and maps a wallet to it.
-3. The user earns tickets from missions (guide, attendance, invite, on-chain faucet).
+3. The user earns tickets from missions (guide, attendance, invite, payout address, first enter; plus testnet-only faucet missions).
 4. The user spends tickets to enter the current raffle round.
 5. When the round window ends, entries stop. Settlement happens on-chain after that.
+
+The app selects a chain via `CHAIN` / `NEXT_PUBLIC_CHAIN` (`anvil`, `sepolia`, `base-sepolia`, or `base`). Factory, vault, and prize token addresses come from env. Base mainnet contracts are deployed; see the root README for addresses.
 
 ```
 Kakao login → account → mapped wallet
@@ -36,14 +38,16 @@ Later logins reuse the same account and wallet. The user does not import or conn
 
 Tickets are issued by the platform, not by the user.
 
-v0 issuance channels:
+Issuance channels:
 
 - Kaffle guide (one-time)
 - daily attendance
 - friend invite / referral (inviter and invitee grants; inviter capped)
-- on-chain faucet claim on the mapped wallet (one-time mission credit)
+- payout address registration (one-time)
+- first raffle enter (one-time bonus)
+- on-chain faucet claim on the mapped wallet (one-time mission credit; **testnet only**)
 
-Mission definitions live in code. Completions and the ticket ledger live in Postgres. Social/referral actions are verified off-chain, then recorded as ticket grants. The faucet mission is confirmed after a successful claim from the mapped wallet.
+Mission definitions live in code. Completions and the ticket ledger live in Postgres. Social/referral actions are verified off-chain, then recorded as ticket grants. The faucet mission is confirmed after a successful claim from the mapped wallet and is hidden when the active chain is not a testnet.
 
 Tickets are the only way to enter a raffle. There is no on-chain entry fee. The ticket ledger stays off-chain. A platform signature proves a spend when the mapped wallet enters on-chain.
 
@@ -65,14 +69,14 @@ Participation records live on-chain on the raffle clone. Round labels (`N회차`
 
 ## On-chain contracts
 
-Four contracts share the on-chain layer in v0.
+Four contracts share the on-chain layer.
 
 | Contract | Owns |
 | --- | --- |
 | Factory | raffle creation, raffle registry, Chainlink VRF |
 | Raffle (clone) | one round’s entries, window, and winner |
 | Vault | prize stablecoin and payout |
-| Faucet | testnet token drip for the on-chain mission |
+| Faucet | testnet token drip for the on-chain mission (optional; omitted on mainnet) |
 
 Each round is a minimal proxy (EIP-1167 clone) of a single raffle implementation. The clone has its own storage. The code is shared. Implementation upgrades are out of scope for now.
 
@@ -97,6 +101,14 @@ Anyone may call `requestWinner` after the window ends, if there is at least one 
 If nobody entered, `requestWinner` reverts. The prize stays in the vault. The admin starts the next round with `createRaffle`.
 
 The VRF callback only writes the winner. It does not send tokens.
+
+#### Chainlink VRF failure (current vs later)
+
+If `requestWinner` reverts (for example subscription underfunded), the round stays closed for entry and can be requested again.
+
+If `requestWinner` succeeds on-chain but the VRF fulfillment never arrives, the clone has already set a non-zero request id (`AlreadyRequested`). With entries present and no winner, `isFinished()` stays false, so `createRaffle` for the next round is blocked and the attached prize remains reserved in the vault. There is **no on-chain retry or admin unwind** for that case today.
+
+Operational recovery for this stuck state (retry randomness, timeout, or controlled prize release / round closure) is **planned as a later follow-up**, not implemented in the current contracts.
 
 ### Vault
 
