@@ -1,6 +1,8 @@
 import {
   BaseError,
   ContractFunctionRevertedError,
+  encodeFunctionData,
+  keccak256,
   type Address,
   type Hex,
 } from "viem";
@@ -12,7 +14,8 @@ import {
   syncChainClock,
 } from "@/lib/chain/clients";
 import { getRaffleStatus } from "@/lib/raffle/status";
-import { getTicketBalance, refundTickets, spendTickets } from "@/lib/tickets";
+import { findEntryByRequest, reserveEntry, savePreparedEntry, failEntry, readEntry, releaseEntryLease } from "@/lib/raffle/entry-store";
+import { entryOperationResponse, reconcileEntryOperation, submitPreparedEntry } from "@/lib/raffle/entry-recovery";
 
 export const MAX_TICKETS_PER_ENTER = 100;
 const SIGNATURE_TTL_SECONDS = 10 * 60;
@@ -45,6 +48,7 @@ export function enterErrorMessage(error: unknown) {
 
 export async function enterRaffle(input: {
   userId: string;
+  requestId: string;
   walletAddress: string;
   ticketCount: number;
 }) {
@@ -55,6 +59,16 @@ export async function enterRaffle(input: {
     ticketCount > MAX_TICKETS_PER_ENTER
   ) {
     throw new Error("invalid ticket count");
+  }
+
+  const { chainId, ticketSigner } = getChainConfig();
+  const replay = await findEntryByRequest(input.userId, input.requestId);
+  if (replay) {
+    if (replay.ticketCount !== ticketCount || replay.chainId !== chainId ||
+      replay.walletAddress !== input.walletAddress.toLowerCase()) {
+      throw new Error("entry request conflict");
+    }
+    return entryOperationResponse(await reconcileEntryOperation(replay.id));
   }
 
   await syncChainClock();
@@ -70,73 +84,70 @@ export async function enterRaffle(input: {
 
   const user = input.walletAddress.toLowerCase() as Address;
   const raffle = current.address as Address;
-  const { ticketSigner, chainId } = getChainConfig();
   const publicClient = getPublicClient();
   const relayer = getRelayerWalletClient();
 
-  const nonce = await publicClient.readContract({
-    address: raffle,
-    abi: kaffleAbi,
-    functionName: "nonce",
-    args: [user],
-  });
-  const deadline = BigInt(Math.floor(Date.now() / 1000) + SIGNATURE_TTL_SECONDS);
-
-  const signature = await ticketSigner.signTypedData({
-    domain: {
-      name: "Kaffle",
-      version: "1",
-      chainId,
-      verifyingContract: raffle,
-    },
-    types: enterTypes,
-    primaryType: "Enter",
-    message: {
-      user,
-      raffle,
-      ticketCount: BigInt(ticketCount),
-      nonce,
-      deadline,
-    },
-  });
-
-  await spendTickets({
+  const { operation, created } = await reserveEntry({
     userId: input.userId,
-    amount: ticketCount,
-    reason: "raffle_entry",
-    relatedId: raffle.toLowerCase(),
+    requestId: input.requestId,
+    chainId,
+    raffleAddress: raffle.toLowerCase(),
+    walletAddress: user,
+    ticketCount,
   });
-
-  try {
-    const hash = await relayer.writeContract({
-      address: raffle,
-      abi: kaffleAbi,
-      functionName: "enter",
-      args: [user, BigInt(ticketCount), deadline, signature as Hex],
-    });
-
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
-    if (receipt.status !== "success") {
-      throw new Error("enter transaction failed");
+  if (!created) {
+    if (operation.ticketCount !== ticketCount || operation.chainId !== chainId || operation.walletAddress !== user) {
+      throw new Error("entry request conflict");
     }
-
-    const [ticketBalance, nextStatus] = await Promise.all([
-      getTicketBalance(input.userId),
-      getRaffleStatus(),
-    ]);
-
-    return {
-      hash,
-      ticketBalance,
-      ...nextStatus,
-    };
-  } catch (error) {
-    await refundTickets({
-      userId: input.userId,
-      amount: ticketCount,
-      reason: "raffle_entry_refund",
-      relatedId: raffle.toLowerCase(),
-    });
-    throw error;
+    return entryOperationResponse(await reconcileEntryOperation(operation.id));
   }
+
+  let prepared: {
+    rawTransaction: Hex;
+    txHash: Hex;
+    entryNonce: string;
+    deadline: bigint;
+    startBlock: bigint;
+  };
+  try {
+    // Read the nonce only after reserving the user: no other entry can be prepared concurrently.
+    const block = await publicClient.getBlock();
+    if (block.number === null) throw new Error("entry block unavailable");
+    const nonce = await publicClient.readContract({
+      address: raffle, abi: kaffleAbi, functionName: "nonce", args: [user], blockNumber: block.number,
+    });
+    const deadline = block.timestamp + BigInt(SIGNATURE_TTL_SECONDS) < BigInt(current.endTime)
+      ? block.timestamp + BigInt(SIGNATURE_TTL_SECONDS) : BigInt(current.endTime);
+    const signature = await ticketSigner.signTypedData({
+      domain: { name: "Kaffle", version: "1", chainId, verifyingContract: raffle },
+      types: enterTypes,
+      primaryType: "Enter",
+      message: { user, raffle, ticketCount: BigInt(ticketCount), nonce, deadline },
+    });
+    const request = await relayer.prepareTransactionRequest({
+      account: relayer.account,
+      to: raffle,
+      data: encodeFunctionData({
+        abi: kaffleAbi,
+        functionName: "enter",
+        args: [user, BigInt(ticketCount), deadline, signature as Hex],
+      }),
+    });
+    const rawTransaction = await relayer.signTransaction(request);
+    prepared = { rawTransaction, txHash: keccak256(rawTransaction), entryNonce: nonce.toString(), deadline, startBlock: block.number };
+    const saved = await savePreparedEntry(operation, prepared);
+    if (!saved) return entryOperationResponse(await readEntry(operation.id));
+  } catch {
+    // No broadcast occurs in this block. A CAS prevents refunding if persistence
+    // actually succeeded but its DB response was lost, or another worker took over.
+    try {
+      await failEntry(operation, "entry preparation failed");
+    } finally {
+      await releaseEntryLease(operation);
+    }
+    return entryOperationResponse(await readEntry(operation.id));
+  }
+
+  const pending = { ...operation, state: "PENDING" as const, ...prepared };
+  return entryOperationResponse(await submitPreparedEntry(pending, true));
 }

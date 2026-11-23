@@ -1,11 +1,11 @@
 import { createPublicClient, createWalletClient, http } from "viem";
 import { getChainConfig, getChainSlug } from "@/lib/chain/config";
 
-export function getPublicClient() {
+export function getPublicClient(options?: { timeout?: number; retryCount?: number }) {
   const { rpcUrl, chain } = getChainConfig();
   return createPublicClient({
     chain,
-    transport: http(rpcUrl),
+    transport: http(rpcUrl, options),
   });
 }
 
@@ -20,12 +20,12 @@ export function getOwnerWalletClient() {
 }
 
 /** Pays gas for enter / claim / requestWinner. Need not be the contract owner. */
-export function getRelayerWalletClient() {
+export function getRelayerWalletClient(options?: { timeout?: number; retryCount?: number }) {
   const { rpcUrl, relayerAccount, chain } = getChainConfig();
   return createWalletClient({
     account: relayerAccount,
     chain,
-    transport: http(rpcUrl),
+    transport: http(rpcUrl, options),
   });
 }
 

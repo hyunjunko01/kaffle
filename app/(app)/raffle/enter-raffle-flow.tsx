@@ -1,7 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { getPublicChainConfig } from "@/lib/chain/config";
+import type { entryOperationResponse } from "@/lib/raffle/entry-recovery";
+
 import {
   ActionSheet,
   type ActionSheetStep,
@@ -9,12 +12,16 @@ import {
 import type { CurrentRaffle, RaffleView } from "./types";
 import { toView } from "./types";
 
+type EntryResult = ReturnType<typeof entryOperationResponse>;
+type EntryRequest = { requestId: string; ticketCount: number };
+
 type ActionSheetState = {
   step: ActionSheetStep;
   loadingMessage: string;
   errorMessage: string | null;
   txHash: string | null;
   successMessage: string;
+  pending?: boolean;
 };
 
 type EnterRaffleFlowProps = {
@@ -66,7 +73,105 @@ export function EnterRaffleFlow({
   const [ticketCount, setTicketCount] = useState("1");
   const [sheet, setSheet] = useState<ActionSheetState | null>(null);
 
-  const canEnter = Boolean(current.isOpen && view.ticketBalance > 0);
+  const [awaitingResult, setAwaitingResult] = useState(false);
+  const [recovering, setRecovering] = useState(true);
+  const requestRef = useRef<EntryRequest | null>(null);
+  const inFlight = useRef(false);
+  const storageKey = `kaffle:entry:${getPublicChainConfig().chainId}:${view.wallet}`;
+
+  const refreshView = useCallback(async () => {
+    try {
+      const response = await fetch("/api/raffle");
+      if (!response.ok) throw new Error("refresh failed");
+      onViewUpdate(toView(await response.json(), null));
+      router.refresh();
+    } catch {
+      onPageError("참여 결과는 저장되었습니다. 최신 티켓과 라운드 정보는 새로고침해 주세요.");
+    }
+  }, [onViewUpdate, onPageError, router]);
+
+  const applyResult = useCallback((result: EntryResult) => {
+    const pending = result.state === "pending";
+    if (pending) {
+      requestRef.current = { requestId: result.requestId, ticketCount: result.ticketCount };
+      try { localStorage.setItem(storageKey, JSON.stringify(requestRef.current)); } catch { /* DB recovery remains available. */ }
+    } else {
+      requestRef.current = null;
+      try { localStorage.removeItem(storageKey); } catch { /* Storage may be disabled. */ }
+    }
+    setAwaitingResult(pending);
+    onBusyChange(false);
+    setSheet({
+      step: result.state === "failed" ? "error" : "success",
+      pending,
+      loadingMessage: "",
+      txHash: result.hash,
+      successMessage: pending
+        ? "참여 결과를 확인하고 있습니다. 티켓은 임시 차감되었으며, 창을 닫아도 확인을 계속합니다."
+        : "래플 참여가 완료되었습니다.",
+      errorMessage: result.state === "failed" ? "참여가 완료되지 않아 티켓을 돌려드렸습니다." : null,
+    });
+    if (!pending) void refreshView();
+  }, [onBusyChange, refreshView, storageKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function resume() {
+      let saved: EntryRequest | null = null;
+      try {
+        const value = JSON.parse(localStorage.getItem(storageKey) ?? "null") as EntryRequest | null;
+        if (value && typeof value.requestId === "string" && Number.isInteger(value.ticketCount)) saved = value;
+      } catch { /* Fall back to the server's active operation. */ }
+      const query = saved ? `?requestId=${encodeURIComponent(saved.requestId)}` : "";
+      try {
+        const response = await fetch(`/api/raffle/enter${query}`);
+        if (cancelled) return;
+        if (saved) requestRef.current = saved;
+        if (!response.ok) {
+          if (saved) setAwaitingResult(true);
+          return;
+        }
+        const result = await response.json();
+        if (!cancelled && result.operationId) applyResult(result);
+      } catch {
+        if (!cancelled && saved) {
+          requestRef.current = saved;
+          setAwaitingResult(true);
+        }
+      } finally {
+        if (!cancelled) setRecovering(false);
+      }
+    }
+    void resume();
+    return () => { cancelled = true; };
+  }, [storageKey, applyResult]);
+
+  useEffect(() => {
+    if (!awaitingResult) return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    async function poll() {
+      const request = requestRef.current;
+      if (!request) return;
+      try {
+        const response = await fetch(`/api/raffle/enter?requestId=${encodeURIComponent(request.requestId)}`);
+        if (response.ok) {
+          const result = await response.json();
+          if (!cancelled && result.operationId) {
+            if (result.state !== "pending") {
+              applyResult(result);
+              return;
+            }
+          }
+        }
+      } catch { /* Keep the same operation and retry status checks. */ }
+      if (!cancelled) timer = setTimeout(() => void poll(), 3_000);
+    }
+    timer = setTimeout(() => void poll(), 3_000);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [awaitingResult, applyResult]);
+
+  const canEnter = Boolean(current.isOpen && view.ticketBalance > 0 && !awaitingResult && !recovering);
   const enterBusy = sheet?.step === "loading";
   const sheetOpen = sheet !== null;
   const sheetStep = sheet?.step ?? "confirm";
@@ -86,7 +191,7 @@ export function EnterRaffleFlow({
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!current.isOpen || view.ticketBalance <= 0) return;
+    if (!current.isOpen || view.ticketBalance <= 0 || awaitingResult || recovering || inFlight.current) return;
 
     const count = Number(ticketCount);
     const maxTickets = view.maxTicketsPerEnter;
@@ -99,6 +204,7 @@ export function EnterRaffleFlow({
       return;
     }
 
+    requestRef.current = { requestId: crypto.randomUUID(), ticketCount: count };
     onPageError(null);
     setSheet({
       step: "confirm",
@@ -109,53 +215,60 @@ export function EnterRaffleFlow({
     });
   }
 
+  function handleRetry() {
+    requestRef.current = { requestId: crypto.randomUUID(), ticketCount: Number(ticketCount) };
+    setSheet({ step: "confirm", loadingMessage: "", errorMessage: null, txHash: null, successMessage: "" });
+  }
+
   async function executeEnter() {
-    const count = Number(ticketCount);
+    if (inFlight.current) return;
+    const request = requestRef.current;
+    if (!request) return;
+    inFlight.current = true;
+    try { localStorage.setItem(storageKey, JSON.stringify(request)); } catch { /* Server operation is durable. */ }
     onBusyChange(true);
-    setSheet({
-      step: "loading",
-      loadingMessage: "래플 참여 처리 중…",
-      errorMessage: null,
-      txHash: null,
-      successMessage: "",
-    });
+    setAwaitingResult(true);
+    setSheet({ step: "loading", loadingMessage: "래플 참여 처리 중…", errorMessage: null, txHash: null, successMessage: "" });
 
-    const res = await fetch("/api/raffle/enter", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ticketCount: count }),
-    });
-    const body = (await res.json()) as RaffleView & {
-      error?: string;
-      hash?: string;
-    };
-
-    if (!res.ok) {
-      onBusyChange(false);
-      setSheet({
-        step: "error",
-        loadingMessage: "",
-        errorMessage: enterErrorMessage(
-          body.error === "invalid ticket count"
-            ? `티켓은 1~${view.maxTicketsPerEnter}장까지 사용할 수 있습니다.`
-            : body.error,
-        ),
-        txHash: null,
-        successMessage: "",
+    try {
+      const response = await fetch("/api/raffle/enter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
       });
-      return;
+      const body = await response.json();
+      if (requestRef.current?.requestId !== request.requestId) return;
+      if (body.operationId) {
+        applyResult(body);
+        return;
+      }
+      if (body.error === "entry already pending") {
+        const active = await fetch("/api/raffle/enter");
+        const result = await active.json();
+        if (active.ok && result.operationId) {
+          applyResult(result);
+          return;
+        }
+      }
+      if (response.status >= 400 && response.status < 500 && body.error !== "entry already pending") {
+        requestRef.current = null;
+        try { localStorage.removeItem(storageKey); } catch { /* Storage may be disabled. */ }
+        setAwaitingResult(false);
+        setSheet({ step: "error", loadingMessage: "", errorMessage: enterErrorMessage(body.error), txHash: null, successMessage: "" });
+        return;
+      }
+      // A server/transport error does not prove the transaction failed.
+      throw new Error("entry status unknown");
+    } catch {
+      if (requestRef.current?.requestId !== request.requestId) return;
+      setSheet({
+        step: "error", pending: true, loadingMessage: "", txHash: null, successMessage: "",
+        errorMessage: "참여 결과를 아직 확인할 수 없습니다. 상태 확인을 다시 시도해 주세요. 티켓은 중복 차감되지 않습니다.",
+      });
+    } finally {
+      inFlight.current = false;
+      onBusyChange(false);
     }
-
-    onViewUpdate(toView(body, view));
-    onBusyChange(false);
-    setSheet({
-      step: "success",
-      loadingMessage: "",
-      errorMessage: null,
-      txHash: body.hash ?? null,
-      successMessage: "래플 참여가 완료되었습니다.",
-    });
-    router.refresh();
   }
 
   return (
@@ -202,21 +315,29 @@ export function EnterRaffleFlow({
         </div>
       </form>
 
+      {awaitingResult ? (
+        <p role="status" className="mt-3 text-center text-sm text-muted">
+          이전 참여 결과를 확인하고 있습니다.{" "}
+          <button type="button" disabled={enterBusy} className="underline" onClick={() => void executeEnter()}>
+            상태 확인
+          </button>
+        </p>
+      ) : null}
+
       <ActionSheet
         open={sheetOpen}
         step={sheetStep}
-        title={enterSheetTitle(sheetStep)}
+        title={sheet?.pending ? "참여 확인 중" : enterSheetTitle(sheetStep)}
         onClose={closeSheet}
         onConfirm={() => void executeEnter()}
-        onRetry={() =>
-          setSheet({
-            step: "confirm",
-            loadingMessage: "",
-            errorMessage: null,
-            txHash: null,
-            successMessage: "",
-          })
-        }
+        onRetry={() => {
+          if (requestRef.current) {
+            void executeEnter();
+          } else {
+            handleRetry();
+          }
+        }}
+        retryLabel={awaitingResult ? "상태 확인" : "다시 시도"}
         dismissible={sheetStep !== "loading"}
         loadingMessage={sheet?.loadingMessage}
         successMessage={sheet?.successMessage}

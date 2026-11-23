@@ -6,6 +6,7 @@ Entity map aligned with `prisma/schema.prisma`. Mission definitions stay in code
 User 1 ── 1 Wallet
 User 1 ── n MissionCompletion
 User 1 ── n TicketLedger
+User 1 ── n RaffleEntryOperation ── n TicketLedger
 User 1 ── 0..n referrals (via referredByUserId)
 RaffleSnapshot 1 ── n PrizeClaim
 ```
@@ -44,9 +45,43 @@ Common reasons:
 - `first-enter` (`+n`)
 - `referral` / `referral_join` (`+n`)
 - `raffle_entry` (`-n`)
-- `raffle_entry_refund` (`+n`, if an enter fails after debit)
+- `raffle_entry_refund` (`+n`, once an entry operation is proven unsuccessful)
 
-Each row: user id, amount, reason, related id, created at.
+Each row: user id, amount, reason, related id, created at. New raffle debits and
+refunds also reference `entryOperationId`; `(entryOperationId, reason)` is unique.
+`relatedId` remains the raffle address for compatibility with historical rows.
+Pending debits reduce the spendable balance, but participant totals and the
+first-entry mission count only confirmed operations. Legacy rows without an
+operation retain their existing net-spend accounting.
+
+## RaffleEntryOperation
+
+Durable ticket reservation and transaction recovery record, unique on
+`(userId, requestId)`. Stores chain, raffle, wallet, ticket count, voucher nonce,
+deadline, nonce-snapshot block, signed transaction bytes/hash, state, worker
+lease, and reconciliation cursor. A copied voucher may have a different
+successful transaction hash, saved as `confirmedTxHash`.
+
+`PREPARING → PENDING → CONFIRMED` or `FAILED`. Creating an operation and its debit
+is one transaction under a per-user row lock. Signed bytes and their hash must
+commit before any broadcast. Refunds and the transition to `FAILED` commit
+together with a conditional state update, so competing workers cannot refund
+twice. Expired preparation leases fence stale signers before a refund.
+
+The migration also creates a PostgreSQL partial unique index for
+`(chainId, raffleAddress, walletAddress, entryNonce)` on pending/confirmed rows.
+Prisma's schema does not express this index; preserve it in migrations. It
+prevents a stale nonce snapshot from authorizing a second debit for a consumed
+voucher. Apply the SQL migration with `prisma migrate deploy`, rather than
+replacing it with `db push`.
+
+After broadcasting, a reverted transaction alone does not authorize a refund:
+any caller can copy its public voucher. Recovery waits for a finalized block
+past the voucher deadline and verifies that the user's raffle nonce is unchanged.
+If the nonce advanced, it scans bounded ranges of `Entered` events after the
+snapshot to recover the corresponding entry, including calls forwarded through
+another contract. A conflicting historical ticket count or unavailable proof
+remains pending for review. Do not manually refund an uncertain operation.
 
 ## MissionCompletion
 
@@ -91,4 +126,5 @@ Recorded claim txs for winners.
 - tx hash
 - claimed at
 
-Entries themselves are stored on the raffle clone on-chain, not as `RaffleEntry` rows in Postgres.
+Confirmed participation remains authoritative on the raffle clone. The operation
+rows track submission/accounting recovery and do not replace on-chain entries.

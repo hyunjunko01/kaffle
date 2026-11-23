@@ -1,4 +1,14 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+
+// Legacy rows have no operation. New entries count only after chain confirmation.
+export const confirmedEntryLedgerWhere = {
+  reason: { in: ["raffle_entry", "raffle_entry_refund"] },
+  OR: [
+    { entryOperationId: null },
+    { entryOperation: { state: "CONFIRMED" } },
+  ],
+} satisfies Prisma.TicketLedgerWhereInput;
 
 export async function getTicketBalance(userId: string) {
   const rows = await prisma.ticketLedger.aggregate({
@@ -13,7 +23,7 @@ export async function getRaffleEntryTickets(userId: string, raffleAddress: strin
     where: {
       userId,
       relatedId: raffleAddress.toLowerCase(),
-      reason: { in: ["raffle_entry", "raffle_entry_refund"] },
+      ...confirmedEntryLedgerWhere,
     },
     _sum: { amount: true },
   });
@@ -36,7 +46,7 @@ export async function getRoundParticipants(
     by: ["userId"],
     where: {
       relatedId: address,
-      reason: { in: ["raffle_entry", "raffle_entry_refund"] },
+      ...confirmedEntryLedgerWhere,
     },
     _sum: { amount: true },
   });
@@ -83,56 +93,5 @@ export async function getRoundParticipants(
       ticketCount: row.ticketCount,
       walletAddress: user?.walletAddress ?? null,
     };
-  });
-}
-
-export async function spendTickets(input: {
-  userId: string;
-  amount: number;
-  reason: string;
-  relatedId: string;
-}) {
-  if (!Number.isInteger(input.amount) || input.amount <= 0) {
-    throw new Error("invalid ticket amount");
-  }
-
-  return prisma.$transaction(async (tx) => {
-    const rows = await tx.ticketLedger.aggregate({
-      where: { userId: input.userId },
-      _sum: { amount: true },
-    });
-    const balance = rows._sum.amount ?? 0;
-    if (balance < input.amount) {
-      throw new Error("insufficient tickets");
-    }
-
-    return tx.ticketLedger.create({
-      data: {
-        userId: input.userId,
-        amount: -input.amount,
-        reason: input.reason,
-        relatedId: input.relatedId,
-      },
-    });
-  });
-}
-
-export async function refundTickets(input: {
-  userId: string;
-  amount: number;
-  reason: string;
-  relatedId: string;
-}) {
-  if (!Number.isInteger(input.amount) || input.amount <= 0) {
-    throw new Error("invalid ticket amount");
-  }
-
-  return prisma.ticketLedger.create({
-    data: {
-      userId: input.userId,
-      amount: input.amount,
-      reason: input.reason,
-      relatedId: input.relatedId,
-    },
   });
 }

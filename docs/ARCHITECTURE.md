@@ -51,6 +51,20 @@ Mission definitions live in code. Completions and the ticket ledger live in Post
 
 Tickets are the only way to enter a raffle. There is no on-chain entry fee. The ticket ledger stays off-chain. A platform signature proves a spend when the mapped wallet enters on-chain.
 
+Each entry has a durable, idempotent operation. The operation and ticket debit
+commit together; the signed transaction and its hash then commit before
+broadcast. RPC timeouts retain the reservation. View refreshes run separately
+and cannot refund a successful entry. Pending operations do not count toward
+participant displays or the first-entry mission until confirmed.
+
+The browser resumes stored request IDs and polls status; an authenticated cron
+job also reconciles pending operations after restarts. Successful transactions
+are confirmed after two blocks. Interrupted preparation can refund once its
+lease is safely taken over. After broadcast, refunds require a finalized
+post-deadline block proving the voucher nonce remained unused, since another
+caller may have submitted the same public voucher successfully. See
+[Database](DATABASE.md#raffleentryoperation) for the recovery invariants.
+
 ## Raffle
 
 The platform runs one raffle at a time, one round per cycle.

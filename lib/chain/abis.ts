@@ -136,6 +136,15 @@ export const kaffleFactoryAbi = [
 
 export const kaffleAbi = [
   {
+    type: "event",
+    name: "Entered",
+    inputs: [
+      { name: "user", type: "address", indexed: true },
+      { name: "ticketCount", type: "uint256", indexed: false },
+      { name: "totalTickets", type: "uint256", indexed: false },
+    ],
+  },
+  {
     type: "function",
     name: "enter",
     stateMutability: "nonpayable",

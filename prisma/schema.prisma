@@ -8,19 +8,20 @@ datasource db {
 }
 
 model User {
-  id                        String                      @id @default(cuid())
-  kakaoId                   String                      @unique
+  id                        String                     @id @default(cuid())
+  kakaoId                   String                     @unique
   nickname                  String
-  nicknameChangeCount       Int                         @default(0)
-  postSignupNicknameChanged Boolean                     @default(false)
-  referralCode              String                      @unique
+  nicknameChangeCount       Int                        @default(0)
+  postSignupNicknameChanged Boolean                    @default(false)
+  referralCode              String                     @unique
   referredByUserId          String?
-  createdAt                 DateTime                    @default(now())
+  createdAt                 DateTime                   @default(now())
   wallet                    Wallet?
   personalWallet            PersonalWallet?
   walletOwnershipChallenges WalletOwnershipChallenge[]
-  referredBy                User?                       @relation("Referrals", fields: [referredByUserId], references: [id])
-  referrals                 User[]                      @relation("Referrals")
+  referredBy                User?                      @relation("Referrals", fields: [referredByUserId], references: [id])
+  referrals                 User[]                     @relation("Referrals")
+  raffleEntryOperations     RaffleEntryOperation[]
   ticketLedger              TicketLedger[]
   missionCompletions        MissionCompletion[]
 }
@@ -32,7 +33,9 @@ model Wallet {
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-/** User-owned external wallet (e.g. MetaMask), proven via signed challenge. */
+/**
+ * User-owned external wallet (e.g. MetaMask), proven via signed challenge.
+ */
 model PersonalWallet {
   id         String   @id @default(cuid())
   userId     String   @unique
@@ -56,13 +59,54 @@ model WalletOwnershipChallenge {
 }
 
 model TicketLedger {
-  id        String   @id @default(cuid())
-  userId    String
-  amount    Int
-  reason    String
-  relatedId String?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String                @id @default(cuid())
+  userId           String
+  amount           Int
+  reason           String
+  relatedId        String?
+  createdAt        DateTime              @default(now())
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entryOperationId String?
+  entryOperation   RaffleEntryOperation? @relation(fields: [entryOperationId], references: [id], onDelete: Restrict)
+
+  @@unique([entryOperationId, reason])
+}
+
+enum RaffleEntryState {
+  PREPARING
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+// The SQL migration also enforces a partial unique live-voucher nonce index.
+model RaffleEntryOperation {
+  id              String           @id @default(cuid())
+  userId          String
+  requestId       String
+  chainId         Int
+  raffleAddress   String
+  walletAddress   String
+  ticketCount     Int
+  entryNonce      String?
+  deadline        BigInt?
+  startBlock      BigInt?
+  scanBlock       BigInt?
+  confirmedTxHash String?
+  state           RaffleEntryState @default(PREPARING)
+  txHash          String?          @unique
+  rawTransaction  String?
+  leaseOwner      String?
+  leaseUntil      DateTime?
+  failureReason   String?
+  lastCheckedAt   DateTime         @default(now())
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  user            User             @relation(fields: [userId], references: [id])
+  ledger          TicketLedger[]
+
+  @@unique([userId, requestId])
+  @@index([chainId, state, lastCheckedAt])
 }
 
 model MissionCompletion {

@@ -68,11 +68,20 @@ Useful scripts:
 
 ```bash
 npm run lint
+npm test             # recovery/API regressions; DB tests skip without TEST_DATABASE_URL
 npm run db:migrate    # prisma migrate dev
 npm run db:deploy     # prisma migrate deploy
 ```
 
 Do not commit `.env`. Copy from `.env.example` and keep real keys local or in your host’s secret store.
+
+Entry recovery requires the latest database migrations and `CRON_SECRET` in the
+deployment environment. The Vercel configuration schedules reconciliation every
+minute; other hosts must schedule the authenticated recovery endpoint. See
+[API](docs/API.md#get-apicronraffle-entries) and
+[Database](docs/DATABASE.md#raffleentryoperation) for details. To run concurrency
+tests, migrate a disposable PostgreSQL database whose name ends in `_test`, set
+`TEST_DATABASE_URL` to it, and run `npm test`.
 
 ## Contracts
 

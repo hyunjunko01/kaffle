@@ -89,7 +89,37 @@ Current round status, ticket balance, user entry tickets, participants, and rela
 
 ### `POST /api/raffle/enter`
 
-Spend tickets to enter the current round (platform signature + relayer). The same user may enter more than once.
+Reserve tickets to enter the current round (platform signature + relayer). Send
+`{ "ticketCount": 1, "requestId": "<UUID>" }`. Generate one request ID per
+intended entry and reuse it for every retry of that entry. Reusing the ID with a
+different ticket count is rejected. Only one operation per user and chain may
+be preparing or pending; a concurrent new request returns the existing operation.
+
+The response contains `operationId`, `requestId`, `state` (`pending`, `confirmed`,
+or `failed`), `hash`, `raffleAddress`, `ticketCount`, and `error`. Pending returns
+HTTP 202; terminal outcomes return 200. A failed outcome means its refund has
+committed. A timeout or HTTP 503 is an unknown outcome: keep the same request ID.
+Reload `/api/raffle` separately after a terminal result; view-refresh failures
+cannot change the ticket deduction. The same user may deliberately enter again
+with a new request ID after the previous operation is terminal.
+
+### `GET /api/raffle/enter`
+
+Recover/check the signed-in user's operation using `?requestId=<UUID>` or
+`?operationId=<id>`. Without either parameter, return their active operation on
+the configured chain, or `{ "operation": null }`. An explicit missing/foreign
+operation returns 404. The endpoint also attempts reconciliation without
+creating a new entry or deducting more tickets. Signed transaction bytes and
+worker lease tokens are never returned.
+
+### `GET /api/cron/raffle-entries`
+
+Background recovery, authenticated by `Authorization: Bearer <CRON_SECRET>`.
+Processes up to five active operations per invocation, rotating unresolved work.
+`vercel.json` schedules this every minute on Vercel. Configure `CRON_SECRET` in
+the deployment environment and enable the deployment's cron service. Other hosts
+must schedule the same authenticated HTTP call. Browser polling supplements
+this job; recovery after a restart does not depend on an open browser.
 
 ### `POST /api/raffle/request-winner`
 

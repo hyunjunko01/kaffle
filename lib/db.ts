@@ -6,11 +6,12 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /** Bump when Prisma schema changes so dev HMR picks up new models without a full restart. */
-const PRISMA_SCHEMA_VERSION = 3;
+const PRISMA_SCHEMA_VERSION = 4;
 
 function createPrismaClient() {
   const client = new PrismaClient();
   if (
+    !("raffleEntryOperation" in client) ||
     !("raffleSnapshot" in client) ||
     !("prizeClaim" in client) ||
     !("personalWallet" in client) ||

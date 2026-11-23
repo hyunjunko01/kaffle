@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { getChainSlug, isActiveChainTestnet } from "@/lib/chain/config";
 import { prisma } from "@/lib/db";
+import { confirmedEntryLedgerWhere } from "@/lib/tickets";
 import {
   REFERRAL_SUCCESS_CAP,
   REFERRAL_TICKETS,
@@ -239,7 +240,7 @@ export async function hasRaffleEntered(userId: string) {
     by: ["relatedId"],
     where: {
       userId,
-      reason: { in: ["raffle_entry", "raffle_entry_refund"] },
+      ...confirmedEntryLedgerWhere,
     },
     _sum: { amount: true },
   });
