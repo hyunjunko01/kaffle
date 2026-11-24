@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { readEntryRecoveryStatus, runEntryRecovery } from "@/lib/raffle/entry-recovery-client";
 import type { EntryRecoveryProgress, EntryRecoveryStatus } from "@/lib/raffle/entry-recovery-types";
 
 type Props = {
   admin?: boolean;
+  collapsible?: boolean;
   refreshKey?: string;
   disabled?: boolean;
   onBusyChange?: (busy: boolean) => void;
@@ -16,7 +18,7 @@ function createdTime(value: string) {
   return new Date(value).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
 }
 
-export function EntryRecoveryPanel({ admin = false, refreshKey = "", disabled = false, onBusyChange, onComplete }: Props) {
+export function EntryRecoveryPanel({ admin = false, collapsible = false, refreshKey = "", disabled = false, onBusyChange, onComplete }: Props) {
   const endpoint = admin ? "/api/admin/raffle/entries" : "/api/raffle/entries";
   const [status, setStatus] = useState<EntryRecoveryStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,11 +90,12 @@ export function EntryRecoveryPanel({ admin = false, refreshKey = "", disabled = 
     }
   }
 
-  return (
-    <section className={admin ? "mt-10 space-y-4" : "space-y-3 rounded-[var(--kaffle-radius-sm)] border border-border p-4"}>
+  const title = admin ? "미확정 참여 일괄 확인" : "내 참여 내역 확인";
+  const content = (
+    <>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">{admin ? "미확정 참여 일괄 확인" : "내 참여 내역 확인"}</h2>
+          {!collapsible ? <h2 className="text-lg font-semibold tracking-tight">{title}</h2> : null}
           <p className="mt-1 text-sm leading-6 text-muted">
             {admin ? "현재 네트워크의 이전 회차를 포함한 미확정 참여를 확인합니다." : "이전 회차를 포함해 참여 완료 여부와 티켓 환불 상태를 확인합니다."}
           </p>
@@ -137,6 +140,27 @@ export function EntryRecoveryPanel({ admin = false, refreshKey = "", disabled = 
         </p>
       ) : null}
       <p className="text-xs leading-5 text-muted">결과가 확정되지 않은 내역은 대기로 유지됩니다. 잠시 후 다시 확인할 수 있습니다.</p>
+    </>
+  );
+
+  if (collapsible) {
+    return (
+      <details className="group rounded-[var(--kaffle-radius-sm)] border border-border">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-[var(--kaffle-radius-sm)] p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
+          <h2 className="text-sm font-medium">{title}</h2>
+          <span className="flex shrink-0 items-center gap-2 text-xs text-muted">
+            <span>{running ? "확인 중…" : status ? `${status.total}건` : loading ? "불러오는 중…" : "확인 필요"}</span>
+            <ChevronDown aria-hidden="true" className="h-4 w-4 transition-transform group-open:rotate-180" />
+          </span>
+        </summary>
+        <div className="space-y-3 border-t border-border p-4">{content}</div>
+      </details>
+    );
+  }
+
+  return (
+    <section className={admin ? "mt-10 space-y-4" : "space-y-3 rounded-[var(--kaffle-radius-sm)] border border-border p-4"}>
+      {content}
     </section>
   );
 }

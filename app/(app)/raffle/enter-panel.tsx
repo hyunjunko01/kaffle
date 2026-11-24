@@ -69,12 +69,6 @@ export function RaffleEnterPanel() {
   return (
     <main>
       <section className="space-y-8">
-        <EntryRecoveryPanel
-          refreshKey={`${enterBusy}:${view?.ticketBalance}:${current?.userTickets}`}
-          disabled={enterBusy || settleBusy || claimBusy}
-          onBusyChange={setRecoveryBusy}
-          onComplete={reload}
-        />
         {current && view ? (
           <>
             <RaffleRoundHeader
@@ -136,6 +130,13 @@ export function RaffleEnterPanel() {
             ) : null}
           </>
         )}
+        <EntryRecoveryPanel
+          collapsible
+          refreshKey={`${enterBusy}:${view?.ticketBalance}:${current?.userTickets}`}
+          disabled={enterBusy || settleBusy || claimBusy}
+          onBusyChange={setRecoveryBusy}
+          onComplete={reload}
+        />
       </section>
     </main>
   );
