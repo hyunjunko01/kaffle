@@ -70,9 +70,15 @@ broadcast. RPC timeouts retain the reservation. View refreshes run separately
 and cannot refund a successful entry. Pending operations do not count toward
 participant displays or the first-entry mission until confirmed.
 
-The browser resumes stored request IDs and polls status; an authenticated cron
-job also reconciles pending operations after restarts. Successful transactions
-are confirmed after two blocks. Interrupted preparation can refund once its
+The browser resumes stored request IDs and polls status. Users can also manually
+check pending entries from the raffle page after a round ends; admins can check
+all pending users/rounds on the configured chain with one button. A run pages
+through five-entry batches within a fixed creation-time window and checks each
+selected entry once, retaining unresolved entries for a later manual run. The
+optional scheduler endpoint is retained, but no Vercel cron runs by default.
+Users who do not return depend on an admin check; pending reservations remain
+held until a check can prove their outcome. Successful transactions are confirmed
+after two blocks. Interrupted preparation can refund once its
 lease is safely taken over. After broadcast, refunds require a finalized
 post-deadline block proving the voucher nonce remained unused, since another
 caller may have submitted the same public voucher successfully. See

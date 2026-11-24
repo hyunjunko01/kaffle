@@ -75,10 +75,11 @@ npm run db:deploy     # prisma migrate deploy
 
 Do not commit `.env`. Copy from `.env.example` and keep real keys local or in your host’s secret store.
 
-Entry recovery requires the latest database migrations and `CRON_SECRET` in the
-deployment environment. The Vercel configuration schedules reconciliation every
-minute; other hosts must schedule the authenticated recovery endpoint. See
-[API](docs/API.md#get-apicronraffle-entries) and
+Entry recovery requires the latest database migrations. Users can check pending
+entries from the raffle page, including after a round ends; admins can check all
+pending entries from the admin page. No scheduled job is configured by default.
+The optional scheduler endpoint requires `CRON_SECRET` only when enabled. See
+[API](docs/API.md#get--post-apiraffleentries) and
 [Database](docs/DATABASE.md#raffleentryoperation) for details. To run concurrency
 tests, migrate a disposable PostgreSQL database whose name ends in `_test`, set
 `TEST_DATABASE_URL` to it, and run `npm test`.

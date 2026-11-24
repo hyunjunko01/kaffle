@@ -1,3 +1,4 @@
+import { EntryRecoveryPanel } from "@/components/entry-recovery-panel";
 import { OpsWalletsPanel } from "./ops-wallets-panel";
 import { RafflePanel } from "./raffle-panel";
 import { VaultPanel } from "./vault-panel";
@@ -12,6 +13,7 @@ export default function AdminPage() {
       <OpsWalletsPanel />
       <VaultPanel />
       <RafflePanel />
+      <EntryRecoveryPanel admin />
     </main>
   );
 }

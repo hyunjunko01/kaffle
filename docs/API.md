@@ -137,12 +137,29 @@ worker lease tokens are never returned.
 
 ### `GET /api/cron/raffle-entries`
 
-Background recovery, authenticated by `Authorization: Bearer <CRON_SECRET>`.
+Optional background recovery, authenticated by `Authorization: Bearer <CRON_SECRET>`.
 Processes up to five active operations per invocation, rotating unresolved work.
-`vercel.json` schedules this every minute on Vercel. Configure `CRON_SECRET` in
-the deployment environment and enable the deployment's cron service. Other hosts
-must schedule the same authenticated HTTP call. Browser polling supplements
-this job; recovery after a restart does not depend on an open browser.
+No Vercel cron is configured by default. The current user/admin workflow does not
+require `CRON_SECRET`; keep it only if using this endpoint with an external
+scheduler or a supported hosting plan.
+
+### `GET` / `POST /api/raffle/entries`
+
+- `GET`: read the signed-in user's pending entries across all rounds on the
+  configured chain, including rounds that have already ended. Returns `total`,
+  a preview of the oldest ten entries, and `explorerBaseUrl`. No recovery occurs
+  on this list request; signed transaction bytes and lease tokens are excluded.
+- `POST`: manually check pending entries using the existing recovery rules.
+  Send `{ "cursor": null }` to start. Each request checks at most five entries
+  and returns `results` plus `nextCursor`; pass that cursor on subsequent requests
+  until it is null. The creation-time cutoff stays fixed, and unresolved entries
+  are not retried repeatedly within the same run. Client-supplied user/chain IDs
+  do not control the scope. Invalid cursors return 400.
+
+The raffle page exposes this check independently of the current round's enter,
+draw, or result screen. Outcomes remain pending if failure cannot be proven;
+checking does not grant new tickets, create a new entry, force a refund, or block
+the draw until all off-chain records are resolved. Users may retry later.
 
 ### `POST /api/raffle/request-winner`
 
@@ -159,5 +176,18 @@ Admin routes reuse the Kakao user session. `ADMIN_KAKAO_IDS` must include that u
 - `GET` / `POST /api/admin/vault` — read vault status; fund vault from the owner wallet
 - `GET /api/admin/ops-wallets` — owner / relayer ETH (and owner prize-token) balances
 - `POST /api/admin/raffle` — create a round (`durationSeconds`, `prizeAmount`)
+- `GET /api/admin/raffle/entries` — pending-entry count and oldest-ten preview for
+  every user on the configured chain
+- `POST /api/admin/raffle/entries` — admin-triggered batch recovery, using the same
+  cursor protocol and five-entry request limit as the user endpoint; one click in
+  the admin UI checks all eligible entries in the fixed creation-time window
+
+Admin batch recovery requires the existing admin Kakao session, rather than a
+cron secret. It reuses transaction verification, preparation leases, and atomic
+refund protection. It offers no force-refund operation. Per-entry lookup errors
+are reported as `unavailable` while other entries continue. Resolved/pending/error
+counts and the remaining list are displayed after the run. If the browser closes
+or a request fails, completed operations remain committed; a later manual run can
+check the remaining entries again.
 
 There is no `/internal/raffles/close` job. Entry closes on-chain at `endTime`; the admin creates the next round when the current one is finished.

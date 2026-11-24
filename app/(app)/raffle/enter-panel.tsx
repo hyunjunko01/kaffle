@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { getPublicChainConfig, NETWORKS } from "@/lib/chain/config";
+import { EntryRecoveryPanel } from "@/components/entry-recovery-panel";
 import { EnterRaffleFlow } from "./enter-raffle-flow";
 import { RaffleRoundBoard, RaffleRoundHeader } from "./raffle-round-header";
 import { SettleWinnerFlow } from "./settle-winner-flow";
 import { useRaffleView } from "./use-raffle-view";
-import { hasSeenWinnerReveal } from "./winner-reveal-seen";
 
 function RoundStatusSpinner() {
   return (
@@ -32,11 +32,12 @@ export function RaffleEnterPanel() {
   const [enterBusy, setEnterBusy] = useState(false);
   const [settleBusy, setSettleBusy] = useState(false);
   const [claimBusy, setClaimBusy] = useState(false);
+  const [recoveryBusy, setRecoveryBusy] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [revealSeen, setRevealSeen] = useState(false);
+  const [revealState, setRevealState] = useState<{ key: string; seen: boolean } | null>(null);
 
   const current = view?.current ?? null;
-  const busy = enterBusy || settleBusy || claimBusy;
+  const busy = enterBusy || settleBusy || claimBusy || recoveryBusy;
   const canRequestWinner = Boolean(current?.canRequestWinner);
   const canClaim = Boolean(current?.canClaim);
   const isWinner =
@@ -44,13 +45,13 @@ export function RaffleEnterPanel() {
     Boolean(view?.wallet) &&
     current!.winner!.toLowerCase() === view!.wallet!.toLowerCase();
 
-  useEffect(() => {
-    if (!current?.winner) {
-      setRevealSeen(false);
-      return;
-    }
-    setRevealSeen(hasSeenWinnerReveal(current.address, view?.wallet ?? null));
-  }, [current?.address, current?.winner, view?.wallet]);
+  // SettleWinnerFlow already restores the saved reveal state and reports changes.
+  // Scope that state to the round/wallet so a recovery refresh cannot reuse an old result.
+  const revealKey = `${current?.address.toLowerCase() ?? ""}:${view?.wallet?.toLowerCase() ?? ""}`;
+  const revealSeen = revealState?.key === revealKey && revealState.seen;
+  const handleRevealSeenChange = useCallback((seen: boolean) => {
+    setRevealState({ key: revealKey, seen });
+  }, [revealKey]);
 
   async function refreshRound() {
     setRefreshing(true);
@@ -68,6 +69,12 @@ export function RaffleEnterPanel() {
   return (
     <main>
       <section className="space-y-8">
+        <EntryRecoveryPanel
+          refreshKey={`${enterBusy}:${view?.ticketBalance}:${current?.userTickets}`}
+          disabled={enterBusy || settleBusy || claimBusy}
+          onBusyChange={setRecoveryBusy}
+          onComplete={reload}
+        />
         {current && view ? (
           <>
             <RaffleRoundHeader
@@ -86,7 +93,7 @@ export function RaffleEnterPanel() {
                 disabled={busy}
                 onBusyChange={setSettleBusy}
                 onViewUpdate={setView}
-                onRevealSeenChange={setRevealSeen}
+                onRevealSeenChange={handleRevealSeenChange}
                 canClaim={canClaim && isWinner}
                 onClaimBusyChange={setClaimBusy}
               />
