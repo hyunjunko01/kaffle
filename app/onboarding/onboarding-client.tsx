@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BrandMark } from "@/components/brand-mark";
-import { connectMappedWallet, isWeb3AuthConfigured } from "@/lib/auth/web3auth";
+import { connectMappedWalletProof, isWeb3AuthConfigured } from "@/lib/auth/web3auth";
 
 type OnboardingData = {
   user: {
@@ -16,6 +16,10 @@ type OnboardingData = {
 
 function errorMessage(value: string | undefined) {
   switch (value) {
+    case "Wallet verification failed":
+      return "로그인 정보와 지갑을 확인하지 못했습니다. 다시 로그인한 후 시도해 주세요.";
+    case "Wallet verification unavailable":
+      return "지갑 확인 서비스에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.";
     case "invalid nickname":
       return "닉네임을 확인해 주세요.";
     case "invalid referral":
@@ -102,7 +106,7 @@ export function OnboardingClient({ preview = false }: { preview?: boolean }) {
         throw new Error("지갑 연결용 토큰을 만들지 못했습니다.");
       }
       const { idToken } = (await tokenResponse.json()) as { idToken: string };
-      const address = await connectMappedWallet(idToken);
+      const { address, identityToken, accessToken } = await connectMappedWalletProof(idToken);
 
       const response = await fetch("/api/onboarding", {
         method: "POST",
@@ -111,6 +115,8 @@ export function OnboardingClient({ preview = false }: { preview?: boolean }) {
           nickname,
           referralCode: referralCode || undefined,
           walletAddress: address,
+          identityToken,
+          accessToken,
         }),
       });
       const body = (await response.json()) as { error?: string };
@@ -120,7 +126,6 @@ export function OnboardingClient({ preview = false }: { preview?: boolean }) {
 
       router.replace("/");
     } catch (caught) {
-      console.error(caught);
       setError(
         caught instanceof Error
           ? errorMessage(caught.message)

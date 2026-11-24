@@ -13,8 +13,14 @@ import {
   attachReferralOnCreate,
   clearReferralCookie,
 } from "@/lib/referrals";
+import {
+  MappedWalletVerificationError,
+  MappedWalletVerificationUnavailableError,
+  normalizeMappedWalletAddress,
+  verifyMappedWallet,
+} from "@/lib/auth/mapped-wallet-verification";
 
-const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
+export const runtime = "nodejs";
 const REFERRAL_RE = /^[a-f0-9]{8}$/;
 
 function errorResponse(message: string, status = 400) {
@@ -49,10 +55,13 @@ export async function POST(request: Request) {
   let body: {
     nickname?: unknown;
     walletAddress?: unknown;
+    identityToken?: unknown;
+    accessToken?: unknown;
     referralCode?: unknown;
   };
   try {
     body = (await request.json()) as typeof body;
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("invalid body");
   } catch {
     return errorResponse("invalid request");
   }
@@ -66,13 +75,22 @@ export async function POST(request: Request) {
     );
   }
 
-  if (
-    typeof body.walletAddress !== "string" ||
-    !ADDRESS_RE.test(body.walletAddress)
-  ) {
-    return errorResponse("invalid wallet");
+  const submittedAddress = normalizeMappedWalletAddress(body.walletAddress);
+  if (!submittedAddress) return errorResponse("invalid wallet");
+
+  let walletAddress: string;
+  try {
+    walletAddress = await verifyMappedWallet({
+      kakaoId: user.kakaoId,
+      address: submittedAddress,
+      identityToken: body.identityToken,
+      accessToken: body.accessToken,
+    });
+  } catch (error) {
+    if (error instanceof MappedWalletVerificationError) return errorResponse(error.message, 401);
+    if (error instanceof MappedWalletVerificationUnavailableError) return errorResponse(error.message, 503);
+    throw error;
   }
-  const walletAddress = body.walletAddress.toLowerCase();
 
   const cookieStore = await cookies();
   const cookieReferralCode = cookieStore.get(REFERRAL_COOKIE)?.value;

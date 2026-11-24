@@ -26,6 +26,10 @@ The Kakao identity. Created on first login.
 ## Wallet
 
 One wallet per user. Mapped after Kakao login, when Web3Auth returns an address.
+Registration requires server verification of Web3Auth's signed app key and its
+binding to the authenticated Kakao user. The address persisted by either
+registration endpoint is the verifier's normalized result. Provider identity
+and access tokens are used transiently and are not stored in this table.
 
 - user id
 - address

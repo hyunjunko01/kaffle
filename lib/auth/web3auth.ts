@@ -1,5 +1,6 @@
 "use client";
 
+import { decodeJwt } from "jose";
 import type { Web3AuthNoModal } from "@web3auth/no-modal";
 import { getPublicChainConfig } from "@/lib/chain/config";
 
@@ -122,16 +123,23 @@ export async function connectMappedWalletProvider(idToken: string) {
   const { AUTH_CONNECTION, CONNECTOR_STATUS, WALLET_CONNECTORS } = await import(
     "@web3auth/no-modal"
   );
+  const requestedUserId = decodeJwt(idToken).sub;
+  if (!requestedUserId) throw new Error("Invalid wallet login token");
   const web3auth = await getClient();
   const auth = web3auth.getConnector(WALLET_CONNECTORS.AUTH);
   if (
     auth?.status === CONNECTOR_STATUS.CONNECTED ||
     auth?.status === CONNECTOR_STATUS.AUTHORIZED
   ) {
-    const existingProvider = auth.provider ?? web3auth.provider;
-    if (existingProvider) {
-      return existingProvider;
+    const userInfo = await web3auth.getUserInfo();
+    if (userInfo.userId === requestedUserId && userInfo.authConnectionId === authConnectionId &&
+        userInfo.authConnection === AUTH_CONNECTION.CUSTOM) {
+      const existingProvider = auth.provider ?? web3auth.provider;
+      if (existingProvider) return existingProvider;
     }
+    // A Kakao account switch must not reuse another user's restored wallet.
+    await web3auth.logout();
+    await waitForAuthReady(web3auth);
   }
 
   const connection = await web3auth.connectTo(WALLET_CONNECTORS.AUTH, {
@@ -162,4 +170,13 @@ export async function connectMappedWallet(idToken: string) {
   }
 
   return address.toLowerCase();
+}
+
+/** Provider-signed registration proof. Never send the Kaffle login JWT as this proof. */
+export async function connectMappedWalletProof(idToken: string) {
+  const address = await connectMappedWallet(idToken);
+  const web3auth = await getClient();
+  const { idToken: identityToken } = await web3auth.getAuthTokenInfo();
+  if (!identityToken) throw new Error("Web3Auth did not return a wallet identity token");
+  return { address, identityToken, accessToken: web3auth.accessToken ?? undefined };
 }

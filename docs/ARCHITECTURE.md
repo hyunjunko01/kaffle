@@ -30,6 +30,19 @@ On first login, the platform:
 - lets Web3Auth reconstruct the signing key in the browser
 - maps that wallet address 1:1 to the account
 
+Wallet registration verifies Web3Auth's signed identity proof on the server.
+The public app key must derive the submitted address, and the provider identity
+and custom connection must match the current Kakao session. A v11 token without
+the original user ID is resolved through the provider's authenticated user API,
+including a primary social EVM address match. Client-supplied user info alone is
+never sufficient. Both wallet registration endpoints apply the same verifier
+before any mutation; see [API](API.md#post-apimewallet).
+
+The browser also checks restored Web3Auth user/connection information before
+reusing a provider. Switching Kakao accounts disconnects a mismatched restored
+wallet and reconnects with the current user's login JWT. This client check
+supports account switching; server verification remains mandatory.
+
 The server stores the address only. It does not store or generate the private key.
 
 Later logins reuse the same account and wallet. The user does not import or connect an external wallet to enter the platform.

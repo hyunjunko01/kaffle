@@ -2,8 +2,14 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getCurrentUser, toMePayload } from "@/lib/auth/user";
 import { prisma } from "@/lib/db";
+import {
+  MappedWalletVerificationError,
+  MappedWalletVerificationUnavailableError,
+  normalizeMappedWalletAddress,
+  verifyMappedWallet,
+} from "@/lib/auth/mapped-wallet-verification";
 
-const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   const user = await getCurrentUser();
@@ -11,11 +17,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as { address?: string };
-  const address = body.address?.toLowerCase();
-
-  if (!address || !ADDRESS_RE.test(address)) {
+  let body: { address?: unknown; identityToken?: unknown; accessToken?: unknown };
+  try {
+    body = (await request.json()) as typeof body;
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("invalid body");
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+  const submittedAddress = normalizeMappedWalletAddress(body.address);
+  if (!submittedAddress) {
     return NextResponse.json({ error: "Invalid address" }, { status: 400 });
+  }
+
+  let address: string;
+  try {
+    address = await verifyMappedWallet({
+      kakaoId: user.kakaoId,
+      address: submittedAddress,
+      identityToken: body.identityToken,
+      accessToken: body.accessToken,
+    });
+  } catch (error) {
+    if (error instanceof MappedWalletVerificationError) {
+      return NextResponse.json({ error: error.message }, { status: 401 });
+    }
+    if (error instanceof MappedWalletVerificationUnavailableError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+    throw error;
   }
 
   if (user.wallet) {

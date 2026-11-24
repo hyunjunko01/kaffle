@@ -30,13 +30,36 @@ Return the current user, mapped wallet, and ticket balance.
 
 Update profile fields allowed after signup (for example nickname rules).
 
-### `GET` / `POST /api/me/wallet`
+### `POST /api/me/wallet`
 
-Read or attach the mapped wallet address for the current user.
+Attach the mapped wallet for the current user. Send `address`, `identityToken`
+(the Web3Auth-issued identity JWT), and `accessToken` from the current Web3Auth
+session. `accessToken` is needed when the identity JWT omits the original user ID.
+Read the stored mapping through `GET /api/me`.
+
+Both this route and onboarding verify the provider token before writing a wallet:
+ES256 signature against the pinned Web3Auth v11 Citadel JWKS, issuer, project
+audience, expiration/issued-at time, and the configured custom auth connection.
+The submitted address must derive from a signed `web3auth_app_key` secp256k1
+public key, and the authenticated provider identity must match the Kakao session.
+External-wallet and threshold-key claims are rejected. The application-issued
+JWT from `/api/auth/web3auth-token` is a login credential, not registration proof.
+
+When a v11 token omits `userId`, the server uses the provider access token to
+query the same `/v1/user` endpoint as the installed SDK. It checks the original
+identifier, connection, network, and primary social EVM address. An unrelated
+access token or linked external address cannot satisfy that check. Invalid proof
+returns 401; unavailable configuration/provider verification returns 503. Neither
+case creates a wallet or updates onboarding fields. Existing mappings cannot be
+overwritten.
 
 ### `GET` / `POST /api/onboarding`
 
 First-run nickname / wallet / referral completion after Kakao login.
+`POST` requires `nickname`, `walletAddress`, `identityToken`, and the provider
+`accessToken` described above. The onboarding client obtains proof via
+`connectMappedWalletProof()` and sends it automatically; users do not choose or
+paste a wallet address.
 
 ## Missions and tickets
 
